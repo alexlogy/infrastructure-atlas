@@ -11,14 +11,15 @@ This document describes the security model of the codebase. To report a vulnerab
 
 ## Access control
 
-| Concern          | Control                                                                                                            |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------ |
-| Drafts           | The collection `read` rule limits anonymous readers to `_status = published`. Version history requires login       |
-| Public rendering | Queries use `overrideAccess: false` with no user, plus `draft: false`, an explicit `select` and view-model mapping |
-| Users            | No public sign-up. Admin-only create and delete. Role changes are admin-only at field level                        |
-| First account    | Payload's first-user screen only works while no users exist, and that account is forced to `admin`                 |
-| Admin panel      | Requires authentication. Optionally also restrict it at the proxy (see `deployment.md`)                            |
-| APIs             | GraphQL is disabled. The REST API is enforced by the same collection access rules                                  |
+| Concern          | Control                                                                                                                                                                                                                          |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Drafts           | The collection `read` rule limits anonymous readers to `_status = published`. Version history requires login                                                                                                                     |
+| Public rendering | Queries use `overrideAccess: false` with no user, plus `draft: false`, an explicit `select` and view-model mapping                                                                                                               |
+| Draft preview    | `/api/preview` needs a valid Payload session and only redirects to same-site paths. Pages re-check the session on every render; with an editor they read drafts as that user (`overrideAccess: false`) and skip the shared cache |
+| Users            | No public sign-up. Admin-only create and delete. Role changes are admin-only at field level                                                                                                                                      |
+| First account    | Payload's first-user screen only works while no users exist, and that account is forced to `admin`                                                                                                                               |
+| Admin panel      | Requires authentication. Optionally also restrict it at the proxy (see `deployment.md`)                                                                                                                                          |
+| APIs             | GraphQL is disabled. The REST API is enforced by the same collection access rules                                                                                                                                                |
 
 The Payload Local API bypasses access control by default. Any new public data access must pass `overrideAccess: false`, and the integration tests in `tests/int/` should cover it.
 
@@ -50,6 +51,5 @@ A full Content Security Policy is planned once the WebGL and Ghost image sources
 
 ## Known gaps
 
-- No authenticated draft preview yet. Drafts are only visible inside `/admin`.
 - No rate limiting inside the app. Add it at the proxy for `/api/users/login`.
 - No email adapter. Password-reset emails are written to the server console, so configure an adapter before relying on password resets.
