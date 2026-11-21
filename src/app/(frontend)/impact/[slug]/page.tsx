@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 
 import { PerspectiveSwitch, perspectiveLabel } from '@/components/impact/PerspectiveSwitch'
 import { PROSE_CLASS, RichText } from '@/components/RichText'
+import { getProject } from '@/lib/payload/preview'
 import { getPublicProject, getSiteSettings } from '@/lib/payload/public'
 import { selectPerspective } from '@/lib/perspective'
 import type { ImageView } from '@/types/view-models'
@@ -32,7 +33,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
   const settings = await getSiteSettings()
   if (!settings.showImpact) notFound()
 
-  const project = await getPublicProject((await params).slug)
+  const project = await getProject((await params).slug)
   if (!project) notFound()
 
   const narratives = {

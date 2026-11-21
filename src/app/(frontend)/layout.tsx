@@ -4,6 +4,7 @@ import React from 'react'
 import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SkipLink } from '@/components/layout/SkipLink'
+import { getPreviewUser } from '@/lib/payload/preview'
 import { getSiteSettings } from '@/lib/payload/public'
 
 import './styles.css'
@@ -21,12 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const settings = await getSiteSettings()
+  const [settings, previewUser] = await Promise.all([getSiteSettings(), getPreviewUser()])
 
   return (
     <html lang={settings.locale}>
       <body className="flex min-h-screen flex-col font-sans antialiased">
         <SkipLink />
+        {previewUser && <PreviewBanner />}
         <SiteHeader settings={settings} />
         <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
           {children}
@@ -34,5 +36,18 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <SiteFooter siteTitle={settings.siteTitle} />
       </body>
     </html>
+  )
+}
+
+function PreviewBanner() {
+  return (
+    <div role="status" className="bg-gold px-6 py-2 text-center text-sm text-midnight">
+      Preview mode: unpublished drafts are visible to you only.{' '}
+      {/* Full navigation to a route handler that clears a cookie; <Link> would prefetch/RSC-fetch it. */}
+      {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+      <a href="/api/exit-preview" className="font-semibold underline underline-offset-4">
+        Exit preview
+      </a>
+    </div>
   )
 }

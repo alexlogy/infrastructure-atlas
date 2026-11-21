@@ -1,4 +1,6 @@
-import type { Payload } from 'payload'
+import type { Payload, Where } from 'payload'
+
+import type { User } from '@/payload-types'
 
 import { isValidSlug } from '@/lib/validation/slugs'
 import type {
@@ -33,6 +35,17 @@ const PUBLIC_MEDIA = {
  * makes Payload enforce the collection's public read rules.
  */
 
+/**
+ * Read mode for draft-enabled collections. Anonymous: published only. With a
+ * preview user (an authenticated editor): latest drafts, still access-checked
+ * as that user rather than with overrideAccess.
+ */
+function readMode(previewUser?: User | null) {
+  return previewUser
+    ? { draft: true, user: previewUser, overrideAccess: false, published: [] as Where[] }
+    : { draft: false, overrideAccess: false, published: [{ _status: { equals: 'published' } }] }
+}
+
 export async function fetchSiteSettings(payload: Payload): Promise<SiteSettingsView> {
   const doc = await payload.findGlobal({
     slug: 'site-settings',
@@ -43,13 +56,16 @@ export async function fetchSiteSettings(payload: Payload): Promise<SiteSettingsV
   return toSiteSettingsView(doc)
 }
 
-/** Published milestones only, with just the fields the timeline renders. */
-export async function fetchPublicTimeline(payload: Payload): Promise<MilestoneView[]> {
+/** Published milestones (or drafts for a preview user), with just the fields the timeline renders. */
+export async function fetchPublicTimeline(
+  payload: Payload,
+  previewUser?: User | null,
+): Promise<MilestoneView[]> {
+  const { published, ...mode } = readMode(previewUser)
   const { docs } = await payload.find({
     collection: 'timeline-milestones',
-    draft: false,
-    overrideAccess: false,
-    where: { _status: { equals: 'published' } },
+    ...mode,
+    where: { and: published },
     depth: 1,
     limit: TIMELINE_LIMIT,
     pagination: false,
@@ -69,7 +85,11 @@ export async function fetchPublicTimeline(payload: Payload): Promise<MilestoneVi
     },
     populate: PUBLIC_MEDIA,
   })
-  return docs.map(toMilestoneView).sort(compareMilestones)
+  // Drafts may be saved without required fields; skip ones that cannot be rendered.
+  return docs
+    .filter((doc) => doc.title && doc.startDate)
+    .map(toMilestoneView)
+    .sort(compareMilestones)
 }
 
 const PROJECT_SUMMARY_SELECT = {
@@ -99,17 +119,18 @@ export async function fetchPublicProjects(payload: Payload): Promise<ProjectSumm
   return docs.map(toProjectSummaryView).sort(compareProjects)
 }
 
-/** One published project by slug, or null. Relationships are not selected. */
+/** One published project (or its draft, for a preview user) by slug, or null. Relationships are not selected. */
 export async function fetchPublicProject(
   payload: Payload,
   slug: string,
+  previewUser?: User | null,
 ): Promise<ProjectView | null> {
   if (!isValidSlug(slug)) return null
+  const { published, ...mode } = readMode(previewUser)
   const { docs } = await payload.find({
     collection: 'impact-projects',
-    draft: false,
-    overrideAccess: false,
-    where: { and: [{ slug: { equals: slug } }, { _status: { equals: 'published' } }] },
+    ...mode,
+    where: { and: [{ slug: { equals: slug } }, ...published] },
     depth: 1,
     limit: 1,
     pagination: false,
@@ -127,7 +148,8 @@ export async function fetchPublicProject(
     },
     populate: PUBLIC_MEDIA,
   })
-  return docs[0] ? toProjectView(docs[0]) : null
+  const doc = docs[0]
+  return doc?.title ? toProjectView({ ...doc, summary: doc.summary ?? '' }) : null
 }
 
 export async function fetchHomePage(payload: Payload): Promise<HomePageView> {

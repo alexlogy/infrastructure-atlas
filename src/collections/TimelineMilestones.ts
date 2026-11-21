@@ -12,6 +12,8 @@ export const TimelineMilestones: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'startDate', 'era', 'featured', '_status'],
+    // Opens the timeline with drafts through the authenticated preview route.
+    preview: () => `/api/preview?path=${encodeURIComponent('/journey')}`,
   },
   defaultSort: 'startDate',
   versions: {
