@@ -29,6 +29,7 @@ The Payload Local API bypasses access control by default. Any new public data ac
 - **Uploads:** only raster images (JPEG, PNG, WebP, AVIF, GIF) up to 10 MB are accepted, and SVG is rejected. Uploads require an authenticated editor.
 - **Media visibility:** uploaded files can be fetched by anyone who has the URL, even if they're only attached to a draft. Don't upload confidential material. A gated media route is planned.
 - **Ghost:** only the read-only Content API key is used, server-side. Request URLs carry the key, so they are never logged or used as cache keys. Post URLs and images must be http(s), and cards link to the canonical article rather than copying it.
+- **Ghost webhook:** `/api/revalidate/ghost` returns 404 unless `REVALIDATION_SECRET` (at least 32 characters) is set. Each delivery needs a valid `X-Ghost-Signature`, compared in constant time, with a timestamp within 5 minutes to limit replays. Bodies over 5 MB are refused, and the payload is never parsed or logged. The only effect is expiring the cached post list, so a replay inside the window costs one extra Ghost fetch.
 - **Database:** all queries go through Payload and Drizzle with parameters. No raw SQL is built by joining strings.
 
 ## HTTP hardening
