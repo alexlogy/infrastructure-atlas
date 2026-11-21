@@ -38,6 +38,7 @@ describe('toSiteSettingsView', () => {
       showImpact: true,
       showAtlas: true,
       atlasCenter: DEFAULT_ATLAS_CENTER,
+      shareImage: null,
     })
     expect(toSiteSettingsView({ siteTitle: '   ', description: '' }).siteTitle).toBe(
       DEFAULT_SITE_TITLE,
