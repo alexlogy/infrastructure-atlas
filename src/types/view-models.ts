@@ -97,3 +97,24 @@ export type AtlasNodeView = LatLng & {
 export type AtlasArcView = { from: string; to: string }
 
 export type AtlasView = { nodes: AtlasNodeView[]; arcs: AtlasArcView[] }
+
+/** A Ghost post as shown on a card. `url` is the canonical article URL. */
+export type GhostPostView = {
+  id: string
+  title: string
+  slug: string
+  url: string
+  excerpt: string | null
+  image: { url: string; alt: string } | null
+  tags: string[]
+  publishedAt: string
+  readingTime: number | null
+}
+
+export type WritingSettingsView = {
+  enabled: boolean
+  recentCount: number
+  includeTags: string[]
+  excludeTags: string[]
+  featuredSlugs: string[]
+}

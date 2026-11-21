@@ -96,10 +96,12 @@ export interface Config {
   globals: {
     'site-settings': SiteSetting;
     'home-page': HomePage;
+    'writing-settings': WritingSetting;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'writing-settings': WritingSettingsSelect<false> | WritingSettingsSelect<true>;
   };
   locale: null;
   widgets: {
@@ -740,6 +742,31 @@ export interface HomePage {
   createdAt?: string | null;
 }
 /**
+ * Shows recent posts from the Ghost blog configured on the server. Has no effect until GHOST_URL and GHOST_CONTENT_API_KEY are set.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "writing-settings".
+ */
+export interface WritingSetting {
+  id: number;
+  enabled?: boolean | null;
+  recentCount: number;
+  /**
+   * Only show posts with one of these tag slugs. Empty = all.
+   */
+  includeTags?: string[] | null;
+  /**
+   * Never show posts with these tag slugs.
+   */
+  excludeTags?: string[] | null;
+  /**
+   * Shown first, in this order. Renamed or deleted posts are skipped automatically.
+   */
+  featuredSlugs?: string[] | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "site-settings_select".
  */
@@ -787,6 +814,20 @@ export interface HomePageSelect<T extends boolean = true> {
         id?: T;
       };
   featuredProjects?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "writing-settings_select".
+ */
+export interface WritingSettingsSelect<T extends boolean = true> {
+  enabled?: T;
+  recentCount?: T;
+  includeTags?: T;
+  excludeTags?: T;
+  featuredSlugs?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

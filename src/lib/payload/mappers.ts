@@ -5,6 +5,7 @@ import type {
   Media,
   SiteSetting,
   TimelineMilestone,
+  WritingSetting,
 } from '@/payload-types'
 import { isSafeHref } from '@/lib/validation/links'
 import type {
@@ -19,6 +20,7 @@ import type {
   ProjectSummaryView,
   ProjectView,
   SiteSettingsView,
+  WritingSettingsView,
 } from '@/types/view-models'
 
 export const DEFAULT_SITE_TITLE = 'Infrastructure Atlas'
@@ -246,4 +248,17 @@ export function toAtlasView(
   }
 
   return { nodes: [...nodes.values()], arcs: [...arcs.values()] }
+}
+
+export function toWritingSettingsView(
+  doc: Partial<WritingSetting> | null | undefined,
+): WritingSettingsView {
+  const count = doc?.recentCount ?? 6
+  return {
+    enabled: doc?.enabled ?? true,
+    recentCount: Number.isInteger(count) ? Math.min(Math.max(count, 1), 20) : 6,
+    includeTags: cleanTags(doc?.includeTags),
+    excludeTags: cleanTags(doc?.excludeTags),
+    featuredSlugs: cleanTags(doc?.featuredSlugs),
+  }
 }
