@@ -5,11 +5,18 @@ import { useEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
+import { markerKey, type MarkerStyle, markerStyleFor } from '@/lib/atlas-markers'
 import { angularDistance, latLngToVector } from '@/lib/geo'
 import type { AtlasArcView, AtlasNodeView, LatLng } from '@/types/view-models'
 
 // Midnight Atlas tokens (mirrors styles.css; WebGL cannot read CSS variables cheaply).
-const COLORS = { surface: '#13273a', line: '#2e4a63', accent: '#65d6df', gold: '#e5b96d' }
+const COLORS = {
+  surface: '#13273a',
+  line: '#2e4a63',
+  accent: '#65d6df',
+  gold: '#e5b96d',
+  ink: '#f4f7fa',
+}
 const CAMERA_DISTANCE = 2.8
 const MARKER_RADIUS = 0.022
 
@@ -141,21 +148,32 @@ function Markers({
   selectedId: string | null
   onSelect: (id: string) => void
 }) {
-  // Shared by every marker: one geometry, two materials.
-  const geometry = useMemo(() => new THREE.SphereGeometry(MARKER_RADIUS, 12, 8), [])
-  const idle = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.accent }), [])
-  const active = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.gold }), [])
-  useDispose(geometry, idle, active)
+  // Shared by every marker: one geometry per shape, one material per colour.
+  const r = MARKER_RADIUS
+  const circle = useMemo(() => new THREE.SphereGeometry(r, 12, 8), [r])
+  const diamond = useMemo(() => new THREE.OctahedronGeometry(r * 1.35), [r])
+  const square = useMemo(() => new THREE.BoxGeometry(r * 1.7, r * 1.7, r * 1.7), [r])
+  const triangle = useMemo(() => new THREE.TetrahedronGeometry(r * 1.6), [r])
+  const accent = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.accent }), [])
+  const gold = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.gold }), [])
+  const active = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.ink }), [])
+  useDispose(circle, diamond, square, triangle, accent, gold, active)
+
+  const geometries = { circle, diamond, square, triangle }
+  const materials = { accent, gold }
+  const key = useMemo(() => markerKey(nodes.map((n) => n.category)), [nodes])
+  const styleOf = (node: AtlasNodeView): MarkerStyle => markerStyleFor(key, node.category)
 
   useEffect(() => () => void (document.body.style.cursor = ''), [])
 
   return nodes.map((node) => {
     const isSelected = node.id === selectedId
+    const style = styleOf(node)
     return (
       <mesh
         key={node.id}
-        geometry={geometry}
-        material={isSelected ? active : idle}
+        geometry={geometries[style.shape]}
+        material={isSelected ? active : materials[style.color]}
         position={latLngToVector(node.latitude, node.longitude, 1.01)}
         scale={isSelected ? 1.7 : 1}
         onClick={(event) => {
