@@ -22,7 +22,7 @@ Infrastructure Atlas is a reusable portfolio platform, not a hard-coded personal
 
 - **Payload CMS embedded in Next.js**: an authenticated admin panel at `/admin`, with drafts and publishing.
 - **PostgreSQL** is the source of truth for portfolio content.
-- **HTML-first rendering**: navigation, text and SEO work without WebGL. A lazy-loaded Three.js globe on `/atlas` is a progressive enhancement over an HTML list of places.
+- **HTML-first rendering**: navigation, text and SEO work without WebGL. A lazy-loaded Three.js globe on `/atlas` and the home page is a progressive enhancement over an HTML list of places.
 - **Optional Ghost integration**: lists published articles from a Ghost blog over the read-only Content API and links to the originals.
 
 > [!IMPORTANT]
@@ -40,18 +40,20 @@ Browser ──> Next.js (server components, HTML content, SEO)
 
 ### Public pages
 
-| Route            | Content                                                                                                                                                           |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), plus featured projects in the chosen order         |
-| `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                                      |
-| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                                   |
-| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                   |
-| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                           |
-| `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off |
+| Route            | Content                                                                                                                                                                                           |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), plus an Atlas section with a small globe and featured projects in the chosen order |
+| `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                                                                      |
+| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                                                                   |
+| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                                                   |
+| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                                                           |
+| `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off                                 |
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
 
-On `/atlas`, the list of places is the main content and works without JavaScript or WebGL. When WebGL is available, a globe loads afterwards, facing the starting view set in **Site settings** (Asia-Pacific by default). Markers come from published locations, and arcs connect the places a published project lists, in order. Clicking a marker or a place's **Show on globe** button selects it in both views. The globe only draws a frame when something changes, keeps the scroll wheel for the page, and skips the camera animation when the visitor prefers reduced motion.
+On `/atlas`, the list of places is the main content and works without JavaScript or WebGL. When WebGL is available, a globe loads afterwards, facing the starting view set in **Site settings** (Asia-Pacific by default). Markers come from published locations, and arcs connect the places a published project lists, in order. Each location **category** gets its own marker shape and colour, explained in a key under the globe and shown on each place card. Uncategorised places use a cyan circle. Clicking a marker or a place's **Show on globe** button selects it in both views, and links like `/atlas#place-<id>` open with that place selected. The globe only draws a frame when something changes, keeps the scroll wheel for the page, and skips the camera animation when the visitor prefers reduced motion.
+
+When the Atlas section is on and places are published, the home page shows a place count, an **Explore the atlas** link and the same globe, without auto-rotation. three.js loads only when that section scrolls near the viewport; without WebGL the text and link stay, next to a plain disc. Selecting a marker there opens the place on `/atlas`.
 
 Pages are rendered on the server as plain HTML, so they work without JavaScript or WebGL. They read only published records through narrow, server-only queries (`src/lib/payload/public.ts`) that select just the fields they display, and they map each record to a small display object before it reaches React. When the CMS is empty, the pages show a short explanation instead of sample content.
 

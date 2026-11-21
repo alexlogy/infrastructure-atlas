@@ -2,10 +2,11 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { HomeGlobe } from '@/components/atlas/HomeGlobe'
 import { ProjectGrid } from '@/components/impact/ProjectCard'
 import { pageMetadata } from '@/lib/metadata'
-import { getHomePage, getPublicProjects, getSiteSettings } from '@/lib/payload/public'
-import type { NavLink, ProjectSummaryView } from '@/types/view-models'
+import { getAtlas, getHomePage, getPublicProjects, getSiteSettings } from '@/lib/payload/public'
+import type { AtlasView, NavLink, ProjectSummaryView } from '@/types/view-models'
 
 export function generateMetadata(): Promise<Metadata> {
   return pageMetadata({ path: '/' })
@@ -18,6 +19,7 @@ export default async function HomePage() {
     settings.showImpact && home.featuredProjectIds.length > 0
       ? pickInOrder(await getPublicProjects(), home.featuredProjectIds)
       : []
+  const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
   const actions: NavLink[] =
     home.callsToAction.length > 0
@@ -67,6 +69,30 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {atlas && atlas.nodes.length > 0 && (
+        <section className="mx-auto max-w-5xl px-6 pb-24" aria-labelledby="home-atlas-heading">
+          <div className="grid items-center gap-12 rounded-lg border border-line p-8 md:grid-cols-[2fr_3fr]">
+            <div>
+              <h2 id="home-atlas-heading" className="text-2xl font-semibold">
+                Atlas
+              </h2>
+              <p className="mt-3 leading-relaxed text-muted">
+                {count(atlas.nodes.length, 'place')}
+                {atlas.arcs.length > 0 && `, ${count(atlas.arcs.length, 'connection')}`}, with the
+                projects and milestones behind them.
+              </p>
+              <Link
+                href="/atlas"
+                className="mt-6 inline-flex font-medium text-accent underline underline-offset-4 hover:text-ink"
+              >
+                Explore the atlas
+              </Link>
+            </div>
+            <HomeGlobe atlas={atlas} center={settings.atlasCenter} />
+          </div>
+        </section>
+      )}
+
       {featured.length > 0 && (
         <section
           className="mx-auto max-w-5xl px-6 pb-24"
@@ -83,6 +109,8 @@ export default async function HomePage() {
     </>
   )
 }
+
+const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
 
 /** Published projects in the editor's chosen order; unpublished ids drop out. */
 function pickInOrder(projects: ProjectSummaryView[], ids: string[]): ProjectSummaryView[] {

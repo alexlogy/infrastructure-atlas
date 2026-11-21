@@ -62,6 +62,8 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.
 
+Markers share one geometry per shape and one material per colour. `src/lib/atlas-markers.ts` assigns category styles, and both the globe and the HTML key (`MarkerIcon`) read it, so they can't drift apart. The home page's `HomeGlobe` reuses `Globe` and the same capability hook, and mounts it only after an `IntersectionObserver` reports the section near the viewport. Visitors who never scroll there never download three.js.
+
 ## Media access
 
 The media `read` rule also guards file downloads, because Payload's file route applies it. For anonymous requests it returns `id in (media used by published content)`. That list is built from four anonymous reads and shared across one request, so populating many images costs one lookup. Next's image optimiser fetches source files without the visitor's cookies, so draft previews pass `unoptimized` and let the editor's browser load draft-only images directly.
