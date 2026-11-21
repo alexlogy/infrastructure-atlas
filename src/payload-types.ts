@@ -69,6 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    'timeline-milestones': TimelineMilestone;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,6 +79,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    'timeline-milestones': TimelineMilestonesSelect<false> | TimelineMilestonesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -87,8 +89,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    'site-settings': SiteSetting;
+  };
+  globalsSelect: {
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -123,6 +129,10 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  /**
+   * Admins manage users and settings. Editors manage content.
+   */
+  role: 'admin' | 'editor';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -149,7 +159,14 @@ export interface User {
  */
 export interface Media {
   id: number;
+  /**
+   * Describe the image for screen-reader users.
+   */
   alt: string;
+  /**
+   * Optional credit or licence note shown with the image.
+   */
+  attribution?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -161,6 +178,53 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "timeline-milestones".
+ */
+export interface TimelineMilestone {
+  id: number;
+  title: string;
+  subtitle?: string | null;
+  startDate: string;
+  /**
+   * Leave empty for a single point in time or an ongoing period.
+   */
+  endDate?: string | null;
+  /**
+   * How precisely the dates are shown publicly.
+   */
+  datePrecision: 'year' | 'month' | 'day';
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional grouping label, e.g. "Early career".
+   */
+  era?: string | null;
+  tags?: string[] | null;
+  image?: (number | null) | Media;
+  featured?: boolean | null;
+  /**
+   * Tie-breaker for milestones on the same date (lower first).
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -193,6 +257,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'timeline-milestones';
+        value: number | TimelineMilestone;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -241,6 +309,7 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -265,6 +334,7 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
+  attribution?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -276,6 +346,26 @@ export interface MediaSelect<T extends boolean = true> {
   height?: T;
   focalX?: T;
   focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "timeline-milestones_select".
+ */
+export interface TimelineMilestonesSelect<T extends boolean = true> {
+  title?: T;
+  subtitle?: T;
+  startDate?: T;
+  endDate?: T;
+  datePrecision?: T;
+  description?: T;
+  era?: T;
+  tags?: T;
+  image?: T;
+  featured?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -316,6 +406,58 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * Shown in the header and browser tab. Leave empty for a neutral default.
+   */
+  siteTitle?: string | null;
+  /**
+   * Short introduction and default SEO description.
+   */
+  description?: string | null;
+  locale?: string | null;
+  navLinks?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  sections?: {
+    journey?: boolean | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteTitle?: T;
+  description?: T;
+  locale?: T;
+  navLinks?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  sections?:
+    | T
+    | {
+        journey?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

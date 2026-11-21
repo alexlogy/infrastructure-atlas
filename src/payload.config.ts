@@ -6,7 +6,9 @@ import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
 import { Media } from './collections/Media'
+import { TimelineMilestones } from './collections/TimelineMilestones'
 import { Users } from './collections/Users'
+import { SiteSettings } from './globals/SiteSettings'
 import { parseServerEnv } from './lib/env'
 
 const filename = fileURLToPath(import.meta.url)
@@ -21,7 +23,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media],
+  collections: [Users, Media, TimelineMilestones],
+  globals: [SiteSettings],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,
   serverURL: env.NEXT_PUBLIC_SITE_URL,
@@ -38,5 +41,7 @@ export default buildConfig({
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
   sharp,
+  // Upload size cap enforced by Payload's request parser (bytes).
+  upload: { limits: { fileSize: 10 * 1024 * 1024 } },
   plugins: [],
 })
