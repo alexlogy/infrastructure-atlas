@@ -10,7 +10,16 @@ export const Users: CollectionConfig = {
   },
   // No public sign-up: only admins create accounts. Payload's one-time
   // "create first user" screen works only while the collection is empty.
-  auth: true,
+  auth: {
+    // Per-account brute-force lockout. Per-IP throttling belongs at the reverse proxy (docs/deployment.md).
+    maxLoginAttempts: 5,
+    lockTime: 10 * 60 * 1000,
+    cookies: {
+      // Payload defaults to a non-Secure cookie; never send the session over plain http in production.
+      secure: (process.env.NEXT_PUBLIC_SITE_URL ?? '').startsWith('https://'),
+      sameSite: 'Lax',
+    },
+  },
   access: {
     admin: canAccessAdmin,
     create: adminOnly,
