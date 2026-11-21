@@ -4,16 +4,16 @@ Payload schemas live in `src/collections/` and `src/globals/`. Types are generat
 
 ## Access summary
 
-| Slug                  | Kind       | Anonymous read          | Create / update / delete                               | Drafts |
-| --------------------- | ---------- | ----------------------- | ------------------------------------------------------ | ------ |
-| `users`               | Collection | None                    | Admins. Editors can update themselves (not their role) | No     |
-| `media`               | Collection | All files (public URLs) | Authenticated                                          | No     |
-| `timeline-milestones` | Collection | Published only          | Authenticated                                          | Yes    |
-| `impact-projects`     | Collection | Published only          | Authenticated                                          | Yes    |
-| `atlas-locations`     | Collection | Published only          | Authenticated                                          | Yes    |
-| `site-settings`       | Global     | Yes                     | Authenticated                                          | No     |
-| `home-page`           | Global     | Yes                     | Authenticated                                          | No     |
-| `writing-settings`    | Global     | Yes                     | Authenticated                                          | No     |
+| Slug                  | Kind       | Anonymous read                       | Create / update / delete                               | Drafts |
+| --------------------- | ---------- | ------------------------------------ | ------------------------------------------------------ | ------ |
+| `users`               | Collection | None                                 | Admins. Editors can update themselves (not their role) | No     |
+| `media`               | Collection | Only media used by published content | Authenticated                                          | No     |
+| `timeline-milestones` | Collection | Published only                       | Authenticated                                          | Yes    |
+| `impact-projects`     | Collection | Published only                       | Authenticated                                          | Yes    |
+| `atlas-locations`     | Collection | Published only                       | Authenticated                                          | Yes    |
+| `site-settings`       | Global     | Yes                                  | Authenticated                                          | No     |
+| `home-page`           | Global     | Yes                                  | Authenticated                                          | No     |
+| `writing-settings`    | Global     | Yes                                  | Authenticated                                          | No     |
 
 GraphQL is disabled. Anonymous readers can never see version history (`readVersions`).
 
@@ -33,7 +33,7 @@ There is no public registration. New users must be created by an admin.
 | `alt`         | text | Required, describes the image for screen-reader users |
 | `attribution` | text | Optional credit or licence note shown with the image  |
 
-Accepted types are JPEG, PNG, WebP, AVIF and GIF, up to 10 MB. SVG is rejected because it can contain scripts. Files are stored in `/media` locally and are publicly readable by URL.
+Accepted types are JPEG, PNG, WebP, AVIF and GIF, up to 10 MB. SVG is rejected because it can contain scripts. Files are stored in `/media` locally. Visitors can read a file only while published content uses it; see `docs/security.md`.
 
 ## `timeline-milestones`
 
@@ -128,3 +128,4 @@ The Ghost address and key are environment variables, never CMS fields. Saving ex
 - Put owner information in the CMS, never in source files, fixtures or seeds.
 - Give every new public query `overrideAccess: false`, an explicit `select`, and a mapper to a view model.
 - Collections with drafts need a `publishedOrAuthenticated` read rule and hooks that expire their cache tag only when published content changes.
+- A new field that references `media` must be added to `src/access/publishedMedia.ts`, or its images stay hidden from visitors. An integration test fails until you do.

@@ -265,7 +265,7 @@ Health checks can use `GET /api/health`. It returns `200 {"status":"ok"}` when t
 - GraphQL is disabled. The REST API stays enabled for the admin panel and is protected by collection access rules.
 - Every response gets baseline security headers: `nosniff`, `Referrer-Policy`, frame protection, `Permissions-Policy`, and HSTS in production. Every page also gets a per-request nonce Content Security Policy (see [docs/security.md](docs/security.md)).
 - After 5 failed logins an account is locked for 10 minutes. On https the session cookie is `Secure`. Add per-IP rate limiting at your reverse proxy ([docs/deployment.md](docs/deployment.md#login-protection) has an nginx example).
-- Uploaded media files can be fetched by anyone who has the URL. Don't upload confidential files.
+- Visitors can only fetch an uploaded image while published content uses it. Images attached only to a draft, or to nothing, need an admin session. Editors still see draft images in preview.
 
 ### Backup and restore
 
@@ -295,16 +295,16 @@ For the full production procedure (applying migrations before the new version ta
 
 ## Project status
 
-| Phase                                                                           | Status  |
-| ------------------------------------------------------------------------------- | ------- |
-| 0. Scaffold, tooling, local database                                            | Done    |
-| 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)             | Done    |
-| 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch | Done    |
-| 1. Authenticated draft preview                                                  | Done    |
-| 2. Three.js atlas globe                                                         | Done    |
-| 3. Ghost writing integration                                                    | Done    |
-| 3. Sitemap, robots rules, canonical and Open Graph metadata                     | Done    |
-| 3. Content Security Policy                                                      | Done    |
-| 3. Signed Ghost webhook for instant updates                                     | Done    |
-| 3. Login lockout, Secure session cookie, proxy rate-limit guide                 | Done    |
-| 3. Gated media route                                                            | Planned |
+| Phase                                                                           | Status |
+| ------------------------------------------------------------------------------- | ------ |
+| 0. Scaffold, tooling, local database                                            | Done   |
+| 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)             | Done   |
+| 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch | Done   |
+| 1. Authenticated draft preview                                                  | Done   |
+| 2. Three.js atlas globe                                                         | Done   |
+| 3. Ghost writing integration                                                    | Done   |
+| 3. Sitemap, robots rules, canonical and Open Graph metadata                     | Done   |
+| 3. Content Security Policy                                                      | Done   |
+| 3. Signed Ghost webhook for instant updates                                     | Done   |
+| 3. Login lockout, Secure session cookie, proxy rate-limit guide                 | Done   |
+| 3. Media visible only while published content uses it                           | Done   |

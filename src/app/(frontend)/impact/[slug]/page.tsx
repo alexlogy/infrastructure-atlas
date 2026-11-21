@@ -1,6 +1,7 @@
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 import type { Metadata } from 'next'
 import Image from 'next/image'
+import { draftMode } from 'next/headers'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
@@ -34,6 +35,9 @@ export default async function ProjectPage({ params, searchParams }: Props) {
 
   const project = await getProject((await params).slug)
   if (!project) notFound()
+  // In preview the browser fetches images itself, with the editor's session: the optimiser fetches
+  // anonymously and so can't load media that only a draft uses.
+  const unoptimized = (await draftMode()).isEnabled
 
   const narratives = {
     leadership: project.leadershipNarrative,
@@ -70,7 +74,9 @@ export default async function ProjectPage({ params, searchParams }: Props) {
           ))}
         </ul>
       )}
-      {project.image && <Figure image={project.image} className="mt-8" priority />}
+      {project.image && (
+        <Figure image={project.image} className="mt-8" priority unoptimized={unoptimized} />
+      )}
 
       {perspective && (
         <section aria-labelledby="perspective-heading" className="mt-12">
@@ -89,7 +95,9 @@ export default async function ProjectPage({ params, searchParams }: Props) {
 
       <ProseSection title="The challenge" data={project.challenge} />
       <ProseSection title="Architecture" data={project.architecture}>
-        {project.diagram && <Figure image={project.diagram} className="mt-6" />}
+        {project.diagram && (
+          <Figure image={project.diagram} className="mt-6" unoptimized={unoptimized} />
+        )}
       </ProseSection>
       <ProseSection title="Decisions and trade-offs" data={project.decisions} />
 
@@ -173,10 +181,12 @@ function Figure({
   image,
   className,
   priority,
+  unoptimized,
 }: {
   image: ImageView
   className?: string
   priority?: boolean
+  unoptimized: boolean
 }) {
   return (
     <figure className={className}>
@@ -187,6 +197,7 @@ function Figure({
         height={image.height ?? 675}
         sizes="(min-width: 768px) 720px, 100vw"
         priority={priority}
+        unoptimized={unoptimized}
         className="h-auto w-full rounded-md"
       />
       {image.attribution && (

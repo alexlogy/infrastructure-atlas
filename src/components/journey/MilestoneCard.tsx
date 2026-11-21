@@ -4,7 +4,15 @@ import { PROSE_CLASS, RichText } from '@/components/RichText'
 import { formatDateRange } from '@/lib/dates'
 import type { MilestoneView } from '@/types/view-models'
 
-export function MilestoneCard({ milestone, locale }: { milestone: MilestoneView; locale: string }) {
+export function MilestoneCard({
+  milestone,
+  locale,
+  unoptimizedImages = false,
+}: {
+  milestone: MilestoneView
+  locale: string
+  unoptimizedImages?: boolean
+}) {
   const { title, subtitle, startDate, endDate, datePrecision, description, era, tags, image } =
     milestone
   const headingId = `milestone-${milestone.id}`
@@ -36,6 +44,7 @@ export function MilestoneCard({ milestone, locale }: { milestone: MilestoneView;
             width={image.width ?? 1200}
             height={image.height ?? 675}
             sizes="(min-width: 768px) 640px, 100vw"
+            unoptimized={unoptimizedImages}
             className="h-auto w-full rounded-md"
           />
           {image.attribution && (
