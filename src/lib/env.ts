@@ -11,6 +11,8 @@ const serverSchema = z.object({
   GHOST_URL: optionalUrl,
   GHOST_CONTENT_API_KEY: optionalString,
   REVALIDATION_SECRET: optionalString,
+  // Extra image origins for the CSP (space or comma separated), e.g. a CDN serving Ghost images.
+  CSP_IMG_ORIGINS: optionalString,
   // Development schema push; set to "false" to use migrations only (e.g. e2e against the test DB).
   PAYLOAD_DB_PUSH: z.enum(['true', 'false']).default('true'),
 })

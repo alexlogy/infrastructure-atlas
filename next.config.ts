@@ -8,7 +8,8 @@ const dirname = path.dirname(__filename)
 
 const isProduction = process.env.NODE_ENV === 'production'
 
-// Baseline headers. A full Content-Security-Policy is deferred until WebGL and Ghost media land.
+// Baseline headers for every response. Rendered pages also get a per-request nonce CSP from
+// src/proxy.ts; this frame-ancestors policy covers API and asset responses it doesn't match.
 const securityHeaders = [
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
