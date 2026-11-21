@@ -1,6 +1,6 @@
 import Image from 'next/image'
 
-import { RichText } from '@/components/RichText'
+import { PROSE_CLASS, RichText } from '@/components/RichText'
 import { formatDateRange } from '@/lib/dates'
 import type { MilestoneView } from '@/types/view-models'
 
@@ -44,12 +44,7 @@ export function MilestoneCard({ milestone, locale }: { milestone: MilestoneView;
         </figure>
       )}
 
-      {description && (
-        <RichText
-          data={description}
-          className="mt-4 space-y-3 leading-relaxed text-ink/90 [&_a]:text-accent [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6"
-        />
-      )}
+      {description && <RichText data={description} className={`mt-4 ${PROSE_CLASS}`} />}
 
       {tags.length > 0 && (
         <ul aria-label="Tags" className="mt-4 flex flex-wrap gap-2">

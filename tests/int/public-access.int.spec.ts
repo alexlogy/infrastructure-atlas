@@ -8,7 +8,13 @@ const revalidateTag = vi.hoisted(() => vi.fn())
 vi.mock('next/cache', () => ({ revalidateTag, unstable_cache: (fn: unknown) => fn }))
 
 import config from '@/payload.config'
-import { fetchPublicTimeline, fetchSiteSettings } from '@/lib/payload/queries'
+import {
+  fetchHomePage,
+  fetchPublicProject,
+  fetchPublicProjects,
+  fetchPublicTimeline,
+  fetchSiteSettings,
+} from '@/lib/payload/queries'
 import { migrations } from '@/migrations'
 import type { User } from '@/payload-types'
 
@@ -34,8 +40,14 @@ beforeAll(async () => {
   // Payload types migration args as `unknown`, so generated migrations need a cast.
   type Migrations = NonNullable<Parameters<Payload['db']['migrate']>[0]>['migrations']
   await payload.db.migrate({ migrations: migrations as unknown as Migrations })
-  await payload.delete({ collection: 'timeline-milestones', where: { id: { exists: true } } })
-  await payload.delete({ collection: 'users', where: { id: { exists: true } } })
+  for (const collection of [
+    'impact-projects',
+    'atlas-locations',
+    'timeline-milestones',
+    'users',
+  ] as const) {
+    await payload.delete({ collection, where: { id: { exists: true } } })
+  }
 })
 
 afterAll(async () => {
@@ -220,5 +232,129 @@ describe('site settings', () => {
       slug: 'site-settings',
       data: { siteTitle: '', navLinks: [] },
     })
+  })
+})
+
+describe('impact projects', () => {
+  let projectId: number
+
+  it('generates a slug from the title and keeps drafts out of public reads', async () => {
+    const draft = await payload.create({
+      collection: 'impact-projects',
+      data: { title: 'Draft Sample Project', summary: 'Sample summary.', _status: 'draft' },
+      draft: true,
+    })
+    projectId = draft.id
+    expect(draft.slug).toBe('draft-sample-project')
+    expect(revalidateTag).not.toHaveBeenCalled()
+
+    expect(await fetchPublicProjects(payload)).toHaveLength(0)
+    expect(await fetchPublicProject(payload, 'draft-sample-project')).toBeNull()
+    await expect(
+      payload.findByID({ collection: 'impact-projects', id: projectId, overrideAccess: false }),
+    ).rejects.toThrow()
+  })
+
+  it('publishes into listings and detail, and expires the projects cache', async () => {
+    await payload.update({
+      collection: 'impact-projects',
+      id: projectId,
+      data: {
+        _status: 'published',
+        outcomes: [{ result: 'Sample qualitative result' }],
+        sourceLinks: [{ label: 'Sample source', url: 'https://example.com/source' }],
+      },
+    })
+    expect(revalidateTag).toHaveBeenCalledWith('projects', { expire: 0 })
+
+    const list = await fetchPublicProjects(payload)
+    expect(list.map((p) => p.slug)).toEqual(['draft-sample-project'])
+    expect(Object.keys(list[0])).not.toEqual(expect.arrayContaining(['_status', 'createdAt']))
+
+    const detail = await fetchPublicProject(payload, 'draft-sample-project')
+    expect(detail?.outcomes).toEqual([
+      { result: 'Sample qualitative result', metric: null, verification: null },
+    ])
+    expect(detail).not.toHaveProperty('milestones')
+  })
+
+  it('serves the last published version while a newer draft is pending', async () => {
+    await payload.update({
+      collection: 'impact-projects',
+      id: projectId,
+      data: { summary: 'Unpublished edit.' },
+      draft: true,
+    })
+    expect((await fetchPublicProject(payload, 'draft-sample-project'))?.summary).toBe(
+      'Sample summary.',
+    )
+  })
+
+  it('rejects invalid or duplicate slugs and anonymous writes', async () => {
+    const data = { title: 'Another', summary: 'x', _status: 'published' as const }
+    await expect(
+      payload.create({ collection: 'impact-projects', data: { ...data, slug: 'Bad Slug' } }),
+    ).rejects.toThrow()
+    await expect(
+      payload.create({
+        collection: 'impact-projects',
+        data: { ...data, slug: 'draft-sample-project' },
+      }),
+    ).rejects.toThrow()
+    await expect(
+      payload.create({
+        collection: 'impact-projects',
+        data: { ...data, slug: 'anonymous' },
+        overrideAccess: false,
+      }),
+    ).rejects.toThrow()
+    expect(await fetchPublicProject(payload, '../etc/passwd')).toBeNull()
+  })
+})
+
+describe('atlas locations', () => {
+  it('validates coordinates and hides drafts from anonymous readers', async () => {
+    const base = {
+      label: 'Sample city',
+      latitude: 1.5,
+      longitude: 103.8,
+      precision: 'city' as const,
+    }
+    await expect(
+      payload.create({ collection: 'atlas-locations', data: { ...base, latitude: 91 } }),
+    ).rejects.toThrow()
+    await expect(
+      payload.create({ collection: 'atlas-locations', data: { ...base, longitude: -181 } }),
+    ).rejects.toThrow()
+
+    await payload.create({
+      collection: 'atlas-locations',
+      data: { ...base, _status: 'draft' },
+      draft: true,
+    })
+    const { docs } = await payload.find({ collection: 'atlas-locations', overrideAccess: false })
+    expect(docs).toHaveLength(0)
+  })
+})
+
+describe('home page', () => {
+  it('is editor-writable only, revalidates, and exposes featured ids in order', async () => {
+    await expect(
+      payload.updateGlobal({ slug: 'home-page', data: { headline: 'x' }, overrideAccess: false }),
+    ).rejects.toThrow()
+
+    const [project] = await fetchPublicProjects(payload)
+    await payload.updateGlobal({
+      slug: 'home-page',
+      data: { headline: 'Sample headline', featuredProjects: [Number(project.id)] },
+      user: editor,
+      overrideAccess: false,
+    })
+    expect(revalidateTag).toHaveBeenCalledWith('home-page', { expire: 0 })
+
+    const home = await fetchHomePage(payload)
+    expect(home).toMatchObject({ headline: 'Sample headline', featuredProjectIds: [project.id] })
+
+    await payload.updateGlobal({ slug: 'home-page', data: { headline: '', featuredProjects: [] } })
   })
 })

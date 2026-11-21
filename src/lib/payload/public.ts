@@ -5,10 +5,22 @@ import { unstable_cache } from 'next/cache'
 import { getPayload } from 'payload'
 
 import { CACHE_TAGS } from '@/lib/cache/tags'
-import type { MilestoneView, SiteSettingsView } from '@/types/view-models'
+import type {
+  HomePageView,
+  MilestoneView,
+  ProjectSummaryView,
+  ProjectView,
+  SiteSettingsView,
+} from '@/types/view-models'
 
-import { toSiteSettingsView } from './mappers'
-import { fetchPublicTimeline, fetchSiteSettings } from './queries'
+import { toHomePageView, toSiteSettingsView } from './mappers'
+import {
+  fetchHomePage,
+  fetchPublicProject,
+  fetchPublicProjects,
+  fetchPublicTimeline,
+  fetchSiteSettings,
+} from './queries'
 
 /**
  * Site settings for public rendering. Falls back to neutral defaults if the
@@ -23,7 +35,8 @@ export const getSiteSettings = unstable_cache(
       return toSiteSettingsView(null)
     }
   },
-  ['public-site-settings'],
+  // Bump the key whenever SiteSettingsView changes shape, or stale cached entries survive deploys.
+  ['public-site-settings-v2'],
   { tags: [CACHE_TAGS.siteSettings] },
 )
 
@@ -32,4 +45,33 @@ export const getPublicTimeline = unstable_cache(
   async (): Promise<MilestoneView[]> => fetchPublicTimeline(await getPayload({ config })),
   ['public-timeline'],
   { tags: [CACHE_TAGS.timeline] },
+)
+
+/** Published project summaries, cached until a project publish/unpublish. */
+export const getPublicProjects = unstable_cache(
+  async (): Promise<ProjectSummaryView[]> => fetchPublicProjects(await getPayload({ config })),
+  ['public-projects'],
+  { tags: [CACHE_TAGS.projects] },
+)
+
+/** One published project; the slug is part of the cache key. */
+export const getPublicProject = unstable_cache(
+  async (slug: string): Promise<ProjectView | null> =>
+    fetchPublicProject(await getPayload({ config }), slug),
+  ['public-project'],
+  { tags: [CACHE_TAGS.projects] },
+)
+
+/** Home page copy. Falls back to empty values so the homepage still renders. */
+export const getHomePage = unstable_cache(
+  async (): Promise<HomePageView> => {
+    try {
+      return await fetchHomePage(await getPayload({ config }))
+    } catch {
+      console.error('[home-page] failed to load; using defaults')
+      return toHomePageView(null)
+    }
+  },
+  ['public-home-page'],
+  { tags: [CACHE_TAGS.homePage] },
 )

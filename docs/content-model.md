@@ -9,7 +9,10 @@ Payload schemas live in `src/collections/` and `src/globals/`. Types are generat
 | `users`               | Collection | None                    | Admins. Editors can update themselves (not their role) | No     |
 | `media`               | Collection | All files (public URLs) | Authenticated                                          | No     |
 | `timeline-milestones` | Collection | Published only          | Authenticated                                          | Yes    |
+| `impact-projects`     | Collection | Published only          | Authenticated                                          | Yes    |
+| `atlas-locations`     | Collection | Published only          | Authenticated                                          | Yes    |
 | `site-settings`       | Global     | Yes                     | Authenticated                                          | No     |
+| `home-page`           | Global     | Yes                     | Authenticated                                          | No     |
 
 GraphQL is disabled. Anonymous readers can never see version history (`readVersions`).
 
@@ -33,21 +36,66 @@ Accepted types are JPEG, PNG, WebP, AVIF and GIF, up to 10 MB. SVG is rejected b
 
 ## `timeline-milestones`
 
-| Field           | Type                           | Notes                                                         |
-| --------------- | ------------------------------ | ------------------------------------------------------------- |
-| `title`         | text, required, ≤ 120          |                                                               |
-| `subtitle`      | text, ≤ 160                    |                                                               |
-| `startDate`     | date, required                 |                                                               |
-| `endDate`       | date                           | Must be on or after `startDate`                               |
-| `datePrecision` | select: `year`, `month`, `day` | Controls the public label ("2020", "Mar 2020", "Mar 1, 2020") |
-| `description`   | rich text (Lexical)            | Paragraphs, bold, italic, lists and external links only       |
-| `era`           | text, ≤ 60                     | Free-text grouping label                                      |
-| `tags`          | text, many, ≤ 12               |                                                               |
-| `image`         | upload → `media`               |                                                               |
-| `featured`      | checkbox                       | Shown with a text label and a gold accent                     |
-| `sortOrder`     | number                         | Breaks ties between milestones on the same date (lower first) |
+| Field           | Type                             | Notes                                                         |
+| --------------- | -------------------------------- | ------------------------------------------------------------- |
+| `title`         | text, required, ≤ 120            |                                                               |
+| `subtitle`      | text, ≤ 160                      |                                                               |
+| `startDate`     | date, required                   |                                                               |
+| `endDate`       | date                             | Must be on or after `startDate`                               |
+| `datePrecision` | select: `year`, `month`, `day`   | Controls the public label ("2020", "Mar 2020", "Mar 1, 2020") |
+| `description`   | rich text (Lexical)              | Paragraphs, bold, italic, lists and external links only       |
+| `era`           | text, ≤ 60                       | Free-text grouping label                                      |
+| `tags`          | text, many, ≤ 12                 |                                                               |
+| `image`         | upload → `media`                 |                                                               |
+| `featured`      | checkbox                         | Shown with a text label and a gold accent                     |
+| `sortOrder`     | number                           | Breaks ties between milestones on the same date (lower first) |
+| `location`      | relationship → `atlas-locations` | Optional; used by the Phase 2 atlas                           |
 
 Public ordering is `startDate` ascending, then `sortOrder`, then `title`. Drafts are versioned, with up to 50 versions kept per milestone.
+
+## `impact-projects`
+
+| Field                                                   | Type                                             | Notes                                                                                |
+| ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `title`                                                 | text, required, ≤ 120                            |                                                                                      |
+| `slug`                                                  | text, required, unique, ≤ 80                     | Lowercase words and single hyphens. Generated from the title when left empty         |
+| `summary`                                               | textarea, required, ≤ 300                        | Card text and meta description                                                       |
+| `featuredImage`, `diagram`                              | upload → `media`                                 |                                                                                      |
+| `tags`                                                  | text, many, ≤ 12                                 |                                                                                      |
+| `leadershipNarrative`, `engineeringNarrative`           | rich text                                        | The two perspectives. The switch only appears when both are filled in                |
+| `challenge`, `architecture`, `decisions`, `limitations` | rich text                                        | Shared by both perspectives                                                          |
+| `outcomes`                                              | array (≤ 12): `result`, `metric`, `verification` | A `metric` marks a measured outcome; none means qualitative                          |
+| `sourceLinks`                                           | array (≤ 8): `label`, `url`                      | `url` must be a site path or an `http(s)`/`mailto` URL; checked again at render time |
+| `milestones`, `locations`                               | relationships                                    | Stored for later phases; public queries do not select them                           |
+| `featured`, `sortOrder`                                 | checkbox, number                                 | Listing order is `sortOrder`, then `title`                                           |
+
+Publish, unpublish and delete expire the `projects` cache tag. A pending draft never replaces the published version on the site.
+
+## `atlas-locations`
+
+| Field                       | Type                                         | Notes                                                   |
+| --------------------------- | -------------------------------------------- | ------------------------------------------------------- |
+| `label`                     | text, required, ≤ 80                         |                                                         |
+| `city`, `region`, `country` | text, optional                               |                                                         |
+| `latitude`                  | number, required, −90 to 90                  | Published coordinates are public: use city-level points |
+| `longitude`                 | number, required, −180 to 180                |                                                         |
+| `precision`                 | select: `exact`, `city`, `region`, `country` | Defaults to `city`                                      |
+| `category`                  | text, ≤ 40                                   | Marker grouping for the globe                           |
+| `sortOrder`                 | number                                       | Lower first                                             |
+
+Visibility is controlled by draft/publish; there is no separate display toggle. No public query reads this collection yet.
+
+## `home-page` (global)
+
+| Field              | Type                                  | Notes                                                      |
+| ------------------ | ------------------------------------- | ---------------------------------------------------------- |
+| `headline`         | text, ≤ 120                           | Empty falls back to the site title                         |
+| `subheadline`      | textarea, ≤ 400                       | Empty falls back to the site description                   |
+| `heroImage`        | upload → `media`                      |                                                            |
+| `callsToAction`    | array (≤ 2) of label + href           | Empty shows links to the enabled sections                  |
+| `featuredProjects` | relationship → `impact-projects`, ≤ 6 | Shown in this order; only published projects are displayed |
+
+Saving expires the `home-page` cache tag.
 
 ## `site-settings` (global)
 
@@ -58,6 +106,7 @@ Public ordering is `startDate` ascending, then `sortOrder`, then `title`. Drafts
 | `locale`           | text (BCP 47)               | Sets `<html lang>` and the date formatting locale                                               |
 | `navLinks`         | array (≤ 8) of label + href | `href` must be a site path or an `http(s)`/`mailto` URL. Links are checked again at render time |
 | `sections.journey` | checkbox                    | Hides `/journey` (404) and its navigation link                                                  |
+| `sections.impact`  | checkbox                    | Hides `/impact` and project pages (404), the navigation link and homepage featured projects     |
 
 ## Rules for new content types
 

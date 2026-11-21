@@ -1,16 +1,7 @@
-import {
-  BoldFeature,
-  InlineToolbarFeature,
-  ItalicFeature,
-  LinkFeature,
-  lexicalEditor,
-  OrderedListFeature,
-  ParagraphFeature,
-  UnorderedListFeature,
-} from '@payloadcms/richtext-lexical'
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, publishedOrAuthenticated } from '@/access'
+import { publicRichTextEditor } from '@/fields/richText'
 import { affectsPublishedContent, expireTag } from '@/lib/cache/revalidate'
 import { CACHE_TAGS } from '@/lib/cache/tags'
 import { isValidDateRange } from '@/lib/validation/dates'
@@ -88,18 +79,7 @@ export const TimelineMilestones: CollectionConfig = {
     {
       name: 'description',
       type: 'richText',
-      editor: lexicalEditor({
-        features: [
-          ParagraphFeature(),
-          BoldFeature(),
-          ItalicFeature(),
-          UnorderedListFeature(),
-          OrderedListFeature(),
-          // External links only: internal document links could expose unpublished records.
-          LinkFeature({ enabledCollections: [] }),
-          InlineToolbarFeature(),
-        ],
-      }),
+      editor: publicRichTextEditor,
     },
     {
       name: 'era',
@@ -109,6 +89,12 @@ export const TimelineMilestones: CollectionConfig = {
     },
     { name: 'tags', type: 'text', hasMany: true, maxRows: 12 },
     { name: 'image', type: 'upload', relationTo: 'media' },
+    {
+      name: 'location',
+      type: 'relationship',
+      relationTo: 'atlas-locations',
+      admin: { description: 'Optional place on the atlas this milestone belongs to.' },
+    },
     {
       type: 'row',
       fields: [

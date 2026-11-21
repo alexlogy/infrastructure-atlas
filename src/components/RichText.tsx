@@ -42,6 +42,10 @@ const converters: JSXConvertersFunction = ({ defaultConverters }) => ({
   autolink: safeLink,
 })
 
+/** Shared typography for CMS prose. */
+export const PROSE_CLASS =
+  'space-y-3 leading-relaxed text-ink/90 [&_a]:text-accent [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-6 [&_ul]:list-disc [&_ul]:pl-6'
+
 export function RichText({ data, className }: { data: SerializedEditorState; className?: string }) {
   return <PayloadRichText data={data} converters={converters} className={className} />
 }

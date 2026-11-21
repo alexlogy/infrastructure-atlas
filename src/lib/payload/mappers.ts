@@ -1,6 +1,21 @@
-import type { Media, SiteSetting, TimelineMilestone } from '@/payload-types'
+import type {
+  HomePage,
+  ImpactProject,
+  Media,
+  SiteSetting,
+  TimelineMilestone,
+} from '@/payload-types'
 import { isSafeHref } from '@/lib/validation/links'
-import type { DatePrecision, ImageView, MilestoneView, SiteSettingsView } from '@/types/view-models'
+import type {
+  DatePrecision,
+  HomePageView,
+  ImageView,
+  MilestoneView,
+  NavLink,
+  ProjectSummaryView,
+  ProjectView,
+  SiteSettingsView,
+} from '@/types/view-models'
 
 export const DEFAULT_SITE_TITLE = 'Infrastructure Atlas'
 
@@ -11,16 +26,28 @@ const clean = (value: string | null | undefined): string | null => {
   return trimmed ? trimmed : null
 }
 
+type RawLink = { label?: string | null; href?: string | null }
+
+/** Re-validate on the way out: stored data may predate the field validator. */
+function toLinks(links: RawLink[] | null | undefined): NavLink[] {
+  return (links ?? []).flatMap((link) => {
+    const label = clean(link.label)
+    const href = clean(link.href)
+    return label && href && isSafeHref(href) ? [{ label, href }] : []
+  })
+}
+
+const cleanTags = (tags: string[] | null | undefined): string[] =>
+  (tags ?? []).map((t) => t.trim()).filter(Boolean)
+
 export function toSiteSettingsView(doc: Partial<SiteSetting> | null | undefined): SiteSettingsView {
   return {
     siteTitle: clean(doc?.siteTitle) ?? DEFAULT_SITE_TITLE,
     description: clean(doc?.description),
     locale: clean(doc?.locale) ?? 'en',
-    // Re-validate on the way out: stored data may predate the field validator.
-    navLinks: (doc?.navLinks ?? [])
-      .filter((link) => clean(link.label) && isSafeHref(link.href ?? ''))
-      .map((link) => ({ label: link.label.trim(), href: link.href.trim() })),
+    navLinks: toLinks(doc?.navLinks),
     showJourney: doc?.sections?.journey ?? true,
+    showImpact: doc?.sections?.impact ?? true,
   }
 }
 
@@ -49,7 +76,7 @@ export function toMilestoneView(doc: PublicMilestoneDoc): MilestoneView {
     datePrecision: PRECISIONS.includes(doc.datePrecision) ? doc.datePrecision : 'month',
     description: doc.description ?? null,
     era: clean(doc.era),
-    tags: (doc.tags ?? []).map((t) => t.trim()).filter(Boolean),
+    tags: cleanTags(doc.tags),
     image: toImageView(doc.image),
     featured: Boolean(doc.featured),
     sortOrder: doc.sortOrder ?? 0,
@@ -63,4 +90,65 @@ export function compareMilestones(a: MilestoneView, b: MilestoneView): number {
     a.sortOrder - b.sortOrder ||
     a.title.localeCompare(b.title)
   )
+}
+
+/** The subset of a project document that public queries select. */
+export type PublicProjectDoc = Omit<
+  ImpactProject,
+  'createdAt' | 'updatedAt' | '_status' | 'milestones' | 'locations'
+>
+
+export type PublicProjectSummaryDoc = Pick<
+  PublicProjectDoc,
+  'id' | 'slug' | 'title' | 'summary' | 'featuredImage' | 'tags' | 'featured' | 'sortOrder'
+>
+
+export function toProjectSummaryView(doc: PublicProjectSummaryDoc): ProjectSummaryView {
+  return {
+    id: String(doc.id),
+    slug: doc.slug,
+    title: doc.title,
+    summary: doc.summary,
+    image: toImageView(doc.featuredImage),
+    tags: cleanTags(doc.tags),
+    featured: Boolean(doc.featured),
+    sortOrder: doc.sortOrder ?? 0,
+  }
+}
+
+export function toProjectView(doc: PublicProjectDoc): ProjectView {
+  return {
+    ...toProjectSummaryView(doc),
+    leadershipNarrative: doc.leadershipNarrative ?? null,
+    engineeringNarrative: doc.engineeringNarrative ?? null,
+    challenge: doc.challenge ?? null,
+    architecture: doc.architecture ?? null,
+    diagram: toImageView(doc.diagram),
+    decisions: doc.decisions ?? null,
+    outcomes: (doc.outcomes ?? []).flatMap((o) => {
+      const result = clean(o.result)
+      return result
+        ? [{ result, metric: clean(o.metric), verification: clean(o.verification) }]
+        : []
+    }),
+    limitations: doc.limitations ?? null,
+    sourceLinks: toLinks(doc.sourceLinks?.map((l) => ({ label: l.label, href: l.url }))),
+  }
+}
+
+/** Listing order: `sortOrder` (lower first), then title for stability. */
+export function compareProjects(a: ProjectSummaryView, b: ProjectSummaryView): number {
+  return a.sortOrder - b.sortOrder || a.title.localeCompare(b.title)
+}
+
+export function toHomePageView(doc: Partial<HomePage> | null | undefined): HomePageView {
+  return {
+    headline: clean(doc?.headline),
+    subheadline: clean(doc?.subheadline),
+    heroImage: toImageView(doc?.heroImage),
+    callsToAction: toLinks(doc?.callsToAction),
+    featuredProjectIds: (doc?.featuredProjects ?? []).map((p) =>
+      String(typeof p === 'object' ? p.id : p),
+    ),
+  }
 }
