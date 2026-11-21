@@ -33,7 +33,8 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm exec next dev --port ${PORT}`,
+    // Migrate first: Playwright waits for the health check (which needs tables) before globalSetup runs.
+    command: `pnpm migrate && pnpm exec next dev --port ${PORT}`,
     url: `${baseURL}/api/health`,
     reuseExistingServer: !process.env.CI,
     timeout: 180_000,
