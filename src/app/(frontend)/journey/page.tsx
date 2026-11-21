@@ -2,12 +2,16 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Timeline } from '@/components/journey/Timeline'
+import { pageMetadata } from '@/lib/metadata'
 import { getTimeline } from '@/lib/payload/preview'
 import { getSiteSettings } from '@/lib/payload/public'
 
-export const metadata: Metadata = {
-  title: 'Journey',
-  description: 'Milestones along the way, in chronological order.',
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'Journey',
+    description: 'Milestones along the way, in chronological order.',
+    path: '/journey',
+  })
 }
 
 export default async function JourneyPage() {

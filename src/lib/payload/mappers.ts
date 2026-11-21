@@ -58,6 +58,7 @@ export function toSiteSettingsView(doc: Partial<SiteSetting> | null | undefined)
     showJourney: doc?.sections?.journey ?? true,
     showImpact: doc?.sections?.impact ?? true,
     showAtlas: doc?.sections?.atlas ?? true,
+    shareImage: toImageView(doc?.shareImage),
     atlasCenter: {
       latitude: doc?.atlasCenter?.latitude ?? DEFAULT_ATLAS_CENTER.latitude,
       longitude: doc?.atlasCenter?.longitude ?? DEFAULT_ATLAS_CENTER.longitude,

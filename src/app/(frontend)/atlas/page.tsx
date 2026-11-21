@@ -2,11 +2,15 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { AtlasExplorer } from '@/components/atlas/AtlasExplorer'
+import { pageMetadata } from '@/lib/metadata'
 import { getAtlas, getSiteSettings } from '@/lib/payload/public'
 
-export const metadata: Metadata = {
-  title: 'Atlas',
-  description: 'Places, and the projects and milestones connected to them.',
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'Atlas',
+    description: 'Places, and the projects and milestones connected to them.',
+    path: '/atlas',
+  })
 }
 
 export default async function AtlasPage() {

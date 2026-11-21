@@ -61,6 +61,5 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 
 ## Planned extensions
 
-- Sitemap, robots rules and Open Graph defaults from published CMS data.
 - A strict Content Security Policy covering the admin, WebGL and Ghost image hosts.
 - An optional, signature-verified Ghost webhook that expires the `ghost` cache tag immediately.

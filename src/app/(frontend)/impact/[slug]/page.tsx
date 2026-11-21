@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation'
 
 import { PerspectiveSwitch, perspectiveLabel } from '@/components/impact/PerspectiveSwitch'
 import { PROSE_CLASS, RichText } from '@/components/RichText'
+import { pageMetadata } from '@/lib/metadata'
 import { getProject } from '@/lib/payload/preview'
 import { getPublicProject, getSiteSettings } from '@/lib/payload/public'
 import { selectPerspective } from '@/lib/perspective'
@@ -19,14 +20,12 @@ type Props = {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const project = await getPublicProject((await params).slug)
   if (!project) return {}
-  return {
+  return pageMetadata({
     title: project.title,
     description: project.summary,
-    alternates: { canonical: `/impact/${project.slug}` },
-    openGraph: project.image
-      ? { images: [{ url: project.image.url, alt: project.image.alt }] }
-      : {},
-  }
+    path: `/impact/${project.slug}`,
+    image: project.image,
+  })
 }
 
 export default async function ProjectPage({ params, searchParams }: Props) {

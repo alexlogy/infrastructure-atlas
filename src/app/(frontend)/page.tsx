@@ -1,9 +1,15 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 
 import { ProjectGrid } from '@/components/impact/ProjectCard'
+import { pageMetadata } from '@/lib/metadata'
 import { getHomePage, getPublicProjects, getSiteSettings } from '@/lib/payload/public'
 import type { NavLink, ProjectSummaryView } from '@/types/view-models'
+
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({ path: '/' })
+}
 
 export default async function HomePage() {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])

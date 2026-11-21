@@ -13,6 +13,7 @@ export type SiteSettingsView = {
   showImpact: boolean
   showAtlas: boolean
   atlasCenter: LatLng
+  shareImage: ImageView | null
 }
 
 export type LatLng = { latitude: number; longitude: number }

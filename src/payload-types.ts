@@ -686,6 +686,10 @@ export interface SiteSetting {
    * Short introduction and default SEO description.
    */
   description?: string | null;
+  /**
+   * Default image for link previews on social sites and chat apps (1200×630 works best).
+   */
+  shareImage?: (number | null) | Media;
   locale?: string | null;
   navLinks?:
     | {
@@ -773,6 +777,7 @@ export interface WritingSetting {
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteTitle?: T;
   description?: T;
+  shareImage?: T;
   locale?: T;
   navLinks?:
     | T
