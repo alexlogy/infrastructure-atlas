@@ -2,7 +2,8 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { Timeline } from '@/components/journey/Timeline'
-import { getPublicTimeline, getSiteSettings } from '@/lib/payload/public'
+import { getTimeline } from '@/lib/payload/preview'
+import { getSiteSettings } from '@/lib/payload/public'
 
 export const metadata: Metadata = {
   title: 'Journey',
@@ -13,7 +14,7 @@ export default async function JourneyPage() {
   const settings = await getSiteSettings()
   if (!settings.showJourney) notFound()
 
-  const milestones = await getPublicTimeline()
+  const milestones = await getTimeline()
 
   return (
     <section className="mx-auto max-w-3xl px-6 py-16 sm:py-24" aria-labelledby="journey-heading">

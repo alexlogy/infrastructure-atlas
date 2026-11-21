@@ -215,6 +215,12 @@ Projects work the same way: create one under **Impact projects**, publish it, an
 
 Unpublishing or deleting a milestone removes it from `/journey` on the next request. Changes to **Site settings** and **Home page** show up immediately too.
 
+### Preview a draft
+
+While signed in to `/admin`, open a milestone or project and select **Preview**. The real page opens with your latest drafts and a "Preview mode" banner. Select **Exit preview** in the banner to go back to the published view.
+
+Preview only works with a valid admin session, checked again on every page load, so a leftover preview cookie shows nothing after you sign out. Visitors can't turn it on, and the preview link only redirects to pages on this site. Projects get a **Preview** button once they have a slug.
+
 > [!NOTE]
 > Rich-text links are only rendered when they point to a site path or an `http(s)`/`mailto` URL. Any other link is shown as plain text.
 
@@ -273,6 +279,6 @@ For the full production procedure (applying migrations before the new version ta
 | 0. Scaffold, tooling, local database                                            | Done    |
 | 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)             | Done    |
 | 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch | Done    |
-| 1. Authenticated draft preview                                                  | Planned |
+| 1. Authenticated draft preview                                                  | Done    |
 | 2. Three.js atlas globe                                                         | Planned |
 | 3. Ghost writing integration and polish                                         | Planned |

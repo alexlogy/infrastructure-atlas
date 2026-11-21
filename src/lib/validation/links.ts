@@ -14,3 +14,14 @@ export function isSafeHref(value: string): boolean {
     return false
   }
 }
+
+/**
+ * Returns a same-origin path ("/impact/x?view=y") or null. Used for redirects,
+ * so anything that could leave the site ("//host", "/\host", absolute URLs) is refused.
+ */
+export function toSafeLocalPath(value: string | null | undefined): string | null {
+  if (!value || !value.startsWith('/') || /[\\\s]/.test(value)) return null
+  const base = 'http://local.invalid'
+  const url = new URL(value, base)
+  return url.origin === base ? `${url.pathname}${url.search}${url.hash}` : null
+}

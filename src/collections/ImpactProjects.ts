@@ -20,6 +20,11 @@ export const ImpactProjects: CollectionConfig = {
   admin: {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'featured', 'sortOrder', '_status'],
+    // Opens the draft through the authenticated preview route; no button until a slug exists.
+    preview: ({ slug }) =>
+      typeof slug === 'string' && isValidSlug(slug)
+        ? `/api/preview?path=${encodeURIComponent(`/impact/${slug}`)}`
+        : null,
   },
   defaultSort: 'sortOrder',
   versions: { drafts: true, maxPerDoc: 50 },
