@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 const suffix = Date.now()
 const placeLabel = `E2E sample place ${suffix}`
 const projectTitle = `E2E atlas project ${suffix}`
+const category = `Sample category ${suffix}`
+let placeId: number
 
 test.beforeAll(async ({ request }) => {
   const login = await request.post('/api/users/login', {
@@ -12,17 +14,18 @@ test.beforeAll(async ({ request }) => {
   const headers = { Authorization: `JWT ${(await login.json()).token}` }
 
   const ids: number[] = []
-  for (const [label, latitude, longitude] of [
-    [placeLabel, 1.5, 104],
-    [`${placeLabel} (second)`, -33.9, 151.2],
+  for (const [label, latitude, longitude, cat] of [
+    [placeLabel, 1.5, 104, category],
+    [`${placeLabel} (second)`, -33.9, 151.2, null],
   ] as const) {
     const res = await request.post('/api/atlas-locations', {
       headers,
-      data: { label, latitude, longitude, precision: 'city', _status: 'published' },
+      data: { label, latitude, longitude, category: cat, precision: 'city', _status: 'published' },
     })
     expect(res.ok(), await res.text()).toBeTruthy()
     ids.push((await res.json()).doc.id)
   }
+  placeId = ids[0]
 
   const project = await request.post('/api/impact-projects', {
     headers,
@@ -86,4 +89,45 @@ test.describe('without JavaScript', () => {
     await page.goto('/atlas')
     await expect(place(page).getByRole('link', { name: projectTitle })).toBeVisible()
   })
+})
+
+test('categories get their own marker, shown in a key and on each place', async ({ page }) => {
+  await page.goto('/atlas')
+  const key = page.getByRole('list', { name: 'Marker key' })
+  await expect(key.getByText(category)).toBeVisible()
+  await expect(key.getByText('Other places')).toBeVisible()
+  await expect(place(page).getByText(category)).toBeVisible()
+})
+
+test('a #place- link preselects that place', async ({ page }) => {
+  await page.goto(`/atlas#place-${placeId}`)
+  await expect(place(page).getByRole('button', { name: /Shown on globe/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+})
+
+test('the home page shows the atlas with a globe and a link to explore it', async ({ page }) => {
+  await page.goto('/')
+  const section = page.getByRole('region', { name: 'Atlas', exact: true })
+  await expect(section).toContainText(/\d+ places?/)
+  await section.scrollIntoViewIfNeeded()
+  await expect(section.locator('canvas')).toBeVisible()
+  await section.getByRole('link', { name: 'Explore the atlas' }).click()
+  await expect(page).toHaveURL(/\/atlas$/)
+})
+
+test('without WebGL the home atlas section keeps its text and link', async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext
+    // @ts-expect-error -- test stub: report no WebGL support
+    HTMLCanvasElement.prototype.getContext = function (type: string, ...args: unknown[]) {
+      return type.startsWith('webgl') ? null : original.call(this, type, ...(args as []))
+    }
+  })
+  await page.goto('/')
+  const section = page.getByRole('region', { name: 'Atlas', exact: true })
+  await section.scrollIntoViewIfNeeded()
+  await expect(section.getByRole('link', { name: 'Explore the atlas' })).toBeVisible()
+  await expect(page.locator('canvas')).toHaveCount(0)
 })
