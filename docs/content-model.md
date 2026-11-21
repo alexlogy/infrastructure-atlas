@@ -116,6 +116,7 @@ The Ghost address and key are environment variables, never CMS fields. Saving ex
 | `siteTitle`                                     | text, ≤ 80                  | Empty means a neutral default ("Infrastructure Atlas")                                          |
 | `description`                                   | textarea, ≤ 300             | Homepage introduction and default meta description                                              |
 | `locale`                                        | text (BCP 47)               | Sets `<html lang>` and the date formatting locale                                               |
+| `shareImage`                                    | upload → `media`            | Default Open Graph/Twitter image when a page has none of its own (1200×630 works best)          |
 | `navLinks`                                      | array (≤ 8) of label + href | `href` must be a site path or an `http(s)`/`mailto` URL. Links are checked again at render time |
 | `sections.journey`                              | checkbox                    | Hides `/journey` (404) and its navigation link                                                  |
 | `sections.impact`                               | checkbox                    | Hides `/impact` and project pages (404), the navigation link and homepage featured projects     |
