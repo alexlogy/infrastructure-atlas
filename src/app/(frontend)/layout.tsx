@@ -5,7 +5,8 @@ import { SiteFooter } from '@/components/layout/SiteFooter'
 import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SkipLink } from '@/components/layout/SkipLink'
 import { getPreviewUser } from '@/lib/payload/preview'
-import { getSiteSettings } from '@/lib/payload/public'
+import { ghostConfig } from '@/lib/ghost'
+import { getSiteSettings, getWritingSettings } from '@/lib/payload/public'
 
 import './styles.css'
 
@@ -22,14 +23,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, previewUser] = await Promise.all([getSiteSettings(), getPreviewUser()])
+  const [settings, writing, previewUser] = await Promise.all([
+    getSiteSettings(),
+    getWritingSettings(),
+    getPreviewUser(),
+  ])
 
   return (
     <html lang={settings.locale}>
       <body className="flex min-h-screen flex-col font-sans antialiased">
         <SkipLink />
         {previewUser && <PreviewBanner />}
-        <SiteHeader settings={settings} />
+        <SiteHeader settings={settings} showWriting={Boolean(ghostConfig) && writing.enabled} />
         <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
           {children}
         </main>

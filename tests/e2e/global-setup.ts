@@ -35,6 +35,17 @@ export default async function globalSetup(): Promise<void> {
     context: { disableRevalidate: true },
   })
   await payload.updateGlobal({
+    slug: 'writing-settings',
+    data: {
+      enabled: true,
+      recentCount: 3,
+      includeTags: [],
+      excludeTags: [],
+      featuredSlugs: ['sample-article-1', 'renamed-or-deleted'],
+    },
+    context: { disableRevalidate: true },
+  })
+  await payload.updateGlobal({
     slug: 'home-page',
     data: { headline: '', subheadline: '', callsToAction: [], featuredProjects: [] },
     context: { disableRevalidate: true },

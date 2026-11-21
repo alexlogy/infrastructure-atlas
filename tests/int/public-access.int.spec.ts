@@ -15,6 +15,7 @@ import {
   fetchPublicProjects,
   fetchPublicTimeline,
   fetchSiteSettings,
+  fetchWritingSettings,
 } from '@/lib/payload/queries'
 import { migrations } from '@/migrations'
 import type { User } from '@/payload-types'
@@ -426,5 +427,41 @@ describe('atlas', () => {
     const stories = atlas.nodes.flatMap((n) => n.stories.map((s) => s.title))
     expect(stories).toEqual(['Atlas sample project', 'Atlas sample project'])
     expect(JSON.stringify(atlas)).not.toContain('Atlas draft place')
+  })
+})
+
+describe('writing settings', () => {
+  it('is editor-writable only, validates Ghost slugs and expires its cache', async () => {
+    await expect(
+      payload.updateGlobal({
+        slug: 'writing-settings',
+        data: { recentCount: 3 },
+        overrideAccess: false,
+      }),
+    ).rejects.toThrow()
+    await expect(
+      payload.updateGlobal({
+        slug: 'writing-settings',
+        data: { recentCount: 3, featuredSlugs: ['ok', 'bad]+slug:x'] },
+      }),
+    ).rejects.toThrow()
+    await expect(
+      payload.updateGlobal({ slug: 'writing-settings', data: { recentCount: 50 } }),
+    ).rejects.toThrow()
+
+    await payload.updateGlobal({
+      slug: 'writing-settings',
+      data: { enabled: true, recentCount: 4, excludeTags: ['sample-tag'], featuredSlugs: ['a'] },
+      user: editor,
+      overrideAccess: false,
+    })
+    expect(revalidateTag).toHaveBeenCalledWith('writing-settings', { expire: 0 })
+    expect(await fetchWritingSettings(payload)).toEqual({
+      enabled: true,
+      recentCount: 4,
+      includeTags: [],
+      excludeTags: ['sample-tag'],
+      featuredSlugs: ['a'],
+    })
   })
 })

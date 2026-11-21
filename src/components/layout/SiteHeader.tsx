@@ -2,11 +2,18 @@ import Link from 'next/link'
 
 import type { SiteSettingsView } from '@/types/view-models'
 
-export function SiteHeader({ settings }: { settings: SiteSettingsView }) {
+export function SiteHeader({
+  settings,
+  showWriting,
+}: {
+  settings: SiteSettingsView
+  showWriting: boolean
+}) {
   const links = [
     ...(settings.showJourney ? [{ label: 'Journey', href: '/journey' }] : []),
     ...(settings.showImpact ? [{ label: 'Impact', href: '/impact' }] : []),
     ...(settings.showAtlas ? [{ label: 'Atlas', href: '/atlas' }] : []),
+    ...(showWriting ? [{ label: 'Writing', href: '/writing' }] : []),
     ...settings.navLinks,
   ]
 

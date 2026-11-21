@@ -10,6 +10,7 @@ import type {
   ProjectSummaryView,
   ProjectView,
   SiteSettingsView,
+  WritingSettingsView,
 } from '@/types/view-models'
 
 import {
@@ -21,6 +22,7 @@ import {
   toProjectSummaryView,
   toProjectView,
   toSiteSettingsView,
+  toWritingSettingsView,
 } from './mappers'
 
 // Hard ceilings on public list sizes per request.
@@ -220,4 +222,20 @@ export async function fetchAtlas(payload: Payload): Promise<AtlasView> {
     }),
   ])
   return toAtlasView(locations.docs, projects.docs, milestones.docs)
+}
+
+export async function fetchWritingSettings(payload: Payload): Promise<WritingSettingsView> {
+  const doc = await payload.findGlobal({
+    slug: 'writing-settings',
+    depth: 0,
+    overrideAccess: false,
+    select: {
+      enabled: true,
+      recentCount: true,
+      includeTags: true,
+      excludeTags: true,
+      featuredSlugs: true,
+    },
+  })
+  return toWritingSettingsView(doc)
 }

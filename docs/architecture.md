@@ -51,10 +51,16 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 | Tests / CI  | Committed migrations only. Push is off when `NODE_ENV=test` and in the Playwright run |
 | Production  | Committed migrations only (`pnpm migrate`). Push is never enabled                     |
 
-## Planned extensions
+## Ghost writing
+
+`src/lib/ghost/client.ts` is a framework-free Content API client, so it can be unit-tested with a mocked `fetch`. Each refresh makes two requests, one for featured slugs and one for recent posts. Both ask only for card fields (no article HTML) and time out after 5 seconds. Responses are validated with zod, and invalid posts, non-http(s) URLs and internal tags are dropped. `src/lib/ghost/index.ts` caches the result for 15 minutes with `unstable_cache` under the `ghost` tag. A failed refresh throws instead of being cached, and a per-process last-known-good copy covers outages. The e2e suite runs against `tests/e2e/mock-ghost.mjs`, so CI needs no Ghost account.
 
 ## Atlas globe
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.
 
-- Phase 3: a server-side Ghost Content API adapter in `src/lib/ghost/`, with time-based revalidation.
+## Planned extensions
+
+- Sitemap, robots rules and Open Graph defaults from published CMS data.
+- A strict Content Security Policy covering the admin, WebGL and Ghost image hosts.
+- An optional, signature-verified Ghost webhook that expires the `ghost` cache tag immediately.

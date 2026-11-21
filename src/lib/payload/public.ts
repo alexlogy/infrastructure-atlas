@@ -12,9 +12,10 @@ import type {
   ProjectSummaryView,
   ProjectView,
   SiteSettingsView,
+  WritingSettingsView,
 } from '@/types/view-models'
 
-import { toHomePageView, toSiteSettingsView } from './mappers'
+import { toHomePageView, toSiteSettingsView, toWritingSettingsView } from './mappers'
 import {
   fetchAtlas,
   fetchHomePage,
@@ -22,6 +23,7 @@ import {
   fetchPublicProjects,
   fetchPublicTimeline,
   fetchSiteSettings,
+  fetchWritingSettings,
 } from './queries'
 
 /**
@@ -83,4 +85,18 @@ export const getAtlas = unstable_cache(
   async (): Promise<AtlasView> => fetchAtlas(await getPayload({ config })),
   ['public-atlas'],
   { tags: [CACHE_TAGS.atlas, CACHE_TAGS.projects, CACHE_TAGS.timeline] },
+)
+
+/** Writing section options. Falls back to defaults so a CMS hiccup never breaks the layout. */
+export const getWritingSettings = unstable_cache(
+  async (): Promise<WritingSettingsView> => {
+    try {
+      return await fetchWritingSettings(await getPayload({ config }))
+    } catch {
+      console.error('[writing-settings] failed to load; using defaults')
+      return toWritingSettingsView(null)
+    }
+  },
+  ['public-writing-settings'],
+  { tags: [CACHE_TAGS.writing] },
 )

@@ -23,7 +23,7 @@ Infrastructure Atlas is a reusable portfolio platform, not a hard-coded personal
 - **Payload CMS embedded in Next.js**: an authenticated admin panel at `/admin`, with drafts and publishing.
 - **PostgreSQL** is the source of truth for portfolio content.
 - **HTML-first rendering**: navigation, text and SEO work without WebGL. A lazy-loaded Three.js globe on `/atlas` is a progressive enhancement over an HTML list of places.
-- **Optional Ghost integration** (planned): imports published article listings over the read-only Content API.
+- **Optional Ghost integration**: lists published articles from a Ghost blog over the read-only Content API and links to the originals.
 
 > [!IMPORTANT]
 > Never commit owner content or secrets. Biographies, contact details, photos and credentials are entered through `/admin` and stored outside Git. Only `.env.example` with placeholder values belongs in the repository.
@@ -39,13 +39,14 @@ Browser ──> Next.js (server components, HTML content, SEO)
 
 ### Public pages
 
-| Route            | Content                                                                                                                                                   |
-| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), plus featured projects in the chosen order |
-| `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                              |
-| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                           |
-| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                           |
-| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                   |
+| Route            | Content                                                                                                                                                           |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), plus featured projects in the chosen order         |
+| `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                                      |
+| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                                   |
+| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                   |
+| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                           |
+| `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off |
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
 
@@ -104,7 +105,7 @@ The local database binds to `127.0.0.1:5432`. On first start, Docker creates two
 | `PAYLOAD_SECRET`                     | Server      | Yes      | Signs auth tokens. Production requires at least 32 characters and rejects the placeholder |
 | `NEXT_PUBLIC_SITE_URL`               | Browser     | No       | Public site origin, default `http://localhost:3000`                                       |
 | `TEST_DATABASE_URI`                  | Server/test | Tests    | Separate database used by integration and e2e tests                                       |
-| `GHOST_URL`, `GHOST_CONTENT_API_KEY` | Server      | No       | Optional Ghost Content API integration (planned)                                          |
+| `GHOST_URL`, `GHOST_CONTENT_API_KEY` | Server      | No       | Ghost blog address and a read-only Content API key. Leave both empty to turn Writing off  |
 | `REVALIDATION_SECRET`                | Server      | No       | Optional webhook verification (planned)                                                   |
 | `PAYLOAD_DB_PUSH`                    | Server/dev  | No       | `true` by default in development. Set to `false` to use migrations only                   |
 
@@ -184,15 +185,16 @@ There is no public sign-up, and editors can't change their own role.
 
 ### Content model
 
-| Name                  | Kind       | Public visitors can see                                                       |
-| --------------------- | ---------- | ----------------------------------------------------------------------------- |
-| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                                |
-| `impact-projects`     | Collection | Published projects only. Their milestone and location links are not shown yet |
-| `atlas-locations`     | Collection | Published locations only, on `/atlas`                                         |
-| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility              |
-| `home-page`           | Global     | Headline, subheadline, hero image, calls to action, featured projects         |
-| `media`               | Collection | Every uploaded file                                                           |
-| `users`               | Collection | Nothing                                                                       |
+| Name                  | Kind       | Public visitors can see                                                        |
+| --------------------- | ---------- | ------------------------------------------------------------------------------ |
+| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                                 |
+| `impact-projects`     | Collection | Published projects only. Their milestone and location links are not shown yet  |
+| `atlas-locations`     | Collection | Published locations only, on `/atlas`                                          |
+| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility               |
+| `home-page`           | Global     | Headline, subheadline, hero image, calls to action, featured projects          |
+| `writing-settings`    | Global     | Whether Writing is on, how many recent posts, tag filters, featured post slugs |
+| `media`               | Collection | Every uploaded file                                                            |
+| `users`               | Collection | Nothing                                                                        |
 
 Milestones have a start date, an optional end date, and a date precision (year, month or day) that controls how dates are displayed. They also support a short rich-text description, era, tags, an image, a featured flag, and a `sortOrder` that breaks ties between milestones on the same date.
 
@@ -218,6 +220,14 @@ Media uploads accept JPEG, PNG, WebP, AVIF and GIF files up to 10 MB. SVG is rej
 Projects work the same way: create one under **Impact projects**, publish it, and it appears on `/impact` and at `/impact/<slug>`. To feature it on the homepage, add it to **Home page → Featured projects**. Unpublished projects are skipped there automatically.
 
 Unpublishing or deleting a milestone removes it from `/journey` on the next request. Changes to **Site settings** and **Home page** show up immediately too.
+
+### Connect a Ghost blog (optional)
+
+1. In Ghost admin, open **Settings → Integrations → Add custom integration** and copy the **Content API key**. Never use the Admin API key.
+2. Set `GHOST_URL` (for example `https://blog.example.com`) and `GHOST_CONTENT_API_KEY` in the server environment, then restart.
+3. In `/admin`, open **Writing settings** to choose how many recent posts to show, filter by tag slug, and list featured post slugs in order.
+
+New Ghost posts appear on `/writing` within 15 minutes. If Ghost is slow or down, the page shows the last posts it fetched, or a short "temporarily unavailable" note. It never breaks the rest of the site. Featured slugs that were renamed or deleted in Ghost are skipped.
 
 ### Preview a draft
 
@@ -285,4 +295,5 @@ For the full production procedure (applying migrations before the new version ta
 | 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch | Done    |
 | 1. Authenticated draft preview                                                  | Done    |
 | 2. Three.js atlas globe                                                         | Done    |
-| 3. Ghost writing integration and polish                                         | Planned |
+| 3. Ghost writing integration                                                    | Done    |
+| 3. Polish: sitemap and metadata, CSP, Ghost webhook, deployment hardening       | Planned |

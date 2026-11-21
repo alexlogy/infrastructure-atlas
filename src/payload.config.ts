@@ -12,6 +12,7 @@ import { TimelineMilestones } from './collections/TimelineMilestones'
 import { Users } from './collections/Users'
 import { HomePage } from './globals/HomePage'
 import { SiteSettings } from './globals/SiteSettings'
+import { WritingSettings } from './globals/WritingSettings'
 import { parseServerEnv } from './lib/env'
 
 const filename = fileURLToPath(import.meta.url)
@@ -27,7 +28,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, TimelineMilestones, ImpactProjects, AtlasLocations],
-  globals: [SiteSettings, HomePage],
+  globals: [SiteSettings, HomePage, WritingSettings],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,
   serverURL: env.NEXT_PUBLIC_SITE_URL,
