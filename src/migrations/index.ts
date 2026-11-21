@@ -1,5 +1,6 @@
 import * as migration_20261121_125812_initial from './20261121_125812_initial';
 import * as migration_20261121_135345_impact_projects_atlas_home from './20261121_135345_impact_projects_atlas_home';
+import * as migration_20261121_144219_atlas_settings from './20261121_144219_atlas_settings';
 
 export const migrations = [
   {
@@ -10,6 +11,11 @@ export const migrations = [
   {
     up: migration_20261121_135345_impact_projects_atlas_home.up,
     down: migration_20261121_135345_impact_projects_atlas_home.down,
-    name: '20261121_135345_impact_projects_atlas_home'
+    name: '20261121_135345_impact_projects_atlas_home',
+  },
+  {
+    up: migration_20261121_144219_atlas_settings.up,
+    down: migration_20261121_144219_atlas_settings.down,
+    name: '20261121_144219_atlas_settings'
   },
 ];

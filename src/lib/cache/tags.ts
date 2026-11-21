@@ -4,6 +4,7 @@ export const CACHE_TAGS = {
   siteSettings: 'site-settings',
   projects: 'projects',
   homePage: 'home-page',
+  atlas: 'atlas',
 } as const
 
 export type CacheTag = (typeof CACHE_TAGS)[keyof typeof CACHE_TAGS]

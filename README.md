@@ -22,7 +22,7 @@ Infrastructure Atlas is a reusable portfolio platform, not a hard-coded personal
 
 - **Payload CMS embedded in Next.js**: an authenticated admin panel at `/admin`, with drafts and publishing.
 - **PostgreSQL** is the source of truth for portfolio content.
-- **HTML-first rendering**: navigation, text and SEO work without WebGL. A Three.js globe will be added as a progressive enhancement.
+- **HTML-first rendering**: navigation, text and SEO work without WebGL. A lazy-loaded Three.js globe on `/atlas` is a progressive enhancement over an HTML list of places.
 - **Optional Ghost integration** (planned): imports published article listings over the read-only Content API.
 
 > [!IMPORTANT]
@@ -30,7 +30,7 @@ Infrastructure Atlas is a reusable portfolio platform, not a hard-coded personal
 
 ```text
 Browser ──> Next.js (server components, HTML content, SEO)
-              ├── /, /journey, /impact ──> cached public queries (published only)
+              ├── /, /journey, /impact, /atlas ──> cached public queries (published only)
               │                     └── Payload Local API ──> PostgreSQL
               ├── /admin (authenticated Payload admin)
               │     └── publish/unpublish ──> cache tag expired
@@ -45,8 +45,11 @@ Browser ──> Next.js (server components, HTML content, SEO)
 | `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                              |
 | `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                           |
 | `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                           |
+| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                   |
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
+
+On `/atlas`, the list of places is the main content and works without JavaScript or WebGL. When WebGL is available, a globe loads afterwards, facing the starting view set in **Site settings** (Asia-Pacific by default). Markers come from published locations, and arcs connect the places a published project lists, in order. Clicking a marker or a place's **Show on globe** button selects it in both views. The globe only draws a frame when something changes, keeps the scroll wheel for the page, and skips the camera animation when the visitor prefers reduced motion.
 
 Pages are rendered on the server as plain HTML, so they work without JavaScript or WebGL. They read only published records through narrow, server-only queries (`src/lib/payload/public.ts`) that select just the fields they display, and they map each record to a small display object before it reaches React. When the CMS is empty, the pages show a short explanation instead of sample content.
 
@@ -54,16 +57,17 @@ Accessibility built in: a skip link, landmarks and a sensible heading order, a v
 
 ### Tech stack
 
-| Concern         | Choice                                                 |
-| --------------- | ------------------------------------------------------ |
-| Web application | Next.js 16 (App Router), React 19, TypeScript strict   |
-| CMS             | Payload 3 with the official PostgreSQL adapter         |
-| Database        | PostgreSQL 18 (Docker Compose locally)                 |
-| Styling         | Tailwind CSS 4 with Midnight Atlas design tokens       |
-| Validation      | zod for environment configuration                      |
-| Testing         | Vitest, Playwright                                     |
-| Tooling         | pnpm 11 (via corepack), ESLint (flat config), Prettier |
-| CI              | GitHub Actions, `pnpm audit`, gitleaks                 |
+| Concern         | Choice                                                                                  |
+| --------------- | --------------------------------------------------------------------------------------- |
+| Web application | Next.js 16 (App Router), React 19, TypeScript strict                                    |
+| CMS             | Payload 3 with the official PostgreSQL adapter                                          |
+| Database        | PostgreSQL 18 (Docker Compose locally)                                                  |
+| Styling         | Tailwind CSS 4 with Midnight Atlas design tokens                                        |
+| 3D              | three 0.187 and @react-three/fiber 9.8 (supports React >=19 <19.4); Drei not needed yet |
+| Validation      | zod for environment configuration                                                       |
+| Testing         | Vitest, Playwright                                                                      |
+| Tooling         | pnpm 11 (via corepack), ESLint (flat config), Prettier                                  |
+| CI              | GitHub Actions, `pnpm audit`, gitleaks                                                  |
 
 ## Getting started
 
@@ -123,11 +127,11 @@ The app validates its configuration at startup and reports which variables are w
 
 ### Testing
 
-| Layer       | Tool       | Location      | Covers                                                                                                                                                                           |
-| ----------- | ---------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Unit        | Vitest     | `tests/unit/` | Date formatting, link and slug safety, perspective selection, mapping CMS records to display data, ordering, environment checks                                                  |
-| Integration | Vitest     | `tests/int/`  | Payload access rules against a real Postgres: drafts never leak, anonymous writes are refused, roles, slug and coordinate validation, and the publish hooks that clear the cache |
-| End-to-end  | Playwright | `tests/e2e/`  | Publishing a milestone or project and seeing it live, the perspective switch, keyboard navigation, reduced motion, pages without JavaScript, mobile layout                       |
+| Layer       | Tool       | Location      | Covers                                                                                                                                                                                       |
+| ----------- | ---------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | Vitest     | `tests/unit/` | Date formatting, link and slug safety, perspective selection, mapping CMS records to display data, ordering, environment checks                                                              |
+| Integration | Vitest     | `tests/int/`  | Payload access rules against a real Postgres: drafts never leak, anonymous writes are refused, roles, slug and coordinate validation, and the publish hooks that clear the cache             |
+| End-to-end  | Playwright | `tests/e2e/`  | Publishing a milestone or project and seeing it live, the perspective switch, the atlas with and without WebGL, keyboard navigation, reduced motion, pages without JavaScript, mobile layout |
 
 Integration and e2e tests only run against `TEST_DATABASE_URI`, and they refuse to start unless the database name ends in `_test`. They apply the committed migrations, clear the test data, and create a throwaway editor with a random password for each run. No known credentials or real content are used.
 
@@ -184,7 +188,7 @@ There is no public sign-up, and editors can't change their own role.
 | --------------------- | ---------- | ----------------------------------------------------------------------------- |
 | `timeline-milestones` | Collection | Published milestones only. Drafts stay private                                |
 | `impact-projects`     | Collection | Published projects only. Their milestone and location links are not shown yet |
-| `atlas-locations`     | Collection | Published locations only (for the Phase 2 globe; no page reads them yet)      |
+| `atlas-locations`     | Collection | Published locations only, on `/atlas`                                         |
 | `site-settings`       | Global     | Title, description, locale, navigation links, section visibility              |
 | `home-page`           | Global     | Headline, subheadline, hero image, calls to action, featured projects         |
 | `media`               | Collection | Every uploaded file                                                           |
@@ -280,5 +284,5 @@ For the full production procedure (applying migrations before the new version ta
 | 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)             | Done    |
 | 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch | Done    |
 | 1. Authenticated draft preview                                                  | Done    |
-| 2. Three.js atlas globe                                                         | Planned |
+| 2. Three.js atlas globe                                                         | Done    |
 | 3. Ghost writing integration and polish                                         | Planned |

@@ -9,6 +9,7 @@ vi.mock('next/cache', () => ({ revalidateTag, unstable_cache: (fn: unknown) => f
 
 import config from '@/payload.config'
 import {
+  fetchAtlas,
   fetchHomePage,
   fetchPublicProject,
   fetchPublicProjects,
@@ -376,5 +377,54 @@ describe('home page', () => {
     expect(home).toMatchObject({ headline: 'Sample headline', featuredProjectIds: [project.id] })
 
     await payload.updateGlobal({ slug: 'home-page', data: { headline: '', featuredProjects: [] } })
+  })
+})
+
+describe('atlas', () => {
+  it('shows only published places, stories and arcs, and expires the atlas cache', async () => {
+    const place = (label: string, latitude: number, longitude: number) => ({
+      label,
+      latitude,
+      longitude,
+      precision: 'city' as const,
+    })
+    const published = await Promise.all([
+      payload.create({
+        collection: 'atlas-locations',
+        data: { ...place('Atlas sample A', 1, 100), _status: 'published' },
+      }),
+      payload.create({
+        collection: 'atlas-locations',
+        data: { ...place('Atlas sample B', -30, 150), _status: 'published' },
+      }),
+    ])
+    expect(revalidateTag).toHaveBeenCalledWith('atlas', { expire: 0 })
+    const draft = await payload.create({
+      collection: 'atlas-locations',
+      data: { ...place('Atlas draft place', 40, 10), _status: 'draft' },
+      draft: true,
+    })
+
+    await payload.create({
+      collection: 'impact-projects',
+      data: {
+        title: 'Atlas sample project',
+        slug: 'atlas-sample-project',
+        summary: 'Sample.',
+        locations: [published[0].id, draft.id, published[1].id],
+        _status: 'published',
+      },
+    })
+    await payload.create({
+      collection: 'timeline-milestones',
+      data: { ...milestoneData('Atlas sample milestone', 'published'), location: draft.id },
+    })
+
+    const atlas = await fetchAtlas(payload)
+    expect(atlas.nodes.map((n) => n.label).sort()).toEqual(['Atlas sample A', 'Atlas sample B'])
+    expect(atlas.arcs).toHaveLength(1)
+    const stories = atlas.nodes.flatMap((n) => n.stories.map((s) => s.title))
+    expect(stories).toEqual(['Atlas sample project', 'Atlas sample project'])
+    expect(JSON.stringify(atlas)).not.toContain('Atlas draft place')
   })
 })

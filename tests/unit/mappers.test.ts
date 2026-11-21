@@ -4,7 +4,10 @@ import { affectsPublishedContent } from '@/lib/cache/revalidate'
 import {
   compareMilestones,
   compareProjects,
+  DEFAULT_ATLAS_CENTER,
   DEFAULT_SITE_TITLE,
+  type PublicLocationDoc,
+  toAtlasView,
   type PublicMilestoneDoc,
   type PublicProjectDoc,
   toHomePageView,
@@ -33,6 +36,8 @@ describe('toSiteSettingsView', () => {
       navLinks: [],
       showJourney: true,
       showImpact: true,
+      showAtlas: true,
+      atlasCenter: DEFAULT_ATLAS_CENTER,
     })
     expect(toSiteSettingsView({ siteTitle: '   ', description: '' }).siteTitle).toBe(
       DEFAULT_SITE_TITLE,
@@ -217,5 +222,71 @@ describe('toHomePageView', () => {
     expect(view.headline).toBe('Sample headline')
     expect(view.featuredProjectIds).toEqual(['3', '1'])
     expect(view.callsToAction).toEqual([{ label: 'Impact', href: '/impact' }])
+  })
+})
+
+const location = (id: number, overrides: Partial<PublicLocationDoc> = {}): PublicLocationDoc => ({
+  id,
+  label: `Sample place ${id}`,
+  latitude: id,
+  longitude: id * 10,
+  precision: 'city',
+  ...overrides,
+})
+
+describe('toAtlasView', () => {
+  it('orders nodes and joins the place parts that exist', () => {
+    const { nodes } = toAtlasView(
+      [
+        location(1, { sortOrder: 2 }),
+        location(2, { sortOrder: 1, city: ' Sample City ', country: 'Sample Country', region: '' }),
+      ],
+      [],
+      [],
+    )
+    expect(nodes.map((n) => n.id)).toEqual(['2', '1'])
+    expect(nodes[0].place).toBe('Sample City, Sample Country')
+    expect(nodes[1].place).toBeNull()
+  })
+
+  it('attaches stories and builds de-duplicated arcs between published nodes only', () => {
+    const view = toAtlasView(
+      [location(1), location(2), location(3)],
+      [
+        { id: 10, title: 'Project A', slug: 'project-a', locations: [1, { id: 2 }, 99, 3] },
+        { id: 11, title: 'Project B', slug: 'project-b', locations: [2, 1] },
+      ],
+      [
+        { id: 20, title: 'Milestone A', location: 3 },
+        { id: 21, title: 'Milestone on a draft place', location: 99 },
+      ],
+    )
+    expect(view.arcs).toEqual([
+      { from: '1', to: '2' },
+      { from: '2', to: '3' },
+    ])
+    const third = view.nodes.find((n) => n.id === '3')!
+    expect(third.stories).toEqual([
+      { kind: 'project', title: 'Project A', href: '/impact/project-a' },
+      { kind: 'milestone', title: 'Milestone A', href: '/journey#milestone-20' },
+    ])
+    expect(view.nodes.flatMap((n) => n.stories).map((s) => s.title)).not.toContain(
+      'Milestone on a draft place',
+    )
+  })
+
+  it('skips locations with unusable coordinates', () => {
+    expect(toAtlasView([location(1, { latitude: Number.NaN })], [], []).nodes).toEqual([])
+  })
+})
+
+describe('toSiteSettingsView atlas fields', () => {
+  it('uses the configured starting view and visibility toggle', () => {
+    const view = toSiteSettingsView({
+      sections: { atlas: false },
+      atlasCenter: { latitude: -20, longitude: 140 },
+    })
+    expect(view.showAtlas).toBe(false)
+    expect(view.atlasCenter).toEqual({ latitude: -20, longitude: 140 })
   })
 })

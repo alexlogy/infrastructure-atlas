@@ -1,11 +1,15 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated, publishedOrAuthenticated } from '@/access'
+import { affectsPublishedContent, expireTag } from '@/lib/cache/revalidate'
+import { CACHE_TAGS } from '@/lib/cache/tags'
 
 /**
  * Places shown on the atlas. Coordinates are public once published, so editors
  * are reminded to use city-level points rather than private sites.
  * Visibility is controlled by draft/publish rather than a separate toggle.
+ * The atlas also depends on projects and milestones, so its cached data is
+ * tagged with their tags too (see getAtlas).
  */
 export const AtlasLocations: CollectionConfig = {
   slug: 'atlas-locations',
@@ -22,6 +26,20 @@ export const AtlasLocations: CollectionConfig = {
     update: authenticated,
     delete: authenticated,
     readVersions: authenticated,
+  },
+  hooks: {
+    afterChange: [
+      ({ doc, previousDoc, req }) => {
+        if (affectsPublishedContent(doc, previousDoc)) expireTag(CACHE_TAGS.atlas, req)
+        return doc
+      },
+    ],
+    afterDelete: [
+      ({ doc, req }) => {
+        if (affectsPublishedContent(doc)) expireTag(CACHE_TAGS.atlas, req)
+        return doc
+      },
+    ],
   },
   fields: [
     { name: 'label', type: 'text', required: true, maxLength: 80 },

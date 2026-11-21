@@ -80,10 +80,10 @@ Publish, unpublish and delete expire the `projects` cache tag. A pending draft n
 | `latitude`                  | number, required, −90 to 90                  | Published coordinates are public: use city-level points |
 | `longitude`                 | number, required, −180 to 180                |                                                         |
 | `precision`                 | select: `exact`, `city`, `region`, `country` | Defaults to `city`                                      |
-| `category`                  | text, ≤ 40                                   | Marker grouping for the globe                           |
+| `category`                  | text, ≤ 40                                   | Stored for marker styling; not used by the globe yet    |
 | `sortOrder`                 | number                                       | Lower first                                             |
 
-Visibility is controlled by draft/publish; there is no separate display toggle. No public query reads this collection yet.
+Visibility is controlled by draft/publish; there is no separate display toggle. `/atlas` shows published locations; projects that reference two or more of them draw arcs between consecutive ones. Publish changes expire the `atlas` cache tag.
 
 ## `home-page` (global)
 
@@ -99,14 +99,16 @@ Saving expires the `home-page` cache tag.
 
 ## `site-settings` (global)
 
-| Field              | Type                        | Notes                                                                                           |
-| ------------------ | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `siteTitle`        | text, ≤ 80                  | Empty means a neutral default ("Infrastructure Atlas")                                          |
-| `description`      | textarea, ≤ 300             | Homepage introduction and default meta description                                              |
-| `locale`           | text (BCP 47)               | Sets `<html lang>` and the date formatting locale                                               |
-| `navLinks`         | array (≤ 8) of label + href | `href` must be a site path or an `http(s)`/`mailto` URL. Links are checked again at render time |
-| `sections.journey` | checkbox                    | Hides `/journey` (404) and its navigation link                                                  |
-| `sections.impact`  | checkbox                    | Hides `/impact` and project pages (404), the navigation link and homepage featured projects     |
+| Field                                           | Type                        | Notes                                                                                           |
+| ----------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
+| `siteTitle`                                     | text, ≤ 80                  | Empty means a neutral default ("Infrastructure Atlas")                                          |
+| `description`                                   | textarea, ≤ 300             | Homepage introduction and default meta description                                              |
+| `locale`                                        | text (BCP 47)               | Sets `<html lang>` and the date formatting locale                                               |
+| `navLinks`                                      | array (≤ 8) of label + href | `href` must be a site path or an `http(s)`/`mailto` URL. Links are checked again at render time |
+| `sections.journey`                              | checkbox                    | Hides `/journey` (404) and its navigation link                                                  |
+| `sections.impact`                               | checkbox                    | Hides `/impact` and project pages (404), the navigation link and homepage featured projects     |
+| `sections.atlas`                                | checkbox                    | Hides `/atlas` (404) and its navigation link                                                    |
+| `atlasCenter.latitude`, `atlasCenter.longitude` | number (±90 / ±180)         | Where the globe faces on load. Empty means 5°N 115°E (Asia-Pacific)                             |
 
 ## Rules for new content types
 
