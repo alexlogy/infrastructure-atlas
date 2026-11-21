@@ -24,6 +24,16 @@ describe('parseServerEnv', () => {
     }
   })
 
+  it('requires a long webhook secret when one is set', () => {
+    expect(() => parseServerEnv({ ...base, REVALIDATION_SECRET: 'short-secret' })).toThrow(
+      /REVALIDATION_SECRET: must be at least 32/,
+    )
+    expect(parseServerEnv({ ...base, REVALIDATION_SECRET: '' }).REVALIDATION_SECRET).toBeUndefined()
+    expect(
+      parseServerEnv({ ...base, REVALIDATION_SECRET: 'y'.repeat(32) }).REVALIDATION_SECRET,
+    ).toBe('y'.repeat(32))
+  })
+
   it('rejects short or placeholder secrets in production', () => {
     expect(() =>
       parseServerEnv({ ...base, NODE_ENV: 'production', PAYLOAD_SECRET: 'short' }),

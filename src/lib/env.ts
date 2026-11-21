@@ -10,7 +10,11 @@ const serverSchema = z.object({
   NEXT_PUBLIC_SITE_URL: z.url().default('http://localhost:3000'),
   GHOST_URL: optionalUrl,
   GHOST_CONTENT_API_KEY: optionalString,
-  REVALIDATION_SECRET: optionalString,
+  // Ghost webhook signing secret; an HMAC key, so it must be long enough to resist guessing.
+  REVALIDATION_SECRET: z.preprocess(
+    (v) => (v === '' ? undefined : v),
+    z.string().min(32, 'must be at least 32 characters').optional(),
+  ),
   // Extra image origins for the CSP (space or comma separated), e.g. a CDN serving Ghost images.
   CSP_IMG_ORIGINS: optionalString,
   // Development schema push; set to "false" to use migrations only (e.g. e2e against the test DB).

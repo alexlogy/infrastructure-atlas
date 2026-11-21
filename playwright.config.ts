@@ -15,6 +15,8 @@ if (!testDatabase) {
 process.env.DATABASE_URI = testDatabase
 // Never schema-push the test database; it is managed by migrations only.
 process.env.PAYLOAD_DB_PUSH = 'false'
+// Placeholder webhook secret shared by the app server and the webhook test.
+process.env.REVALIDATION_SECRET = 'e2e-placeholder-revalidation-secret-0000'
 
 export default defineConfig({
   testDir: './tests/e2e',
@@ -55,6 +57,7 @@ export default defineConfig({
         NODE_OPTIONS: '--no-deprecation',
         GHOST_URL: MOCK_GHOST_URL,
         GHOST_CONTENT_API_KEY: 'e2e-placeholder-content-key',
+        REVALIDATION_SECRET: process.env.REVALIDATION_SECRET,
       },
     },
   ],
