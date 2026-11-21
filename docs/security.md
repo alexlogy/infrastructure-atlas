@@ -42,7 +42,22 @@ Every response gets these headers (configured in `next.config.ts`):
 - `Strict-Transport-Security` (production only)
 - No `X-Powered-By` header
 
-A full Content Security Policy is planned once the WebGL and Ghost image sources are known, so it can be strict without breaking the Payload admin.
+### Content Security Policy
+
+Every rendered page, public or `/admin`, gets a per-request nonce policy from `src/proxy.ts` (built by `src/lib/csp.ts`):
+
+| Directive                                                     | Value                                                           | Why                                                                                                                                                                             |
+| ------------------------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `script-src`                                                  | `'self' 'nonce-…' 'strict-dynamic'`                             | Only scripts Next.js rendered with this request's nonce, and what they load, can run. No `'unsafe-inline'`; `'unsafe-eval'` only in development, where React's tooling needs it |
+| `style-src`                                                   | `'self' 'unsafe-inline'`                                        | Trade-off: next/image, the WebGL canvas and Payload admin widgets set inline style attributes that a nonce cannot cover. Injected CSS cannot run code                           |
+| `img-src`                                                     | `'self' data: blob:`, the `GHOST_URL` origin, `CSP_IMG_ORIGINS` | Only listed origins, validated to http(s); never a blanket `https:`                                                                                                             |
+| `connect-src`                                                 | `'self'` (plus `ws:` in development for hot reload)             | Ghost is fetched on the server, so the browser needs no other origins                                                                                                           |
+| `object-src` / `base-uri` / `form-action` / `frame-ancestors` | `'none'` / `'self'` / `'self'` / `'self'`                       | No plugins, no base-tag hijacking, forms post only here, framing only by this site                                                                                              |
+| `upgrade-insecure-requests`                                   | when `NEXT_PUBLIC_SITE_URL` is https                            |                                                                                                                                                                                 |
+
+The e2e suite browses every public page, the admin dashboard and the milestone editor, and fails on any `securitypolicyviolation`. It has passed against both the dev server and a production build. The admin's avatar is Payload's built-in one, because Gravatar would send a hash of each editor's email to a third party.
+
+If Ghost serves feature images from another host (a CDN or image service), add that origin to `CSP_IMG_ORIGINS`. Otherwise those images are blocked and the cards show without them.
 
 ## Dependencies
 

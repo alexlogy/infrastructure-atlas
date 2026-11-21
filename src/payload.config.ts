@@ -23,6 +23,8 @@ const env = parseServerEnv(process.env)
 export default buildConfig({
   admin: {
     user: Users.slug,
+    // Built-in avatar: Gravatar would send a hash of each editor's email to a third party.
+    avatar: 'default',
     importMap: {
       baseDir: path.resolve(dirname),
     },
