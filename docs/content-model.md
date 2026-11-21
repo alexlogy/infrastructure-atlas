@@ -74,15 +74,15 @@ Publish, unpublish and delete expire the `projects` cache tag. A pending draft n
 
 ## `atlas-locations`
 
-| Field                       | Type                                         | Notes                                                   |
-| --------------------------- | -------------------------------------------- | ------------------------------------------------------- |
-| `label`                     | text, required, ≤ 80                         |                                                         |
-| `city`, `region`, `country` | text, optional                               |                                                         |
-| `latitude`                  | number, required, −90 to 90                  | Published coordinates are public: use city-level points |
-| `longitude`                 | number, required, −180 to 180                |                                                         |
-| `precision`                 | select: `exact`, `city`, `region`, `country` | Defaults to `city`                                      |
-| `category`                  | text, ≤ 40                                   | Stored for marker styling; not used by the globe yet    |
-| `sortOrder`                 | number                                       | Lower first                                             |
+| Field                       | Type                                         | Notes                                                                                                                 |
+| --------------------------- | -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `label`                     | text, required, ≤ 80                         |                                                                                                                       |
+| `city`, `region`, `country` | text, optional                               |                                                                                                                       |
+| `latitude`                  | number, required, −90 to 90                  | Published coordinates are public: use city-level points                                                               |
+| `longitude`                 | number, required, −180 to 180                |                                                                                                                       |
+| `precision`                 | select: `exact`, `city`, `region`, `country` | Defaults to `city`                                                                                                    |
+| `category`                  | text, ≤ 40                                   | Marker shape and colour on the globe, plus the key on `/atlas`. Styles are assigned A–Z and repeat after 7 categories |
+| `sortOrder`                 | number                                       | Lower first                                                                                                           |
 
 Visibility is controlled by draft/publish; there is no separate display toggle. `/atlas` shows published locations; projects that reference two or more of them draw arcs between consecutive ones. Publish changes expire the `atlas` cache tag.
 
