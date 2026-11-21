@@ -46,6 +46,7 @@ Browser ──> Next.js (server components, HTML content, SEO)
 | Validation      | zod for environment configuration                      |
 | Testing         | Vitest, Playwright                                     |
 | Tooling         | pnpm 11 (via corepack), ESLint (flat config), Prettier |
+| CI              | GitHub Actions, `pnpm audit`, gitleaks                 |
 
 ## Getting started
 
@@ -101,6 +102,26 @@ The app validates its configuration at startup and reports which variables are w
 | `pnpm generate:types`      | Regenerate `src/payload-types.ts`                                  |
 | `pnpm migrate:create`      | Generate a migration from schema changes                           |
 | `pnpm migrate`             | Apply pending migrations                                           |
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and on every push to `main`. It needs no secrets, live content or Ghost account.
+
+| Job     | What it checks                                                                                |
+| ------- | --------------------------------------------------------------------------------------------- |
+| verify  | `format:check`, `lint`, `typecheck`, `test`, `build`, against a Postgres 18 service container |
+| audit   | `pnpm audit --audit-level high`                                                               |
+| secrets | gitleaks over the full Git history                                                            |
+
+Run the same checks locally before you push:
+
+```bash
+pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build
+pnpm audit --audit-level high
+```
+
+> [!NOTE]
+> Security fixes for some packages that other dependencies pull in are pinned under `overrides` in `pnpm-workspace.yaml`. Remove each entry once the upstream package ships the patched version itself.
 
 ## Content workflow
 
