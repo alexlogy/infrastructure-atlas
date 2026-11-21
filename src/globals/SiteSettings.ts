@@ -64,6 +64,24 @@ export const SiteSettings: GlobalConfig = {
       fields: [
         { name: 'journey', label: 'Show Journey', type: 'checkbox', defaultValue: true },
         { name: 'impact', label: 'Show Impact', type: 'checkbox', defaultValue: true },
+        { name: 'atlas', label: 'Show Atlas', type: 'checkbox', defaultValue: true },
+      ],
+    },
+    {
+      name: 'atlasCenter',
+      label: 'Atlas starting view',
+      type: 'group',
+      admin: {
+        description: 'Where the globe faces when it first loads. Defaults to Asia-Pacific.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'latitude', type: 'number', min: -90, max: 90 },
+            { name: 'longitude', type: 'number', min: -180, max: 180 },
+          ],
+        },
       ],
     },
   ],

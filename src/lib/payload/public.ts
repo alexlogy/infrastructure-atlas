@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 
 import { CACHE_TAGS } from '@/lib/cache/tags'
 import type {
+  AtlasView,
   HomePageView,
   MilestoneView,
   ProjectSummaryView,
@@ -15,6 +16,7 @@ import type {
 
 import { toHomePageView, toSiteSettingsView } from './mappers'
 import {
+  fetchAtlas,
   fetchHomePage,
   fetchPublicProject,
   fetchPublicProjects,
@@ -36,7 +38,7 @@ export const getSiteSettings = unstable_cache(
     }
   },
   // Bump the key whenever SiteSettingsView changes shape, or stale cached entries survive deploys.
-  ['public-site-settings-v2'],
+  ['public-site-settings-v3'],
   { tags: [CACHE_TAGS.siteSettings] },
 )
 
@@ -74,4 +76,11 @@ export const getHomePage = unstable_cache(
   },
   ['public-home-page'],
   { tags: [CACHE_TAGS.homePage] },
+)
+
+/** Atlas nodes and arcs. Depends on locations, projects and milestones, so any of their publishes expire it. */
+export const getAtlas = unstable_cache(
+  async (): Promise<AtlasView> => fetchAtlas(await getPayload({ config })),
+  ['public-atlas'],
+  { tags: [CACHE_TAGS.atlas, CACHE_TAGS.projects, CACHE_TAGS.timeline] },
 )

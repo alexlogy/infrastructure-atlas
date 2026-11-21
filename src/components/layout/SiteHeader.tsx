@@ -6,6 +6,7 @@ export function SiteHeader({ settings }: { settings: SiteSettingsView }) {
   const links = [
     ...(settings.showJourney ? [{ label: 'Journey', href: '/journey' }] : []),
     ...(settings.showImpact ? [{ label: 'Impact', href: '/impact' }] : []),
+    ...(settings.showAtlas ? [{ label: 'Atlas', href: '/atlas' }] : []),
     ...settings.navLinks,
   ]
 

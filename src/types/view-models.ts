@@ -11,7 +11,11 @@ export type SiteSettingsView = {
   navLinks: NavLink[]
   showJourney: boolean
   showImpact: boolean
+  showAtlas: boolean
+  atlasCenter: LatLng
 }
+
+export type LatLng = { latitude: number; longitude: number }
 
 export type DatePrecision = 'year' | 'month' | 'day'
 
@@ -76,3 +80,20 @@ export type HomePageView = {
   /** Ordered ids; resolved against published projects at render time. */
   featuredProjectIds: string[]
 }
+
+export type AtlasStoryView = { kind: 'project' | 'milestone'; title: string; href: string }
+
+export type AtlasNodeView = LatLng & {
+  id: string
+  label: string
+  /** "City, Region, Country" from whichever parts are filled in. */
+  place: string | null
+  precision: 'exact' | 'city' | 'region' | 'country'
+  category: string | null
+  stories: AtlasStoryView[]
+}
+
+/** A connection between two nodes, derived from a project's ordered locations. */
+export type AtlasArcView = { from: string; to: string }
+
+export type AtlasView = { nodes: AtlasNodeView[]; arcs: AtlasArcView[] }

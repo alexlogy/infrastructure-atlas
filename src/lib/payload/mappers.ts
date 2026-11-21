@@ -1,4 +1,5 @@
 import type {
+  AtlasLocation,
   HomePage,
   ImpactProject,
   Media,
@@ -7,7 +8,10 @@ import type {
 } from '@/payload-types'
 import { isSafeHref } from '@/lib/validation/links'
 import type {
+  AtlasNodeView,
+  AtlasView,
   DatePrecision,
+  LatLng,
   HomePageView,
   ImageView,
   MilestoneView,
@@ -18,6 +22,9 @@ import type {
 } from '@/types/view-models'
 
 export const DEFAULT_SITE_TITLE = 'Infrastructure Atlas'
+
+/** Neutral Asia-Pacific framing used until an editor sets a starting view. */
+export const DEFAULT_ATLAS_CENTER: LatLng = { latitude: 5, longitude: 115 }
 
 const PRECISIONS: readonly DatePrecision[] = ['year', 'month', 'day']
 
@@ -48,6 +55,11 @@ export function toSiteSettingsView(doc: Partial<SiteSetting> | null | undefined)
     navLinks: toLinks(doc?.navLinks),
     showJourney: doc?.sections?.journey ?? true,
     showImpact: doc?.sections?.impact ?? true,
+    showAtlas: doc?.sections?.atlas ?? true,
+    atlasCenter: {
+      latitude: doc?.atlasCenter?.latitude ?? DEFAULT_ATLAS_CENTER.latitude,
+      longitude: doc?.atlasCenter?.longitude ?? DEFAULT_ATLAS_CENTER.longitude,
+    },
   }
 }
 
@@ -151,4 +163,87 @@ export function toHomePageView(doc: Partial<HomePage> | null | undefined): HomeP
       String(typeof p === 'object' ? p.id : p),
     ),
   }
+}
+
+export type PublicLocationDoc = Pick<
+  AtlasLocation,
+  | 'id'
+  | 'label'
+  | 'city'
+  | 'region'
+  | 'country'
+  | 'latitude'
+  | 'longitude'
+  | 'precision'
+  | 'category'
+  | 'sortOrder'
+>
+export type AtlasProjectDoc = Pick<ImpactProject, 'id' | 'title' | 'slug'> & {
+  locations?: (number | { id: number })[] | null
+}
+export type AtlasMilestoneDoc = Pick<TimelineMilestone, 'id' | 'title'> & {
+  location?: number | { id: number } | null
+}
+
+const refId = (ref: number | { id: number } | null | undefined): string | null =>
+  ref == null ? null : String(typeof ref === 'object' ? ref.id : ref)
+
+/**
+ * Joins published locations with the published projects and milestones that
+ * reference them. All three inputs must already be published-only: anything
+ * pointing at a location missing from `locations` is dropped.
+ */
+export function toAtlasView(
+  locations: PublicLocationDoc[],
+  projects: AtlasProjectDoc[],
+  milestones: AtlasMilestoneDoc[],
+): AtlasView {
+  const nodes = new Map<string, AtlasNodeView>()
+  for (const loc of [...locations].sort(
+    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || a.label.localeCompare(b.label),
+  )) {
+    if (!Number.isFinite(loc.latitude) || !Number.isFinite(loc.longitude)) continue
+    const place = [loc.city, loc.region, loc.country].map(clean).filter(Boolean).join(', ')
+    nodes.set(String(loc.id), {
+      id: String(loc.id),
+      label: loc.label,
+      place: place || null,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      precision: loc.precision ?? 'city',
+      category: clean(loc.category),
+      stories: [],
+    })
+  }
+
+  const arcs = new Map<string, { from: string; to: string }>()
+  for (const project of projects) {
+    const ids = [...new Set((project.locations ?? []).map(refId))].filter(
+      (id): id is string => id !== null && nodes.has(id),
+    )
+    for (const id of ids) {
+      nodes.get(id)!.stories.push({
+        kind: 'project',
+        title: project.title,
+        href: `/impact/${project.slug}`,
+      })
+    }
+    for (let i = 1; i < ids.length; i++) {
+      const [from, to] = [ids[i - 1], ids[i]].sort()
+      arcs.set(`${from}:${to}`, { from, to })
+    }
+  }
+
+  for (const milestone of milestones) {
+    const id = refId(milestone.location)
+    if (id && nodes.has(id)) {
+      nodes.get(id)!.stories.push({
+        kind: 'milestone',
+        title: milestone.title,
+        href: `/journey#milestone-${milestone.id}`,
+      })
+    }
+  }
+
+  return { nodes: [...nodes.values()], arcs: [...arcs.values()] }
 }

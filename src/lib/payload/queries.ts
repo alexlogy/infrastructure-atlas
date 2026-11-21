@@ -4,6 +4,7 @@ import type { User } from '@/payload-types'
 
 import { isValidSlug } from '@/lib/validation/slugs'
 import type {
+  AtlasView,
   HomePageView,
   MilestoneView,
   ProjectSummaryView,
@@ -13,6 +14,7 @@ import type {
 
 import {
   compareMilestones,
+  toAtlasView,
   compareProjects,
   toHomePageView,
   toMilestoneView,
@@ -51,7 +53,14 @@ export async function fetchSiteSettings(payload: Payload): Promise<SiteSettingsV
     slug: 'site-settings',
     depth: 0,
     overrideAccess: false,
-    select: { siteTitle: true, description: true, locale: true, navLinks: true, sections: true },
+    select: {
+      siteTitle: true,
+      description: true,
+      locale: true,
+      navLinks: true,
+      sections: true,
+      atlasCenter: true,
+    },
   })
   return toSiteSettingsView(doc)
 }
@@ -168,4 +177,47 @@ export async function fetchHomePage(payload: Payload): Promise<HomePageView> {
     populate: { ...PUBLIC_MEDIA, 'impact-projects': { slug: true } },
   })
   return toHomePageView(doc)
+}
+
+const ATLAS_LIMIT = 500
+
+/** Published locations joined with the published projects and milestones that reference them. */
+export async function fetchAtlas(payload: Payload): Promise<AtlasView> {
+  const published = { _status: { equals: 'published' } } as const
+  const common = { draft: false, overrideAccess: false, depth: 0, pagination: false } as const
+  const [locations, projects, milestones] = await Promise.all([
+    payload.find({
+      collection: 'atlas-locations',
+      ...common,
+      where: published,
+      limit: ATLAS_LIMIT,
+      select: {
+        label: true,
+        city: true,
+        region: true,
+        country: true,
+        latitude: true,
+        longitude: true,
+        precision: true,
+        category: true,
+        sortOrder: true,
+      },
+    }),
+    payload.find({
+      collection: 'impact-projects',
+      ...common,
+      where: { and: [published, { locations: { exists: true } }] },
+      limit: PROJECTS_LIMIT,
+      select: { title: true, slug: true, locations: true },
+    }),
+    payload.find({
+      collection: 'timeline-milestones',
+      ...common,
+      where: { and: [published, { location: { exists: true } }] },
+      limit: TIMELINE_LIMIT,
+      sort: ['startDate', 'sortOrder'],
+      select: { title: true, location: true },
+    }),
+  ])
+  return toAtlasView(locations.docs, projects.docs, milestones.docs)
 }

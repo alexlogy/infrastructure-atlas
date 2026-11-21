@@ -695,6 +695,14 @@ export interface SiteSetting {
   sections?: {
     journey?: boolean | null;
     impact?: boolean | null;
+    atlas?: boolean | null;
+  };
+  /**
+   * Where the globe faces when it first loads. Defaults to Asia-Pacific.
+   */
+  atlasCenter?: {
+    latitude?: number | null;
+    longitude?: number | null;
   };
   updatedAt?: string | null;
   createdAt?: string | null;
@@ -751,6 +759,13 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | {
         journey?: T;
         impact?: T;
+        atlas?: T;
+      };
+  atlasCenter?:
+    | T
+    | {
+        latitude?: T;
+        longitude?: T;
       };
   updatedAt?: T;
   createdAt?: T;
