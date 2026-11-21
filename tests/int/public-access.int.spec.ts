@@ -134,6 +134,22 @@ describe('timeline milestones', () => {
       draft: true,
     })
     expect(docs.map((d) => d.title)).toContain('Draft sample')
+    // Preview path: the same public query, run as the editor, includes drafts.
+    expect((await fetchPublicTimeline(payload, editor)).map((m) => m.title)).toContain(
+      'Draft sample',
+    )
+  })
+
+  it('skips incomplete drafts in preview instead of failing', async () => {
+    const incomplete = await payload.create({
+      collection: 'timeline-milestones',
+      data: { title: 'Incomplete draft', _status: 'draft' },
+      draft: true,
+    })
+    const titles = (await fetchPublicTimeline(payload, editor)).map((m) => m.title)
+    expect(titles).not.toContain('Incomplete draft')
+    await payload.delete({ collection: 'timeline-milestones', id: incomplete.id })
+    revalidateTag.mockClear()
   })
 
   it('does not revalidate on a draft-only save', async () => {
@@ -287,6 +303,10 @@ describe('impact projects', () => {
     })
     expect((await fetchPublicProject(payload, 'draft-sample-project'))?.summary).toBe(
       'Sample summary.',
+    )
+    // An editor previewing sees the pending draft.
+    expect((await fetchPublicProject(payload, 'draft-sample-project', editor))?.summary).toBe(
+      'Unpublished edit.',
     )
   })
 
