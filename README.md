@@ -264,6 +264,7 @@ Health checks can use `GET /api/health`. It returns `200 {"status":"ok"}` when t
 
 - GraphQL is disabled. The REST API stays enabled for the admin panel and is protected by collection access rules.
 - Every response gets baseline security headers: `nosniff`, `Referrer-Policy`, frame protection, `Permissions-Policy`, and HSTS in production. Every page also gets a per-request nonce Content Security Policy (see [docs/security.md](docs/security.md)).
+- After 5 failed logins an account is locked for 10 minutes. On https the session cookie is `Secure`. Add per-IP rate limiting at your reverse proxy ([docs/deployment.md](docs/deployment.md#login-protection) has an nginx example).
 - Uploaded media files can be fetched by anyone who has the URL. Don't upload confidential files.
 
 ### Backup and restore
@@ -305,4 +306,5 @@ For the full production procedure (applying migrations before the new version ta
 | 3. Sitemap, robots rules, canonical and Open Graph metadata                     | Done    |
 | 3. Content Security Policy                                                      | Done    |
 | 3. Signed Ghost webhook for instant updates                                     | Done    |
-| 3. Deployment hardening                                                         | Planned |
+| 3. Login lockout, Secure session cookie, proxy rate-limit guide                 | Done    |
+| 3. Gated media route                                                            | Planned |
