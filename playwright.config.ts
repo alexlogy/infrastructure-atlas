@@ -1,30 +1,29 @@
 import { defineConfig, devices } from '@playwright/test'
-
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
 import 'dotenv/config'
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+const PORT = 3100
+const baseURL = `http://localhost:${PORT}`
+const testDatabase = process.env.TEST_DATABASE_URI
+
+if (!testDatabase) {
+  throw new Error('TEST_DATABASE_URI must be set for e2e tests (see .env.example)')
+}
+
+// Global setup and the app server must both use the isolated test database.
+process.env.DATABASE_URI = testDatabase
+// Never schema-push the test database; it is managed by migrations only.
+process.env.PAYLOAD_DB_PUSH = 'false'
+
 export default defineConfig({
   testDir: './tests/e2e',
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  globalSetup: './tests/e2e/global-setup.ts',
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  // Tests share one database; run serially for deterministic state.
+  workers: 1,
+  reporter: process.env.CI ? 'github' : 'list',
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    baseURL,
     trace: 'on-first-retry',
   },
   projects: [
@@ -34,8 +33,15 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'pnpm dev',
-    reuseExistingServer: true,
-    url: 'http://localhost:3000',
+    command: `pnpm exec next dev --port ${PORT}`,
+    url: `${baseURL}/api/health`,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180_000,
+    env: {
+      DATABASE_URI: testDatabase,
+      PAYLOAD_DB_PUSH: 'false',
+      NEXT_PUBLIC_SITE_URL: baseURL,
+      NODE_OPTIONS: '--no-deprecation',
+    },
   },
 })

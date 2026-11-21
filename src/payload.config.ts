@@ -37,7 +37,8 @@ export default buildConfig({
     pool: {
       connectionString: env.DATABASE_URI,
     },
-    // Dev uses schema push; production applies committed migrations (`pnpm migrate`).
+    // Dev uses schema push; tests and production apply committed migrations (`pnpm migrate`).
+    push: env.NODE_ENV === 'development' && env.PAYLOAD_DB_PUSH === 'true',
     migrationDir: path.resolve(dirname, 'migrations'),
   }),
   sharp,

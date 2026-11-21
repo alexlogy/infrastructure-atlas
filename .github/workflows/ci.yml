@@ -58,6 +58,43 @@ jobs:
       - run: pnpm test
       - run: pnpm build
 
+  e2e:
+    name: End-to-end (Playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: ci_user
+          POSTGRES_PASSWORD: ci-password
+          POSTGRES_DB: infrastructure_atlas_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U ci_user -d infrastructure_atlas_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      TEST_DATABASE_URI: postgresql://ci_user:ci-password@localhost:5432/infrastructure_atlas_test
+      DATABASE_URI: postgresql://ci_user:ci-password@localhost:5432/infrastructure_atlas_test
+      PAYLOAD_SECRET: ci-placeholder-secret-for-build-and-tests-only
+      NEXT_TELEMETRY_DISABLED: '1'
+
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+
   audit:
     name: Dependency audit
     runs-on: ubuntu-latest

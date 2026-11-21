@@ -8,6 +8,8 @@ export default defineConfig({
     // Node by default; component tests opt in with `// @vitest-environment jsdom`.
     environment: 'node',
     setupFiles: ['./vitest.setup.ts'],
+    // Payload init + migrations against Postgres can exceed the 10s default.
+    hookTimeout: 60_000,
     include: ['tests/unit/**/*.test.ts', 'tests/int/**/*.int.spec.ts'],
   },
 })
