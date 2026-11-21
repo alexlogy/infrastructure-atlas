@@ -34,6 +34,7 @@ Browser ──> Next.js (server components, HTML content, SEO)
               │                     └── Payload Local API ──> PostgreSQL
               ├── /admin (authenticated Payload admin)
               │     └── publish/unpublish ──> cache tag expired
+              ├── /api/revalidate/ghost (signed Ghost webhook) ──> cached posts expired
               └── /api/health (database readiness)
 ```
 
@@ -109,7 +110,7 @@ The local database binds to `127.0.0.1:5432`. On first start, Docker creates two
 | `TEST_DATABASE_URI`                  | Server/test | Tests    | Separate database used by integration and e2e tests                                                                                |
 | `GHOST_URL`, `GHOST_CONTENT_API_KEY` | Server      | No       | Ghost blog address and a read-only Content API key. Leave both empty to turn Writing off                                           |
 | `CSP_IMG_ORIGINS`                    | Server      | No       | Extra image origins for the Content Security Policy, space or comma separated (the Ghost origin is always allowed)                 |
-| `REVALIDATION_SECRET`                | Server      | No       | Optional webhook verification (planned)                                                                                            |
+| `REVALIDATION_SECRET`                | Server      | No       | Signing secret for the Ghost webhook, at least 32 characters. Leave empty to turn the webhook off                                  |
 | `PAYLOAD_DB_PUSH`                    | Server/dev  | No       | `true` by default in development. Set to `false` to use migrations only                                                            |
 
 The app validates its configuration at startup and reports which variables are wrong without printing their values.
@@ -230,7 +231,9 @@ Unpublishing or deleting a milestone removes it from `/journey` on the next requ
 2. Set `GHOST_URL` (for example `https://blog.example.com`) and `GHOST_CONTENT_API_KEY` in the server environment, then restart.
 3. In `/admin`, open **Writing settings** to choose how many recent posts to show, filter by tag slug, and list featured post slugs in order.
 
-New Ghost posts appear on `/writing` within 15 minutes. If Ghost is slow or down, the page shows the last posts it fetched, or a short "temporarily unavailable" note. It never breaks the rest of the site. Featured slugs that were renamed or deleted in Ghost are skipped.
+4. Optional, for instant updates: set `REVALIDATION_SECRET` to a random value of at least 32 characters (for example `openssl rand -hex 32`) and restart. Then, in the same Ghost integration, add a webhook for each of **Post published**, **Published post updated**, **Post unpublished** and **Post deleted**, with target URL `https://<your-site>/api/revalidate/ghost` and the same value as its **Secret**.
+
+Without the webhook, new Ghost posts appear on `/writing` within 15 minutes. With it, they appear on the next visit. If Ghost is slow or down, the page shows the last posts it fetched, or a short "temporarily unavailable" note. It never breaks the rest of the site. Featured slugs that were renamed or deleted in Ghost are skipped.
 
 ### Preview a draft
 
@@ -260,7 +263,7 @@ Health checks can use `GET /api/health`. It returns `200 {"status":"ok"}` when t
 ### Security baseline
 
 - GraphQL is disabled. The REST API stays enabled for the admin panel and is protected by collection access rules.
-- Every response gets baseline security headers: `nosniff`, `Referrer-Policy`, frame protection, `Permissions-Policy`, and HSTS in production. A full Content Security Policy is planned.
+- Every response gets baseline security headers: `nosniff`, `Referrer-Policy`, frame protection, `Permissions-Policy`, and HSTS in production. Every page also gets a per-request nonce Content Security Policy (see [docs/security.md](docs/security.md)).
 - Uploaded media files can be fetched by anyone who has the URL. Don't upload confidential files.
 
 ### Backup and restore
@@ -301,4 +304,5 @@ For the full production procedure (applying migrations before the new version ta
 | 3. Ghost writing integration                                                    | Done    |
 | 3. Sitemap, robots rules, canonical and Open Graph metadata                     | Done    |
 | 3. Content Security Policy                                                      | Done    |
-| 3. Ghost webhook, deployment hardening                                          | Planned |
+| 3. Signed Ghost webhook for instant updates                                     | Done    |
+| 3. Deployment hardening                                                         | Planned |

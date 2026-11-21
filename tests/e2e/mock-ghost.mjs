@@ -21,9 +21,10 @@ const post = (n, extra = {}) => ({
   ...extra,
 })
 
-const POSTS = [5, 4, 3, 2, 1].map((n) =>
+const INITIAL = [5, 4, 3, 2, 1].map((n) =>
   post(n, n === 3 ? { canonical_url: 'https://canonical.example.test/sample-article-3/' } : {}),
 )
+let POSTS = INITIAL
 
 const slugsIn = (filter, negate) => {
   const match = filter.match(negate ? /slug:-\[([^\]]*)\]/ : /(?:^|\+)slug:\[([^\]]*)\]/)
@@ -33,6 +34,15 @@ const slugsIn = (filter, negate) => {
 createServer((req, res) => {
   const url = new URL(req.url ?? '/', `http://localhost:${PORT}`)
   if (url.pathname === '/health') return res.end('ok')
+  // Test controls: "publish" a newer post, or restore the initial set.
+  if (url.pathname === '/__publish' && req.method === 'POST') {
+    POSTS = [post(6, { published_at: '2024-07-15T09:00:00.000+00:00' }), ...INITIAL]
+    return res.end()
+  }
+  if (url.pathname === '/__reset' && req.method === 'POST') {
+    POSTS = INITIAL
+    return res.end()
+  }
   if (url.pathname !== '/ghost/api/content/posts/') {
     res.statusCode = 404
     return res.end()

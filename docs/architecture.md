@@ -9,6 +9,7 @@ Visitor ──> Next.js server (Node.js runtime)
               │             └── src/lib/payload/queries.ts .. Payload Local API, published records only
               ├── (payload) routes: /admin, /api/* .......... Payload admin and REST API
               │      └── collection hooks ──> revalidateTag(...) on publish / unpublish / delete
+              ├── /api/revalidate/ghost ..................... signed Ghost webhook, expires the `ghost` tag
               └── /api/health ............................... database readiness probe
                                    │
                                    └──> PostgreSQL (portfolio content), media storage (uploads)
@@ -55,10 +56,12 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 
 `src/lib/ghost/client.ts` is a framework-free Content API client, so it can be unit-tested with a mocked `fetch`. Each refresh makes two requests, one for featured slugs and one for recent posts. Both ask only for card fields (no article HTML) and time out after 5 seconds. Responses are validated with zod, and invalid posts, non-http(s) URLs and internal tags are dropped. `src/lib/ghost/index.ts` caches the result for 15 minutes with `unstable_cache` under the `ghost` tag. A failed refresh throws instead of being cached, and a per-process last-known-good copy covers outages. The e2e suite runs against `tests/e2e/mock-ghost.mjs`, so CI needs no Ghost account.
 
+`POST /api/revalidate/ghost` lets Ghost expire the `ghost` tag as soon as a post changes. `src/lib/ghost/webhook.ts` checks Ghost's `X-Ghost-Signature` (HMAC-SHA256 of the raw body plus timestamp, keyed with `REVALIDATION_SECRET`) in constant time and rejects timestamps more than 5 minutes off. The payload is only used to check the signature; which post changed doesn't matter, because the whole post list is refetched.
+
 ## Atlas globe
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.
 
 ## Planned extensions
 
-- An optional, signature-verified Ghost webhook that expires the `ghost` cache tag immediately.
+- A gated media route, so files attached only to drafts aren't publicly addressable.
