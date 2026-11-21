@@ -1,0 +1,16 @@
+@import 'tailwindcss';
+
+/* Midnight Atlas design tokens. Components use the Tailwind theme names below. */
+@theme {
+  --color-midnight: #091522;
+  --color-surface: #13273a;
+  --color-accent: #65d6df;
+  --color-gold: #e5b96d;
+  --color-ink: #f4f7fa;
+}
+
+html {
+  background-color: var(--color-midnight);
+  color: var(--color-ink);
+  color-scheme: dark;
+}
