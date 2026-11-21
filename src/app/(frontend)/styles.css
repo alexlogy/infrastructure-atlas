@@ -1,16 +1,55 @@
 @import 'tailwindcss';
 
-/* Midnight Atlas design tokens. Components use the Tailwind theme names below. */
+/*
+ * Midnight Atlas design tokens. Contrast ratios (WCAG 2.x) measured on midnight / surface:
+ *   ink 17.1 / 14.2 · muted 8.9 / 7.4 · accent 10.7 / 8.9 · gold 10.1 / 8.3 · disabled 5.5 / 4.5
+ * `line` is decorative only (cards, dividers) and never carries meaning on its own.
+ */
 @theme {
   --color-midnight: #091522;
   --color-surface: #13273a;
   --color-accent: #65d6df;
   --color-gold: #e5b96d;
   --color-ink: #f4f7fa;
+  --color-muted: #a7b6c5;
+  --color-disabled: #7c8ea0;
+  --color-line: #2e4a63;
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
 }
 
-html {
-  background-color: var(--color-midnight);
-  color: var(--color-ink);
-  color-scheme: dark;
+@layer base {
+  html {
+    background-color: var(--color-midnight);
+    color: var(--color-ink);
+    color-scheme: dark;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  ::selection {
+    background-color: var(--color-accent);
+    color: var(--color-midnight);
+  }
+}
+
+/* Motion is opt-in: only users without a reduced-motion preference get the reveal. */
+@media (prefers-reduced-motion: no-preference) {
+  .reveal {
+    animation: reveal 500ms ease-out both;
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
