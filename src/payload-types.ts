@@ -70,6 +70,8 @@ export interface Config {
     users: User;
     media: Media;
     'timeline-milestones': TimelineMilestone;
+    'impact-projects': ImpactProject;
+    'atlas-locations': AtlasLocation;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +82,8 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     'timeline-milestones': TimelineMilestonesSelect<false> | TimelineMilestonesSelect<true>;
+    'impact-projects': ImpactProjectsSelect<false> | ImpactProjectsSelect<true>;
+    'atlas-locations': AtlasLocationsSelect<false> | AtlasLocationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -91,9 +95,11 @@ export interface Config {
   fallbackLocale: null;
   globals: {
     'site-settings': SiteSetting;
+    'home-page': HomePage;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
+    'home-page': HomePageSelect<false> | HomePageSelect<true>;
   };
   locale: null;
   widgets: {
@@ -217,9 +223,199 @@ export interface TimelineMilestone {
   era?: string | null;
   tags?: string[] | null;
   image?: (number | null) | Media;
+  /**
+   * Optional place on the atlas this milestone belongs to.
+   */
+  location?: (number | null) | AtlasLocation;
   featured?: boolean | null;
   /**
    * Tie-breaker for milestones on the same date (lower first).
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "atlas-locations".
+ */
+export interface AtlasLocation {
+  id: number;
+  label: string;
+  city?: string | null;
+  region?: string | null;
+  country?: string | null;
+  /**
+   * Published coordinates are public. Use a city centre, never a private office or infrastructure site.
+   */
+  latitude: number;
+  longitude: number;
+  precision: 'exact' | 'city' | 'region' | 'country';
+  /**
+   * Optional grouping used for the atlas marker style.
+   */
+  category?: string | null;
+  /**
+   * Lower values are listed first.
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "impact-projects".
+ */
+export interface ImpactProject {
+  id: number;
+  title: string;
+  /**
+   * URL segment, e.g. "sample-project". Generated from the title when empty.
+   */
+  slug: string;
+  summary: string;
+  featuredImage?: (number | null) | Media;
+  tags?: string[] | null;
+  /**
+   * Scope, people, stakeholders and decisions.
+   */
+  leadershipNarrative?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Systems, constraints and technical choices.
+   */
+  engineeringNarrative?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * The problem being solved.
+   */
+  challenge?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * How the solution is shaped.
+   */
+  architecture?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  diagram?: (number | null) | Media;
+  /**
+   * Key decisions and trade-offs.
+   */
+  decisions?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Only record outcomes you can stand behind. Add a metric only when it was measured.
+   */
+  outcomes?:
+    | {
+        result: string;
+        /**
+         * e.g. "−30% latency". Empty = qualitative.
+         */
+        metric?: string | null;
+        /**
+         * How this can be checked (source or method).
+         */
+        verification?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * What did not work, or what is still open.
+   */
+  limitations?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  sourceLinks?:
+    | {
+        label: string;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  milestones?: (number | TimelineMilestone)[] | null;
+  locations?: (number | AtlasLocation)[] | null;
+  featured?: boolean | null;
+  /**
+   * Lower values are listed first.
    */
   sortOrder?: number | null;
   updatedAt: string;
@@ -261,6 +457,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'timeline-milestones';
         value: number | TimelineMilestone;
+      } | null)
+    | ({
+        relationTo: 'impact-projects';
+        value: number | ImpactProject;
+      } | null)
+    | ({
+        relationTo: 'atlas-locations';
+        value: number | AtlasLocation;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -361,7 +565,66 @@ export interface TimelineMilestonesSelect<T extends boolean = true> {
   era?: T;
   tags?: T;
   image?: T;
+  location?: T;
   featured?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "impact-projects_select".
+ */
+export interface ImpactProjectsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  summary?: T;
+  featuredImage?: T;
+  tags?: T;
+  leadershipNarrative?: T;
+  engineeringNarrative?: T;
+  challenge?: T;
+  architecture?: T;
+  diagram?: T;
+  decisions?: T;
+  outcomes?:
+    | T
+    | {
+        result?: T;
+        metric?: T;
+        verification?: T;
+        id?: T;
+      };
+  limitations?: T;
+  sourceLinks?:
+    | T
+    | {
+        label?: T;
+        url?: T;
+        id?: T;
+      };
+  milestones?: T;
+  locations?: T;
+  featured?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "atlas-locations_select".
+ */
+export interface AtlasLocationsSelect<T extends boolean = true> {
+  label?: T;
+  city?: T;
+  region?: T;
+  country?: T;
+  latitude?: T;
+  longitude?: T;
+  precision?: T;
+  category?: T;
   sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -431,7 +694,40 @@ export interface SiteSetting {
     | null;
   sections?: {
     journey?: boolean | null;
+    impact?: boolean | null;
   };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page".
+ */
+export interface HomePage {
+  id: number;
+  /**
+   * Leave empty to use the site title.
+   */
+  headline?: string | null;
+  /**
+   * Leave empty to use the site description.
+   */
+  subheadline?: string | null;
+  heroImage?: (number | null) | Media;
+  /**
+   * Leave empty to link to the enabled sections.
+   */
+  callsToAction?:
+    | {
+        label: string;
+        href: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Shown in this order. Unpublished projects are skipped.
+   */
+  featuredProjects?: (number | ImpactProject)[] | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -454,7 +750,28 @@ export interface SiteSettingsSelect<T extends boolean = true> {
     | T
     | {
         journey?: T;
+        impact?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "home-page_select".
+ */
+export interface HomePageSelect<T extends boolean = true> {
+  headline?: T;
+  subheadline?: T;
+  heroImage?: T;
+  callsToAction?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+        id?: T;
+      };
+  featuredProjects?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

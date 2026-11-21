@@ -61,7 +61,10 @@ export const SiteSettings: GlobalConfig = {
       name: 'sections',
       label: 'Section visibility',
       type: 'group',
-      fields: [{ name: 'journey', label: 'Show Journey', type: 'checkbox', defaultValue: true }],
+      fields: [
+        { name: 'journey', label: 'Show Journey', type: 'checkbox', defaultValue: true },
+        { name: 'impact', label: 'Show Impact', type: 'checkbox', defaultValue: true },
+      ],
     },
   ],
 }

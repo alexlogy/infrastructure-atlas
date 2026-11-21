@@ -5,9 +5,12 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { AtlasLocations } from './collections/AtlasLocations'
+import { ImpactProjects } from './collections/ImpactProjects'
 import { Media } from './collections/Media'
 import { TimelineMilestones } from './collections/TimelineMilestones'
 import { Users } from './collections/Users'
+import { HomePage } from './globals/HomePage'
 import { SiteSettings } from './globals/SiteSettings'
 import { parseServerEnv } from './lib/env'
 
@@ -23,8 +26,8 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, TimelineMilestones],
-  globals: [SiteSettings],
+  collections: [Users, Media, TimelineMilestones, ImpactProjects, AtlasLocations],
+  globals: [SiteSettings, HomePage],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,
   serverURL: env.NEXT_PUBLIC_SITE_URL,

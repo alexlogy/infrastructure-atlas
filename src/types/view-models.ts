@@ -10,6 +10,7 @@ export type SiteSettingsView = {
   locale: string
   navLinks: NavLink[]
   showJourney: boolean
+  showImpact: boolean
 }
 
 export type DatePrecision = 'year' | 'month' | 'day'
@@ -35,4 +36,43 @@ export type MilestoneView = {
   image: ImageView | null
   featured: boolean
   sortOrder: number
+}
+
+export type OutcomeView = {
+  result: string
+  /** Present only for measured outcomes; absent means qualitative. */
+  metric: string | null
+  verification: string | null
+}
+
+export type ProjectSummaryView = {
+  id: string
+  slug: string
+  title: string
+  summary: string
+  image: ImageView | null
+  tags: string[]
+  featured: boolean
+  sortOrder: number
+}
+
+export type ProjectView = ProjectSummaryView & {
+  leadershipNarrative: SerializedEditorState | null
+  engineeringNarrative: SerializedEditorState | null
+  challenge: SerializedEditorState | null
+  architecture: SerializedEditorState | null
+  diagram: ImageView | null
+  decisions: SerializedEditorState | null
+  outcomes: OutcomeView[]
+  limitations: SerializedEditorState | null
+  sourceLinks: NavLink[]
+}
+
+export type HomePageView = {
+  headline: string | null
+  subheadline: string | null
+  heroImage: ImageView | null
+  callsToAction: NavLink[]
+  /** Ordered ids; resolved against published projects at render time. */
+  featuredProjectIds: string[]
 }
