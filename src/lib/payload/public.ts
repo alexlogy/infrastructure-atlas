@@ -40,7 +40,7 @@ export const getSiteSettings = unstable_cache(
     }
   },
   // Bump the key whenever SiteSettingsView changes shape, or stale cached entries survive deploys.
-  ['public-site-settings-v3'],
+  ['public-site-settings-v4'],
   { tags: [CACHE_TAGS.siteSettings] },
 )
 

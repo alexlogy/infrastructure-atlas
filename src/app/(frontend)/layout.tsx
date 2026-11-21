@@ -6,7 +6,9 @@ import { SiteHeader } from '@/components/layout/SiteHeader'
 import { SkipLink } from '@/components/layout/SkipLink'
 import { getPreviewUser } from '@/lib/payload/preview'
 import { ghostConfig } from '@/lib/ghost'
+import { pageMetadata } from '@/lib/metadata'
 import { getSiteSettings, getWritingSettings } from '@/lib/payload/public'
+import { siteOrigin } from '@/lib/seo'
 
 import './styles.css'
 
@@ -16,9 +18,9 @@ export const dynamic = 'force-dynamic'
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSiteSettings()
   return {
+    ...(await pageMetadata({})),
     title: { default: settings.siteTitle, template: `%s · ${settings.siteTitle}` },
-    description: settings.description ?? undefined,
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+    metadataBase: new URL(siteOrigin()),
   }
 }
 

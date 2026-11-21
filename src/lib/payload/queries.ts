@@ -53,10 +53,12 @@ function readMode(previewUser?: User | null) {
 export async function fetchSiteSettings(payload: Payload): Promise<SiteSettingsView> {
   const doc = await payload.findGlobal({
     slug: 'site-settings',
-    depth: 0,
+    depth: 1,
     overrideAccess: false,
+    populate: PUBLIC_MEDIA,
     select: {
       siteTitle: true,
+      shareImage: true,
       description: true,
       locale: true,
       navLinks: true,

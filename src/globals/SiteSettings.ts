@@ -31,6 +31,15 @@ export const SiteSettings: GlobalConfig = {
       admin: { description: 'Short introduction and default SEO description.' },
     },
     {
+      name: 'shareImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Default image for link previews on social sites and chat apps (1200×630 works best).',
+      },
+    },
+    {
       name: 'locale',
       type: 'text',
       defaultValue: 'en',

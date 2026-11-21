@@ -2,11 +2,15 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { ProjectGrid } from '@/components/impact/ProjectCard'
+import { pageMetadata } from '@/lib/metadata'
 import { getPublicProjects, getSiteSettings } from '@/lib/payload/public'
 
-export const metadata: Metadata = {
-  title: 'Impact',
-  description: 'Selected projects: the problem, the decisions and the outcomes.',
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'Impact',
+    description: 'Selected projects: the problem, the decisions and the outcomes.',
+    path: '/impact',
+  })
 }
 
 export default async function ImpactPage() {

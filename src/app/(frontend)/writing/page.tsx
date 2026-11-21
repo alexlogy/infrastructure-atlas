@@ -3,12 +3,16 @@ import { notFound } from 'next/navigation'
 
 import { PostCard } from '@/components/writing/PostCard'
 import { getGhostPosts, ghostConfig } from '@/lib/ghost'
+import { pageMetadata } from '@/lib/metadata'
 import { getSiteSettings, getWritingSettings } from '@/lib/payload/public'
 import type { GhostPostView } from '@/types/view-models'
 
-export const metadata: Metadata = {
-  title: 'Writing',
-  description: 'Recent articles, linked to where they were first published.',
+export function generateMetadata(): Promise<Metadata> {
+  return pageMetadata({
+    title: 'Writing',
+    description: 'Recent articles, linked to where they were first published.',
+    path: '/writing',
+  })
 }
 
 export default async function WritingPage() {
