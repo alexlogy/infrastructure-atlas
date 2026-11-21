@@ -6,7 +6,7 @@
 
 Visitors get an accessible, HTML-first site with progressive 3D. Owners manage every piece of content in Payload CMS, with no code edits needed.
 
-[Overview](#overview) · [Getting started](#getting-started) · [Content workflow](#content-workflow) · [Deployment](#deployment) · [Project status](#project-status)
+[Overview](#overview) · [Getting started](#getting-started) · [Content workflow](#content-workflow) · [Deployment](#deployment) · [Documentation](#documentation) · [Project status](#project-status)
 
 ![Node](https://img.shields.io/badge/node-%5E24.22.3-339933?logo=node.js&logoColor=white)
 ![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs)
@@ -241,6 +241,17 @@ docker compose exec -T db pg_restore -U app_user -d infrastructure_atlas --clean
 
 > [!CAUTION]
 > Database dumps contain your private content. `*.dump` and `*.sql` files are gitignored. Store backups encrypted and outside the repository.
+
+For the full production procedure (applying migrations before the new version takes traffic, the first-admin window on a new database, media backup, and optional hardening), see [docs/deployment.md](docs/deployment.md).
+
+## Documentation
+
+| Guide                                  | What it covers                                                                                                   |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [Architecture](docs/architecture.md)   | How the runtime fits together, module boundaries, the publish → refresh → render flow, caching, schema lifecycle |
+| [Content model](docs/content-model.md) | Every collection and global, its fields and validation, and who can read or write it                             |
+| [Deployment](docs/deployment.md)       | Requirements, environment variables, release steps, health checks, backup and restore                            |
+| [Security](docs/security.md)           | Where content and secrets live, access control, input and output safety, headers, dependency policy, known gaps  |
 
 ## Project status
 
