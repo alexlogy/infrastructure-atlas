@@ -2,7 +2,15 @@ import type { MilestoneView } from '@/types/view-models'
 
 import { MilestoneCard } from './MilestoneCard'
 
-export function Timeline({ milestones, locale }: { milestones: MilestoneView[]; locale: string }) {
+export function Timeline({
+  milestones,
+  locale,
+  unoptimizedImages = false,
+}: {
+  milestones: MilestoneView[]
+  locale: string
+  unoptimizedImages?: boolean
+}) {
   if (milestones.length === 0) {
     return (
       <div className="rounded-lg border border-dashed border-line p-8 text-muted">
@@ -22,7 +30,11 @@ export function Timeline({ milestones, locale }: { milestones: MilestoneView[]; 
               milestone.featured ? 'bg-gold' : 'bg-accent'
             }`}
           />
-          <MilestoneCard milestone={milestone} locale={locale} />
+          <MilestoneCard
+            milestone={milestone}
+            locale={locale}
+            unoptimizedImages={unoptimizedImages}
+          />
         </li>
       ))}
     </ol>

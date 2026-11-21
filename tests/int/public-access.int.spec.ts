@@ -1,6 +1,8 @@
 import { randomBytes } from 'node:crypto'
 
-import { getPayload, type Payload } from 'payload'
+import sharp from 'sharp'
+
+import { type Field, getPayload, type Payload } from 'payload'
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 // The CMS hooks call Next's revalidateTag; capture calls instead of needing a Next runtime.
@@ -46,6 +48,7 @@ beforeAll(async () => {
     'impact-projects',
     'atlas-locations',
     'timeline-milestones',
+    'media',
     'users',
   ] as const) {
     await payload.delete({ collection, where: { id: { exists: true } } })
@@ -474,5 +477,89 @@ describe('writing settings', () => {
       excludeTags: ['sample-tag'],
       featuredSlugs: ['a'],
     })
+  })
+})
+
+describe('media', () => {
+  const upload = async (name: string) => {
+    const data = await sharp({
+      create: { width: 4, height: 4, channels: 3, background: '#13273a' },
+    })
+      .png()
+      .toBuffer()
+    return payload.create({
+      collection: 'media',
+      data: { alt: `Sample image ${name}` },
+      file: { data, mimetype: 'image/png', name: `sample-${name}.png`, size: data.length },
+    })
+  }
+  const anonymousIds = async () =>
+    (await payload.find({ collection: 'media', overrideAccess: false, depth: 0 })).docs.map(
+      (d) => d.id,
+    )
+
+  it('is public only while published content uses it', async () => {
+    const [shown, draftOnly, unused, pending] = await Promise.all(
+      ['shown', 'draft-only', 'unused', 'pending'].map(upload),
+    )
+    const published = await payload.create({
+      collection: 'timeline-milestones',
+      data: { ...milestoneData('Sample milestone with image', 'published'), image: shown.id },
+    })
+    await payload.create({
+      collection: 'timeline-milestones',
+      data: { ...milestoneData('Sample draft with image', 'draft'), image: draftOnly.id },
+    })
+    // A pending draft swaps the image; the published version still uses the old one.
+    await payload.update({
+      collection: 'timeline-milestones',
+      id: published.id,
+      data: { image: pending.id },
+      draft: true,
+    })
+
+    expect(await anonymousIds()).toEqual([shown.id])
+    const timeline = await fetchPublicTimeline(payload)
+    expect(timeline.find((m) => m.id === String(published.id))?.image?.url).toContain('sample-shown')
+
+    const all = await payload.find({ collection: 'media', user: editor, overrideAccess: false })
+    expect(all.docs.map((d) => d.id).sort()).toEqual(
+      [shown.id, draftOnly.id, unused.id, pending.id].sort(),
+    )
+
+    await payload.update({
+      collection: 'timeline-milestones',
+      id: published.id,
+      data: { _status: 'draft' },
+    })
+    expect(await anonymousIds()).toEqual([])
+  })
+
+  it('covers every field that references media', () => {
+    // If this fails, add the new field to src/access/publishedMedia.ts, then update this list.
+    const found: string[] = []
+    const walk = (owner: string, fields: Field[]) => {
+      for (const field of fields) {
+        if (
+          (field.type === 'upload' || field.type === 'relationship') &&
+          [field.relationTo].flat().includes('media')
+        ) {
+          found.push(`${owner}.${field.name}`)
+        }
+        if ('fields' in field) walk(owner, field.fields)
+        if (field.type === 'tabs') field.tabs.forEach((tab) => walk(owner, tab.fields))
+        if (field.type === 'blocks') field.blocks.forEach((b) => walk(owner, b.fields))
+      }
+    }
+    // payload-* collections are Payload internals (locks, preferences, migrations), never public.
+    for (const c of payload.config.collections) if (!c.slug.startsWith('payload-')) walk(c.slug, c.fields)
+    for (const g of payload.config.globals) walk(g.slug, g.fields)
+    expect(found.sort()).toEqual([
+      'home-page.heroImage',
+      'impact-projects.diagram',
+      'impact-projects.featuredImage',
+      'site-settings.shareImage',
+      'timeline-milestones.image',
+    ])
   })
 })
