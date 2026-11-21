@@ -30,10 +30,23 @@ Infrastructure Atlas is a reusable portfolio platform, not a hard-coded personal
 
 ```text
 Browser ──> Next.js (server components, HTML content, SEO)
-              ├── Payload Local API ──> PostgreSQL
+              ├── /, /journey ──> cached public queries (published only)
+              │                     └── Payload Local API ──> PostgreSQL
               ├── /admin (authenticated Payload admin)
+              │     └── publish/unpublish ──> cache tag expired
               └── /api/health (database readiness)
 ```
+
+### Public pages
+
+| Route      | Content                                                                                                                      |
+| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `/`        | Site title and introduction from **Site settings**, plus a link to the journey                                               |
+| `/journey` | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off |
+
+Pages are rendered on the server as plain HTML, so they work without JavaScript or WebGL. They read only published records through narrow, server-only queries (`src/lib/payload/public.ts`) that select just the fields they display, and they map each record to a small display object before it reaches React. When the CMS is empty, the pages show a short explanation instead of sample content.
+
+Accessibility built in: a skip link, landmarks and a sensible heading order, a visible focus ring, colours checked for WCAG AA contrast (most pass AAA), and an entry animation that only plays when the visitor's browser allows motion. Featured milestones are labelled in text as well as colour.
 
 ### Tech stack
 
@@ -161,10 +174,13 @@ Media uploads accept JPEG, PNG, WebP, AVIF and GIF files up to 10 MB. SVG is rej
 
 1. In `/admin`, open **Milestones** and select **Create new**.
 2. Fill in a title, a start date and a date precision, then select **Save draft**. Drafts never appear on the public site or in anonymous API responses.
-3. Select **Publish changes**. The public timeline cache is cleared straight away, so the milestone shows up on the next page load.
+3. Select **Publish changes**. The public timeline cache is cleared straight away.
+4. Open <http://localhost:3000/journey>. The milestone appears in date order, and the date is shown at the precision you chose (for example "2020", "Mar 2020" or "Mar 1, 2020").
+
+Unpublishing or deleting a milestone removes it from `/journey` on the next request. Changes to **Site settings** (title, description, navigation links, section visibility) show up immediately too.
 
 > [!NOTE]
-> The public `/journey` page that displays published milestones is the next item in the Phase 1 slice.
+> Rich-text links are only rendered when they point to a site path or an `http(s)`/`mailto` URL. Any other link is shown as plain text.
 
 > [!TIP]
 > If `pnpm dev` starts returning 500 errors with `Jest worker encountered 2 child process exceptions` after you've run `pnpm build`, delete the `.next/` folder and restart the dev server.
@@ -205,9 +221,10 @@ docker compose exec -T db pg_restore -U app_user -d infrastructure_atlas --clean
 
 ## Project status
 
-| Phase                                             | Status      |
-| ------------------------------------------------- | ----------- |
-| 0. Scaffold, tooling, local database              | Done        |
-| 1. CMS-driven MVP: milestones, timeline, projects | In progress |
-| 2. Three.js atlas globe                           | Planned     |
-| 3. Ghost writing integration and polish           | Planned     |
+| Phase                                                                                          | Status  |
+| ---------------------------------------------------------------------------------------------- | ------- |
+| 0. Scaffold, tooling, local database                                                           | Done    |
+| 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)                            | Done    |
+| 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch, draft preview | Planned |
+| 2. Three.js atlas globe                                                                        | Planned |
+| 3. Ghost writing integration and polish                                                        | Planned |
