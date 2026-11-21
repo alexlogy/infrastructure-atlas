@@ -127,7 +127,29 @@ pnpm audit --audit-level high
 
 ### Create the first admin account
 
-On a fresh database, open `/admin`. Payload shows a one-time **Create first user** screen that is only available while no users exist. Use a unique email and a strong password. The project never seeds a default admin or a known password.
+On a fresh database, open `/admin`. Payload shows a one-time **Create first user** screen that is only available while no users exist. That first account always becomes an **admin**. Use a unique email and a strong password. The project never seeds a default admin or a known password.
+
+Admins can then invite more people from **Users**:
+
+| Role   | Can do                                                             |
+| ------ | ------------------------------------------------------------------ |
+| Admin  | Manage users and roles, plus everything an editor can do           |
+| Editor | Create, edit and publish content and media; edit their own account |
+
+There is no public sign-up, and editors can't change their own role.
+
+### Content model
+
+| Name                  | Kind       | Public visitors can see                                          |
+| --------------------- | ---------- | ---------------------------------------------------------------- |
+| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                   |
+| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility |
+| `media`               | Collection | Every uploaded file                                              |
+| `users`               | Collection | Nothing                                                          |
+
+Milestones have a start date, an optional end date, and a date precision (year, month or day) that controls how dates are displayed. They also support a short rich-text description, era, tags, an image, a featured flag, and a `sortOrder` that breaks ties between milestones on the same date.
+
+Media uploads accept JPEG, PNG, WebP, AVIF and GIF files up to 10 MB. SVG is rejected because it can contain scripts.
 
 ### Database migrations
 
@@ -137,8 +159,15 @@ On a fresh database, open `/admin`. Payload shows a one-time **Create first user
 
 ### Publish a milestone
 
+1. In `/admin`, open **Milestones** and select **Create new**.
+2. Fill in a title, a start date and a date precision, then select **Save draft**. Drafts never appear on the public site or in anonymous API responses.
+3. Select **Publish changes**. The public timeline cache is cleared straight away, so the milestone shows up on the next page load.
+
 > [!NOTE]
-> The timeline collection and the public `/journey` page are the next items in the Phase 1 slice. Once they land, this section will walk through creating a milestone in `/admin`, publishing it, and seeing it on the public timeline.
+> The public `/journey` page that displays published milestones is the next item in the Phase 1 slice.
+
+> [!TIP]
+> If `pnpm dev` starts returning 500 errors with `Jest worker encountered 2 child process exceptions` after you've run `pnpm build`, delete the `.next/` folder and restart the dev server.
 
 ## Deployment
 
