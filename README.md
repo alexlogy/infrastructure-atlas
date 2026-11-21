@@ -30,7 +30,7 @@ Infrastructure Atlas is a reusable portfolio platform, not a hard-coded personal
 
 ```text
 Browser ──> Next.js (server components, HTML content, SEO)
-              ├── /, /journey ──> cached public queries (published only)
+              ├── /, /journey, /impact ──> cached public queries (published only)
               │                     └── Payload Local API ──> PostgreSQL
               ├── /admin (authenticated Payload admin)
               │     └── publish/unpublish ──> cache tag expired
@@ -39,14 +39,18 @@ Browser ──> Next.js (server components, HTML content, SEO)
 
 ### Public pages
 
-| Route      | Content                                                                                                                      |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `/`        | Site title and introduction from **Site settings**, plus a link to the journey                                               |
-| `/journey` | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off |
+| Route            | Content                                                                                                                                                   |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), plus featured projects in the chosen order |
+| `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                              |
+| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                           |
+| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                           |
+
+The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
 
 Pages are rendered on the server as plain HTML, so they work without JavaScript or WebGL. They read only published records through narrow, server-only queries (`src/lib/payload/public.ts`) that select just the fields they display, and they map each record to a small display object before it reaches React. When the CMS is empty, the pages show a short explanation instead of sample content.
 
-Accessibility built in: a skip link, landmarks and a sensible heading order, a visible focus ring, colours checked for WCAG AA contrast (most pass AAA), and an entry animation that only plays when the visitor's browser allows motion. Featured milestones are labelled in text as well as colour.
+Accessibility built in: a skip link, landmarks and a sensible heading order, a visible focus ring, colours checked for WCAG AA contrast (most pass AAA), and an entry animation that only plays when the visitor's browser allows motion. Featured milestones are labelled in text as well as colour, and measured outcomes are distinguished from qualitative ones in text.
 
 ### Tech stack
 
@@ -119,11 +123,11 @@ The app validates its configuration at startup and reports which variables are w
 
 ### Testing
 
-| Layer       | Tool       | Location      | Covers                                                                                                                                           |
-| ----------- | ---------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Unit        | Vitest     | `tests/unit/` | Date formatting, link safety, mapping CMS records to display data, ordering, environment checks                                                  |
-| Integration | Vitest     | `tests/int/`  | Payload access rules against a real Postgres: drafts never leak, anonymous writes are refused, roles, and the publish hooks that clear the cache |
-| End-to-end  | Playwright | `tests/e2e/`  | Publishing a milestone and seeing it on `/journey`, keyboard navigation, reduced motion, pages without JavaScript, mobile layout                 |
+| Layer       | Tool       | Location      | Covers                                                                                                                                                                           |
+| ----------- | ---------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Unit        | Vitest     | `tests/unit/` | Date formatting, link and slug safety, perspective selection, mapping CMS records to display data, ordering, environment checks                                                  |
+| Integration | Vitest     | `tests/int/`  | Payload access rules against a real Postgres: drafts never leak, anonymous writes are refused, roles, slug and coordinate validation, and the publish hooks that clear the cache |
+| End-to-end  | Playwright | `tests/e2e/`  | Publishing a milestone or project and seeing it live, the perspective switch, keyboard navigation, reduced motion, pages without JavaScript, mobile layout                       |
 
 Integration and e2e tests only run against `TEST_DATABASE_URI`, and they refuse to start unless the database name ends in `_test`. They apply the committed migrations, clear the test data, and create a throwaway editor with a random password for each run. No known credentials or real content are used.
 
@@ -176,14 +180,21 @@ There is no public sign-up, and editors can't change their own role.
 
 ### Content model
 
-| Name                  | Kind       | Public visitors can see                                          |
-| --------------------- | ---------- | ---------------------------------------------------------------- |
-| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                   |
-| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility |
-| `media`               | Collection | Every uploaded file                                              |
-| `users`               | Collection | Nothing                                                          |
+| Name                  | Kind       | Public visitors can see                                                       |
+| --------------------- | ---------- | ----------------------------------------------------------------------------- |
+| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                                |
+| `impact-projects`     | Collection | Published projects only. Their milestone and location links are not shown yet |
+| `atlas-locations`     | Collection | Published locations only (for the Phase 2 globe; no page reads them yet)      |
+| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility              |
+| `home-page`           | Global     | Headline, subheadline, hero image, calls to action, featured projects         |
+| `media`               | Collection | Every uploaded file                                                           |
+| `users`               | Collection | Nothing                                                                       |
 
 Milestones have a start date, an optional end date, and a date precision (year, month or day) that controls how dates are displayed. They also support a short rich-text description, era, tags, an image, a featured flag, and a `sortOrder` that breaks ties between milestones on the same date.
+
+Projects have a slug (generated from the title if left empty), a summary, separate leadership and engineering narratives, and optional challenge, architecture, diagram, decisions, outcomes, limitations and source links. An outcome with a `metric` is shown as measured; without one it is labelled qualitative. Only record outcomes you can back up, and use the verification note to say how.
+
+Atlas locations store latitude and longitude (validated to ±90 / ±180) with a precision. Published coordinates are public, so use a city centre rather than a private site.
 
 Media uploads accept JPEG, PNG, WebP, AVIF and GIF files up to 10 MB. SVG is rejected because it can contain scripts.
 
@@ -200,7 +211,9 @@ Media uploads accept JPEG, PNG, WebP, AVIF and GIF files up to 10 MB. SVG is rej
 3. Select **Publish changes**. The public timeline cache is cleared straight away.
 4. Open <http://localhost:3000/journey>. The milestone appears in date order, and the date is shown at the precision you chose (for example "2020", "Mar 2020" or "Mar 1, 2020").
 
-Unpublishing or deleting a milestone removes it from `/journey` on the next request. Changes to **Site settings** (title, description, navigation links, section visibility) show up immediately too.
+Projects work the same way: create one under **Impact projects**, publish it, and it appears on `/impact` and at `/impact/<slug>`. To feature it on the homepage, add it to **Home page → Featured projects**. Unpublished projects are skipped there automatically.
+
+Unpublishing or deleting a milestone removes it from `/journey` on the next request. Changes to **Site settings** and **Home page** show up immediately too.
 
 > [!NOTE]
 > Rich-text links are only rendered when they point to a site path or an `http(s)`/`mailto` URL. Any other link is shown as plain text.
@@ -255,10 +268,11 @@ For the full production procedure (applying migrations before the new version ta
 
 ## Project status
 
-| Phase                                                                                          | Status  |
-| ---------------------------------------------------------------------------------------------- | ------- |
-| 0. Scaffold, tooling, local database                                                           | Done    |
-| 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)                            | Done    |
-| 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch, draft preview | Planned |
-| 2. Three.js atlas globe                                                                        | Planned |
-| 3. Ghost writing integration and polish                                                        | Planned |
+| Phase                                                                           | Status  |
+| ------------------------------------------------------------------------------- | ------- |
+| 0. Scaffold, tooling, local database                                            | Done    |
+| 1. CMS-driven MVP: milestone slice (publish milestone → `/journey`)             | Done    |
+| 1. CMS-driven MVP: home page content, projects, Leadership / Engineering switch | Done    |
+| 1. Authenticated draft preview                                                  | Planned |
+| 2. Three.js atlas globe                                                         | Planned |
+| 3. Ghost writing integration and polish                                         | Planned |
