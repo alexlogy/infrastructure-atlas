@@ -9,3 +9,8 @@ minimumReleaseAgeExclude:
   - '@payloadcms/translations@3.94.1'
   - '@payloadcms/ui@3.94.1'
   - payload@3.94.1
+# Security overrides for transitive dependencies (see `pnpm audit`).
+# Remove each entry once upstream packages ship the patched range themselves.
+overrides:
+  happy-dom: ^21.0.4 # via @lexical/headless 0.50; lexical 0.53 already requires ^21.0.4
+  dompurify: ^3.4.18 # via @payloadcms/ui
