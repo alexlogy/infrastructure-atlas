@@ -53,6 +53,8 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 
 ## Planned extensions
 
-- Phase 1: `home-page`, `impact-projects` (with Leadership and Engineering perspectives) and `atlas-locations`, plus authenticated draft preview.
-- Phase 2: a client-only React Three Fiber globe, loaded dynamically, with the existing HTML list as the fallback.
+## Atlas globe
+
+`/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.
+
 - Phase 3: a server-side Ghost Content API adapter in `src/lib/ghost/`, with time-based revalidation.
