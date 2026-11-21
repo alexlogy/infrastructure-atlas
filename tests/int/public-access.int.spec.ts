@@ -96,6 +96,17 @@ describe('users and roles', () => {
       }),
     ).rejects.toThrow()
   })
+
+  it('locks an account after 5 failed logins, even for the right password', async () => {
+    const secret = password()
+    const email = 'lockout@example.test'
+    await payload.create({ collection: 'users', data: { email, password: secret, role: 'editor' } })
+    const login = (pw: string) =>
+      payload.login({ collection: 'users', data: { email, password: pw } })
+
+    for (let i = 0; i < 5; i++) await expect(login('wrong-password')).rejects.toThrow()
+    await expect(login(secret)).rejects.toThrow(/locked/i)
+  })
 })
 
 describe('timeline milestones', () => {

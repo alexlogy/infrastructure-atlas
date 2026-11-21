@@ -61,8 +61,31 @@ tar -xzf atlas-media-YYYY-MM-DD.tar.gz
 pnpm migrate     # bring the restored schema up to the deployed code's migrations
 ```
 
+## Login protection
+
+Built in:
+
+- **Account lockout:** after 5 failed logins an account is locked for 10 minutes, even for the right password (`src/collections/Users.ts`).
+- **Secure session cookie:** when `NEXT_PUBLIC_SITE_URL` is https, the `payload-token` cookie is `Secure`, `HttpOnly` and `SameSite=Lax`.
+- **Password-reset throttle:** Payload accepts at most one reset request per account every 15 seconds.
+
+Lockout is per account, so it doesn't slow down an attacker trying one password across many accounts, and anyone who knows an editor's email can keep that account locked. Add per-IP rate limiting at the reverse proxy. It belongs there rather than in the app because the proxy sees the real client address and shares limits across every app instance. An nginx example:
+
+```nginx
+# http {} block: 10 requests a minute per client address
+limit_req_zone $binary_remote_addr zone=auth:10m rate=10r/m;
+
+# server {} block, next to the main location that proxies to the app
+location ~ ^/api/users/(login|forgot-password|reset-password|unlock)$ {
+    limit_req zone=auth burst=5 nodelay;
+    limit_req_status 429;
+    proxy_pass http://app:3000;   # same upstream and proxy headers as the main location
+}
+```
+
+Behind a CDN or load balancer, configure nginx's `real_ip` module first, so `$binary_remote_addr` is the visitor's address and not the CDN's.
+
 ## Optional hardening
 
 - Restrict `/admin` with an identity-aware proxy, VPN or IP allow-list. The trade-off is that editors must be on that network to publish.
-- Rate-limit `/api/users/login` at the proxy.
 - Run the container as a non-root user, with a read-only root filesystem except for the media volume.

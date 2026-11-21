@@ -16,6 +16,7 @@ This document describes the security model of the codebase. To report a vulnerab
 | Drafts           | The collection `read` rule limits anonymous readers to `_status = published`. Version history requires login                                                                                                                     |
 | Public rendering | Queries use `overrideAccess: false` with no user, plus `draft: false`, an explicit `select` and view-model mapping                                                                                                               |
 | Draft preview    | `/api/preview` needs a valid Payload session and only redirects to same-site paths. Pages re-check the session on every render; with an editor they read drafts as that user (`overrideAccess: false`) and skip the shared cache |
+| Login            | 5 failed attempts lock the account for 10 minutes. The session cookie is `HttpOnly`, `SameSite=Lax`, and `Secure` when the site URL is https                                                                                     |
 | Users            | No public sign-up. Admin-only create and delete. Role changes are admin-only at field level                                                                                                                                      |
 | First account    | Payload's first-user screen only works while no users exist, and that account is forced to `admin`                                                                                                                               |
 | Admin panel      | Requires authentication. Optionally also restrict it at the proxy (see `deployment.md`)                                                                                                                                          |
@@ -68,5 +69,5 @@ If Ghost serves feature images from another host (a CDN or image service), add t
 
 ## Known gaps
 
-- No rate limiting inside the app. Add it at the proxy for `/api/users/login`.
+- No per-IP rate limiting inside the app. Accounts lock for 10 minutes after 5 failed logins, but add per-IP limits at the reverse proxy (see `deployment.md`), which also stops attackers from keeping an editor locked out.
 - No email adapter. Password-reset emails are written to the server console, so configure an adapter before relying on password resets.
