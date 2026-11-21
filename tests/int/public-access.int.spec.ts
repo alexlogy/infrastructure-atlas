@@ -520,7 +520,9 @@ describe('media', () => {
 
     expect(await anonymousIds()).toEqual([shown.id])
     const timeline = await fetchPublicTimeline(payload)
-    expect(timeline.find((m) => m.id === String(published.id))?.image?.url).toContain('sample-shown')
+    expect(timeline.find((m) => m.id === String(published.id))?.image?.url).toContain(
+      'sample-shown',
+    )
 
     const all = await payload.find({ collection: 'media', user: editor, overrideAccess: false })
     expect(all.docs.map((d) => d.id).sort()).toEqual(
@@ -552,7 +554,8 @@ describe('media', () => {
       }
     }
     // payload-* collections are Payload internals (locks, preferences, migrations), never public.
-    for (const c of payload.config.collections) if (!c.slug.startsWith('payload-')) walk(c.slug, c.fields)
+    for (const c of payload.config.collections)
+      if (!c.slug.startsWith('payload-')) walk(c.slug, c.fields)
     for (const g of payload.config.globals) walk(g.slug, g.fields)
     expect(found.sort()).toEqual([
       'home-page.heroImage',
