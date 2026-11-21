@@ -98,23 +98,44 @@ The local database binds to `127.0.0.1:5432`. On first start, Docker creates two
 | `TEST_DATABASE_URI`                  | Server/test | Tests    | Separate database used by integration and e2e tests                                       |
 | `GHOST_URL`, `GHOST_CONTENT_API_KEY` | Server      | No       | Optional Ghost Content API integration (planned)                                          |
 | `REVALIDATION_SECRET`                | Server      | No       | Optional webhook verification (planned)                                                   |
+| `PAYLOAD_DB_PUSH`                    | Server/dev  | No       | `true` by default in development. Set to `false` to use migrations only                   |
 
 The app validates its configuration at startup and reports which variables are wrong without printing their values.
 
 ### Scripts
 
-| Command                    | Description                                                        |
-| -------------------------- | ------------------------------------------------------------------ |
-| `pnpm dev`                 | Start the dev server (Payload pushes schema changes automatically) |
-| `pnpm build`, `pnpm start` | Build and run in production mode                                   |
-| `pnpm lint`                | ESLint                                                             |
-| `pnpm typecheck`           | TypeScript, no emit                                                |
-| `pnpm format`              | Prettier write (`format:check` to verify only)                     |
-| `pnpm test`                | Vitest unit and integration tests                                  |
-| `pnpm test:e2e`            | Playwright end-to-end tests                                        |
-| `pnpm generate:types`      | Regenerate `src/payload-types.ts`                                  |
-| `pnpm migrate:create`      | Generate a migration from schema changes                           |
-| `pnpm migrate`             | Apply pending migrations                                           |
+| Command                    | Description                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------- |
+| `pnpm dev`                 | Start the dev server (Payload pushes schema changes automatically)           |
+| `pnpm build`, `pnpm start` | Build and run in production mode                                             |
+| `pnpm lint`                | ESLint                                                                       |
+| `pnpm typecheck`           | TypeScript, no emit                                                          |
+| `pnpm format`              | Prettier write (`format:check` to verify only)                               |
+| `pnpm test`                | Vitest unit and integration tests (integration tests need the test database) |
+| `pnpm test:e2e`            | Playwright end-to-end tests (starts its own server on port 3100)             |
+| `pnpm generate:types`      | Regenerate `src/payload-types.ts`                                            |
+| `pnpm migrate:create`      | Generate a migration from schema changes                                     |
+| `pnpm migrate`             | Apply pending migrations                                                     |
+
+### Testing
+
+| Layer       | Tool       | Location      | Covers                                                                                                                                           |
+| ----------- | ---------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Unit        | Vitest     | `tests/unit/` | Date formatting, link safety, mapping CMS records to display data, ordering, environment checks                                                  |
+| Integration | Vitest     | `tests/int/`  | Payload access rules against a real Postgres: drafts never leak, anonymous writes are refused, roles, and the publish hooks that clear the cache |
+| End-to-end  | Playwright | `tests/e2e/`  | Publishing a milestone and seeing it on `/journey`, keyboard navigation, reduced motion, pages without JavaScript, mobile layout                 |
+
+Integration and e2e tests only run against `TEST_DATABASE_URI`, and they refuse to start unless the database name ends in `_test`. They apply the committed migrations, clear the test data, and create a throwaway editor with a random password for each run. No known credentials or real content are used.
+
+```bash
+docker compose up -d db                      # creates infrastructure_atlas_test on first start
+pnpm test                                    # unit + integration
+pnpm exec playwright install chromium        # first run only
+pnpm test:e2e                                # end-to-end
+```
+
+> [!TIP]
+> If a migration ever stops with "It looks like you've run Payload in dev mode", the test database was schema-pushed by mistake. Reset it with `pnpm payload migrate:fresh` (with `DATABASE_URI` pointing at the test database).
 
 ### Continuous integration
 
@@ -123,6 +144,7 @@ The app validates its configuration at startup and reports which variables are w
 | Job     | What it checks                                                                                |
 | ------- | --------------------------------------------------------------------------------------------- |
 | verify  | `format:check`, `lint`, `typecheck`, `test`, `build`, against a Postgres 18 service container |
+| e2e     | Playwright (Chromium) against a Postgres 18 service container                                 |
 | audit   | `pnpm audit --audit-level high`                                                               |
 | secrets | gitleaks over the full Git history                                                            |
 
@@ -130,6 +152,7 @@ Run the same checks locally before you push:
 
 ```bash
 pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build
+pnpm test:e2e
 pnpm audit --audit-level high
 ```
 
