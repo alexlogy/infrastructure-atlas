@@ -13,6 +13,7 @@ Payload schemas live in `src/collections/` and `src/globals/`. Types are generat
 | `atlas-locations`     | Collection | Published only          | Authenticated                                          | Yes    |
 | `site-settings`       | Global     | Yes                     | Authenticated                                          | No     |
 | `home-page`           | Global     | Yes                     | Authenticated                                          | No     |
+| `writing-settings`    | Global     | Yes                     | Authenticated                                          | No     |
 
 GraphQL is disabled. Anonymous readers can never see version history (`readVersions`).
 
@@ -96,6 +97,17 @@ Visibility is controlled by draft/publish; there is no separate display toggle. 
 | `featuredProjects` | relationship → `impact-projects`, ≤ 6 | Shown in this order; only published projects are displayed |
 
 Saving expires the `home-page` cache tag.
+
+## `writing-settings` (global)
+
+| Field                        | Type                       | Notes                                                                                                  |
+| ---------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `enabled`                    | checkbox, default on       | Writing only appears when this is on **and** `GHOST_URL` and `GHOST_CONTENT_API_KEY` are set           |
+| `recentCount`                | number, 1 to 20, default 6 | Recent posts to show, newest first                                                                     |
+| `includeTags`, `excludeTags` | text, many, ≤ 10 each      | Ghost tag slugs. Validated so they can't inject filter syntax                                          |
+| `featuredSlugs`              | text, many, ≤ 6            | Ghost post slugs, shown first in this order and left out of the recent list. Missing posts are skipped |
+
+The Ghost address and key are environment variables, never CMS fields. Saving expires the `writing-settings` cache tag. Ghost posts themselves are cached for 15 minutes under the `ghost` tag.
 
 ## `site-settings` (global)
 
