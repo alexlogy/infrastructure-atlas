@@ -1,0 +1,58 @@
+# Architecture
+
+Infrastructure Atlas is one Next.js application with Payload CMS embedded in it. PostgreSQL runs as a separate service and holds all portfolio content. The repository contains code and CMS schemas only, never owner content.
+
+```text
+Visitor ──> Next.js server (Node.js runtime)
+              ├── (frontend) routes: /, /journey ............ server components, plain HTML
+              │      └── src/lib/payload/public.ts .......... cached, server-only queries
+              │             └── src/lib/payload/queries.ts .. Payload Local API, published records only
+              ├── (payload) routes: /admin, /api/* .......... Payload admin and REST API
+              │      └── collection hooks ──> revalidateTag(...) on publish / unpublish / delete
+              └── /api/health ............................... database readiness probe
+                                   │
+                                   └──> PostgreSQL (portfolio content), media storage (uploads)
+```
+
+## Module boundaries
+
+| Path                               | Responsibility                                                                      |
+| ---------------------------------- | ----------------------------------------------------------------------------------- |
+| `src/collections/`, `src/globals/` | CMS schemas, validation, access rules and revalidation hooks                        |
+| `src/access/`                      | Reusable access functions (`publishedOrAuthenticated`, `adminOrSelf`, ...)          |
+| `src/lib/payload/queries.ts`       | Uncached public queries. Always `overrideAccess: false`, no user, explicit `select` |
+| `src/lib/payload/public.ts`        | `server-only` cached wrappers (`unstable_cache` plus tags) used by pages            |
+| `src/lib/payload/mappers.ts`       | CMS document → view model. Components receive view models, never raw documents      |
+| `src/lib/cache/`                   | Cache tag names and `expireTag`, which is safe to call outside a Next request       |
+| `src/lib/validation/`              | Pure validators shared by CMS fields and render-time checks (links, date ranges)    |
+| `src/lib/env.ts`                   | zod validation of server configuration                                              |
+| `src/components/`                  | Presentational React components, with no data fetching                              |
+| `src/types/view-models.ts`         | The public data contract between data access and UI                                 |
+
+## Data flow for a published milestone
+
+1. An editor saves a milestone as a draft in `/admin`. Payload stores it as a version. The collection hook sees no published content involved, so it does nothing.
+2. The editor publishes. The collection `afterChange` hook calls `revalidateTag('timeline', { expire: 0 })`.
+3. The next request to `/journey` misses the cache. `fetchPublicTimeline` reads published records as an anonymous user, the mappers turn them into `MilestoneView` objects, and the page renders them as HTML.
+
+Unpublishing and deleting published content expire the same tag. Saving site settings expires `site-settings`.
+
+## Rendering and caching
+
+- Frontend routes are dynamic (`force-dynamic`), so `next build` never needs a database. CMS reads are cached through `unstable_cache` and invalidated by tag.
+- Next.js 16 `cacheComponents` is deliberately **not** enabled yet. Switching to `'use cache'` / `cacheTag` should be a single, deliberate migration.
+- Client components are reserved for real interactivity. The only one today is the error boundary.
+
+## Database schema lifecycle
+
+| Environment | Schema changes                                                                        |
+| ----------- | ------------------------------------------------------------------------------------- |
+| Development | Payload pushes the schema automatically (`PAYLOAD_DB_PUSH=true`, the default)         |
+| Tests / CI  | Committed migrations only. Push is off when `NODE_ENV=test` and in the Playwright run |
+| Production  | Committed migrations only (`pnpm migrate`). Push is never enabled                     |
+
+## Planned extensions
+
+- Phase 1: `home-page`, `impact-projects` (with Leadership and Engineering perspectives) and `atlas-locations`, plus authenticated draft preview.
+- Phase 2: a client-only React Three Fiber globe, loaded dynamically, with the existing HTML list as the fallback.
+- Phase 3: a server-side Ghost Content API adapter in `src/lib/ghost/`, with time-based revalidation.
