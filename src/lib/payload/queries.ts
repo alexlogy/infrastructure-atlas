@@ -29,8 +29,9 @@ import {
 const TIMELINE_LIMIT = 500
 const PROJECTS_LIMIT = 200
 
+// Payload derives `url` from `filename`, so both must be selected.
 const PUBLIC_MEDIA = {
-  media: { url: true, alt: true, width: true, height: true, attribution: true },
+  media: { url: true, filename: true, alt: true, width: true, height: true, attribution: true },
 } as const
 
 /**

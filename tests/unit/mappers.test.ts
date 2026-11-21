@@ -89,6 +89,15 @@ describe('toImageView', () => {
       attribution: null,
     })
   })
+
+  it('makes Payload file URLs site-relative so next/image accepts them', () => {
+    const url = (u: string) => toImageView({ id: 1, alt: 'x', url: u } as Media)?.url
+    expect(url('http://localhost:3000/api/media/file/sample%20one.png')).toBe(
+      '/api/media/file/sample%20one.png',
+    )
+    // Files served from elsewhere (e.g. a future storage adapter) are left alone.
+    expect(url('https://cdn.example.test/sample.png')).toBe('https://cdn.example.test/sample.png')
+  })
 })
 
 describe('toMilestoneView', () => {

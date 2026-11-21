@@ -66,11 +66,22 @@ export function toSiteSettingsView(doc: Partial<SiteSetting> | null | undefined)
   }
 }
 
+const LOCAL_MEDIA_PATH = '/api/media/file/'
+
+/**
+ * Payload prefixes file URLs with serverURL; next/image's localPatterns need the
+ * site-relative path (metadata resolves it against metadataBase).
+ */
+function toLocalMediaUrl(url: string): string {
+  const { pathname } = new URL(url, 'http://relative.invalid')
+  return pathname.startsWith(LOCAL_MEDIA_PATH) ? pathname : url
+}
+
 export function toImageView(media: number | Media | null | undefined): ImageView | null {
   // An unpopulated id or a file without a URL cannot be rendered.
   if (!media || typeof media !== 'object' || !media.url) return null
   return {
-    url: media.url,
+    url: toLocalMediaUrl(media.url),
     alt: media.alt ?? '',
     width: media.width ?? null,
     height: media.height ?? null,
