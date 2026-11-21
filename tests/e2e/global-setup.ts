@@ -15,11 +15,27 @@ export default async function globalSetup(): Promise<void> {
 
   const payload = await getPayload({ config: await config })
   await payload.db.migrate()
-  await payload.delete({ collection: 'timeline-milestones', where: { id: { exists: true } } })
-  await payload.delete({ collection: 'users', where: { id: { exists: true } } })
+  for (const collection of [
+    'impact-projects',
+    'atlas-locations',
+    'timeline-milestones',
+    'users',
+  ] as const) {
+    await payload.delete({ collection, where: { id: { exists: true } } })
+  }
   await payload.updateGlobal({
     slug: 'site-settings',
-    data: { siteTitle: '', description: '', navLinks: [], sections: { journey: true } },
+    data: {
+      siteTitle: '',
+      description: '',
+      navLinks: [],
+      sections: { journey: true, impact: true },
+    },
+    context: { disableRevalidate: true },
+  })
+  await payload.updateGlobal({
+    slug: 'home-page',
+    data: { headline: '', subheadline: '', callsToAction: [], featuredProjects: [] },
     context: { disableRevalidate: true },
   })
 

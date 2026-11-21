@@ -3,10 +3,15 @@ import { describe, expect, it } from 'vitest'
 import { affectsPublishedContent } from '@/lib/cache/revalidate'
 import {
   compareMilestones,
+  compareProjects,
   DEFAULT_SITE_TITLE,
   type PublicMilestoneDoc,
+  type PublicProjectDoc,
+  toHomePageView,
   toImageView,
   toMilestoneView,
+  toProjectSummaryView,
+  toProjectView,
   toSiteSettingsView,
 } from '@/lib/payload/mappers'
 import type { Media } from '@/payload-types'
@@ -27,6 +32,7 @@ describe('toSiteSettingsView', () => {
       locale: 'en',
       navLinks: [],
       showJourney: true,
+      showImpact: true,
     })
     expect(toSiteSettingsView({ siteTitle: '   ', description: '' }).siteTitle).toBe(
       DEFAULT_SITE_TITLE,
@@ -120,5 +126,96 @@ describe('affectsPublishedContent', () => {
   it('is false for draft-only saves', () => {
     expect(affectsPublishedContent({ _status: 'draft' }, { _status: 'draft' })).toBe(false)
     expect(affectsPublishedContent({ _status: 'draft' })).toBe(false)
+  })
+})
+
+const project = (overrides: Partial<PublicProjectDoc> = {}): PublicProjectDoc => ({
+  id: 7,
+  title: 'Sample project',
+  slug: 'sample-project',
+  summary: 'A sample summary.',
+  ...overrides,
+})
+
+describe('toProjectView', () => {
+  it('returns empty, renderable defaults for a minimal project', () => {
+    expect(toProjectView(project())).toMatchObject({
+      id: '7',
+      slug: 'sample-project',
+      image: null,
+      tags: [],
+      featured: false,
+      sortOrder: 0,
+      leadershipNarrative: null,
+      engineeringNarrative: null,
+      diagram: null,
+      outcomes: [],
+      sourceLinks: [],
+    })
+  })
+
+  it('keeps quantified and qualitative outcomes distinct and drops empty ones', () => {
+    const view = toProjectView(
+      project({
+        outcomes: [
+          { result: 'Measured change', metric: ' 10% ', verification: 'Sample report' },
+          { result: 'Qualitative change', metric: ' ', verification: '' },
+          { result: '   ' },
+        ],
+      }),
+    )
+    expect(view.outcomes).toEqual([
+      { result: 'Measured change', metric: '10%', verification: 'Sample report' },
+      { result: 'Qualitative change', metric: null, verification: null },
+    ])
+  })
+
+  it('drops unsafe source links', () => {
+    const view = toProjectView(
+      project({
+        sourceLinks: [
+          { label: 'Report', url: 'https://example.com/report' },
+          { label: 'Bad', url: 'javascript:alert(1)' },
+        ],
+      }),
+    )
+    expect(view.sourceLinks).toEqual([{ label: 'Report', href: 'https://example.com/report' }])
+  })
+})
+
+describe('compareProjects', () => {
+  it('orders by sortOrder, then title', () => {
+    const views = [
+      project({ id: 1, title: 'B', sortOrder: 1 }),
+      project({ id: 2, title: 'C', sortOrder: 0 }),
+      project({ id: 3, title: 'A', sortOrder: 1 }),
+    ].map(toProjectSummaryView)
+    expect(views.sort(compareProjects).map((v) => v.title)).toEqual(['C', 'A', 'B'])
+  })
+})
+
+describe('toHomePageView', () => {
+  it('returns empty defaults for a missing global', () => {
+    expect(toHomePageView(null)).toEqual({
+      headline: null,
+      subheadline: null,
+      heroImage: null,
+      callsToAction: [],
+      featuredProjectIds: [],
+    })
+  })
+
+  it('keeps featured order for ids and populated docs, and filters unsafe actions', () => {
+    const view = toHomePageView({
+      headline: ' Sample headline ',
+      featuredProjects: [3, { ...project({ id: 1 }), createdAt: '', updatedAt: '' }],
+      callsToAction: [
+        { label: 'Impact', href: '/impact' },
+        { label: 'Bad', href: 'javascript:alert(1)' },
+      ],
+    })
+    expect(view.headline).toBe('Sample headline')
+    expect(view.featuredProjectIds).toEqual(['3', '1'])
+    expect(view.callsToAction).toEqual([{ label: 'Impact', href: '/impact' }])
   })
 })
