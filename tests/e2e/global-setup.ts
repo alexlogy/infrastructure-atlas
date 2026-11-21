@@ -29,7 +29,8 @@ export default async function globalSetup(): Promise<void> {
       siteTitle: '',
       description: '',
       navLinks: [],
-      sections: { journey: true, impact: true },
+      sections: { journey: true, impact: true, atlas: true },
+      atlasCenter: { latitude: null, longitude: null },
     },
     context: { disableRevalidate: true },
   })

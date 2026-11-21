@@ -97,7 +97,7 @@ test.describe('mobile', () => {
   test.use({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true })
 
   test('pages fit the viewport without horizontal scrolling', async ({ page }) => {
-    for (const path of ['/', '/journey', '/impact']) {
+    for (const path of ['/', '/journey', '/impact', '/atlas']) {
       await page.goto(path)
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
