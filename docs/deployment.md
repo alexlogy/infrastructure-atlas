@@ -15,12 +15,13 @@ Infrastructure Atlas runs as a single Node.js service (`pnpm build`, then `pnpm 
 
 Set these as runtime secrets in your platform. Never bake them into an image or commit them.
 
-| Variable               | Production notes                                                                   |
-| ---------------------- | ---------------------------------------------------------------------------------- |
-| `DATABASE_URI`         | Use a dedicated database user with access to this database only                    |
-| `PAYLOAD_SECRET`       | At least 32 random characters, unique per environment. The app refuses weak values |
-| `NEXT_PUBLIC_SITE_URL` | The public origin, for example `https://portfolio.example.com`                     |
-| `NODE_ENV`             | `production`. This also disables schema push                                       |
+| Variable               | Production notes                                                                                                                                                                                                                                                                         |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URI`         | Use a dedicated database user with access to this database only                                                                                                                                                                                                                          |
+| `PAYLOAD_SECRET`       | At least 32 random characters, unique per environment. The app refuses weak values                                                                                                                                                                                                       |
+| `NEXT_PUBLIC_SITE_URL` | The public origin, for example `https://portfolio.example.com`. Must be set when running `pnpm build`: Next.js bakes `NEXT_PUBLIC_*` values into the build, so changing it later needs a rebuild. Canonical URLs, the sitemap, robots rules and `upgrade-insecure-requests` depend on it |
+| `CSP_IMG_ORIGINS`      | Optional extra image origins for the Content Security Policy (for example a CDN that serves Ghost images)                                                                                                                                                                                |
+| `NODE_ENV`             | `production`. This also disables schema push                                                                                                                                                                                                                                             |
 
 ## Release procedure
 

@@ -54,7 +54,7 @@ On `/atlas`, the list of places is the main content and works without JavaScript
 
 Pages are rendered on the server as plain HTML, so they work without JavaScript or WebGL. They read only published records through narrow, server-only queries (`src/lib/payload/public.ts`) that select just the fields they display, and they map each record to a small display object before it reaches React. When the CMS is empty, the pages show a short explanation instead of sample content.
 
-Every public page sets a canonical URL and Open Graph and Twitter tags built from published CMS data. Project pages use their featured image; other pages use the optional **share image** from Site settings. `/sitemap.xml` lists the home page, the enabled sections and published projects. It never lists drafts, and includes `/writing` only when Ghost is set up. `/robots.txt` keeps crawlers out of `/admin` and `/api/`. Absolute URLs come from `NEXT_PUBLIC_SITE_URL`, so set it to your public address in production.
+Every public page sets a canonical URL and Open Graph and Twitter tags built from published CMS data. Project pages use their featured image; other pages use the optional **share image** from Site settings. `/sitemap.xml` lists the home page, the enabled sections and published projects. It never lists drafts, and includes `/writing` only when Ghost is set up. `/robots.txt` keeps crawlers out of `/admin` and `/api/`. Absolute URLs come from `NEXT_PUBLIC_SITE_URL`, so set it to your public address when you build for production.
 
 Accessibility built in: a skip link, landmarks and a sensible heading order, a visible focus ring, colours checked for WCAG AA contrast (most pass AAA), and an entry animation that only plays when the visitor's browser allows motion. Featured milestones are labelled in text as well as colour, and measured outcomes are distinguished from qualitative ones in text.
 
@@ -101,15 +101,16 @@ The local database binds to `127.0.0.1:5432`. On first start, Docker creates two
 
 ### Environment variables
 
-| Variable                             | Scope       | Required | Purpose                                                                                   |
-| ------------------------------------ | ----------- | -------- | ----------------------------------------------------------------------------------------- |
-| `DATABASE_URI`                       | Server      | Yes      | PostgreSQL connection string                                                              |
-| `PAYLOAD_SECRET`                     | Server      | Yes      | Signs auth tokens. Production requires at least 32 characters and rejects the placeholder |
-| `NEXT_PUBLIC_SITE_URL`               | Browser     | No       | Public site origin, default `http://localhost:3000`                                       |
-| `TEST_DATABASE_URI`                  | Server/test | Tests    | Separate database used by integration and e2e tests                                       |
-| `GHOST_URL`, `GHOST_CONTENT_API_KEY` | Server      | No       | Ghost blog address and a read-only Content API key. Leave both empty to turn Writing off  |
-| `REVALIDATION_SECRET`                | Server      | No       | Optional webhook verification (planned)                                                   |
-| `PAYLOAD_DB_PUSH`                    | Server/dev  | No       | `true` by default in development. Set to `false` to use migrations only                   |
+| Variable                             | Scope       | Required | Purpose                                                                                                                            |
+| ------------------------------------ | ----------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `DATABASE_URI`                       | Server      | Yes      | PostgreSQL connection string                                                                                                       |
+| `PAYLOAD_SECRET`                     | Server      | Yes      | Signs auth tokens. Production requires at least 32 characters and rejects the placeholder                                          |
+| `NEXT_PUBLIC_SITE_URL`               | Browser     | No       | Public site origin, default `http://localhost:3000`. Set it **at build time**: Next.js bakes `NEXT_PUBLIC_*` values into the build |
+| `TEST_DATABASE_URI`                  | Server/test | Tests    | Separate database used by integration and e2e tests                                                                                |
+| `GHOST_URL`, `GHOST_CONTENT_API_KEY` | Server      | No       | Ghost blog address and a read-only Content API key. Leave both empty to turn Writing off                                           |
+| `CSP_IMG_ORIGINS`                    | Server      | No       | Extra image origins for the Content Security Policy, space or comma separated (the Ghost origin is always allowed)                 |
+| `REVALIDATION_SECRET`                | Server      | No       | Optional webhook verification (planned)                                                                                            |
+| `PAYLOAD_DB_PUSH`                    | Server/dev  | No       | `true` by default in development. Set to `false` to use migrations only                                                            |
 
 The app validates its configuration at startup and reports which variables are wrong without printing their values.
 
@@ -299,4 +300,5 @@ For the full production procedure (applying migrations before the new version ta
 | 2. Three.js atlas globe                                                         | Done    |
 | 3. Ghost writing integration                                                    | Done    |
 | 3. Sitemap, robots rules, canonical and Open Graph metadata                     | Done    |
-| 3. CSP, Ghost webhook, deployment hardening                                     | Planned |
+| 3. Content Security Policy                                                      | Done    |
+| 3. Ghost webhook, deployment hardening                                          | Planned |
