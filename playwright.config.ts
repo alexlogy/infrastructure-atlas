@@ -46,9 +46,8 @@ export default defineConfig({
     },
     {
       // Migrate first: Playwright waits for the health check (which needs tables) before globalSetup runs.
-      // The dev data cache persists on disk while tag expiry lives in memory, so entries from an
-      // earlier run could outlive deletes made since; start every run from an empty data cache.
-      command: `node -e "require('fs').rmSync('.next/dev/cache/fetch-cache',{recursive:true,force:true})" && pnpm migrate && pnpm exec next dev --port ${PORT}`,
+      // src/instrumentation.ts empties the data cache on start, so earlier runs leave nothing stale.
+      command: `pnpm migrate && pnpm exec next dev --port ${PORT}`,
       url: `${baseURL}/api/health`,
       reuseExistingServer: !process.env.CI,
       timeout: 180_000,
