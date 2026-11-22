@@ -1,5 +1,6 @@
 export const MARKER_SHAPES = ['circle', 'diamond', 'square', 'triangle'] as const
-export const MARKER_COLORS = ['accent', 'gold'] as const
+// Gold is kept for the selected place, so categories alternate cyan and ice.
+export const MARKER_COLORS = ['accent', 'ice'] as const
 
 export type MarkerStyle = {
   shape: (typeof MARKER_SHAPES)[number]

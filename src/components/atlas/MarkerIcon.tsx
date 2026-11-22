@@ -14,7 +14,7 @@ export function MarkerIcon({ style }: { style: MarkerStyle }) {
       aria-hidden="true"
       viewBox="0 0 12 12"
       fill="currentColor"
-      className={`h-3 w-3 shrink-0 ${style.color === 'gold' ? 'text-gold' : 'text-accent'}`}
+      className={`h-3 w-3 shrink-0 ${style.color === 'ice' ? 'text-ice' : 'text-accent'}`}
     >
       {SHAPES[style.shape]}
     </svg>

@@ -5,6 +5,7 @@ import { buildConfig } from 'payload'
 import sharp from 'sharp'
 import { fileURLToPath } from 'url'
 
+import { Achievements } from './collections/Achievements'
 import { AtlasLocations } from './collections/AtlasLocations'
 import { ImpactProjects } from './collections/ImpactProjects'
 import { Media } from './collections/Media'
@@ -29,7 +30,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, TimelineMilestones, ImpactProjects, AtlasLocations],
+  collections: [Users, Media, TimelineMilestones, ImpactProjects, AtlasLocations, Achievements],
   globals: [SiteSettings, HomePage, WritingSettings],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,

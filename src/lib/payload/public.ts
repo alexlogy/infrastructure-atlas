@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 
 import { CACHE_TAGS } from '@/lib/cache/tags'
 import type {
+  AchievementView,
   AtlasView,
   HomePageView,
   MilestoneView,
@@ -18,6 +19,7 @@ import type {
 import { toHomePageView, toSiteSettingsView, toWritingSettingsView } from './mappers'
 import {
   fetchAtlas,
+  fetchPublicAchievements,
   fetchHomePage,
   fetchPublicProject,
   fetchPublicProjects,
@@ -76,7 +78,7 @@ export const getHomePage = unstable_cache(
       return toHomePageView(null)
     }
   },
-  ['public-home-page'],
+  ['public-home-page-v2'],
   { tags: [CACHE_TAGS.homePage] },
 )
 
@@ -99,4 +101,18 @@ export const getWritingSettings = unstable_cache(
   },
   ['public-writing-settings'],
   { tags: [CACHE_TAGS.writing] },
+)
+
+/** Published achievements for the home page strip, cached until one is published or unpublished. */
+export const getPublicAchievements = unstable_cache(
+  async (): Promise<AchievementView[]> => {
+    try {
+      return await fetchPublicAchievements(await getPayload({ config }))
+    } catch {
+      console.error('[achievements] failed to load; hiding the metric strip')
+      return []
+    }
+  },
+  ['public-achievements'],
+  { tags: [CACHE_TAGS.achievements] },
 )

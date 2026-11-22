@@ -2,13 +2,15 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 
-import { HomeGlobe } from '@/components/atlas/HomeGlobe'
+import { PlaceGlobe } from '@/components/atlas/PlaceGlobe'
+import { MetricStrip } from '@/components/hero/MetricStrip'
 import { SmartLink } from '@/components/layout/SmartLink'
 import { ImpactSection } from '@/components/impact/ImpactSection'
 import { JourneyScene } from '@/components/journey/JourneyScene'
 import { pageMetadata } from '@/lib/metadata'
 import {
   getAtlas,
+  getPublicAchievements,
   getHomePage,
   getPublicProjects,
   getPublicTimeline,
@@ -25,9 +27,10 @@ type Props = { searchParams: Promise<{ project?: string | string[]; view?: strin
 export default async function HomePage({ searchParams }: Props) {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])
 
-  const [projects, milestones] = await Promise.all([
+  const [projects, milestones, achievements] = await Promise.all([
     settings.showImpact ? getPublicProjects() : [],
     settings.showJourney ? getPublicTimeline() : [],
+    getPublicAchievements(),
   ])
   const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
@@ -35,19 +38,32 @@ export default async function HomePage({ searchParams }: Props) {
     home.callsToAction.length > 0
       ? home.callsToAction
       : [
-          ...(settings.showJourney ? [{ label: 'Explore the journey', href: '/journey' }] : []),
-          ...(settings.showImpact ? [{ label: 'See the impact', href: '/impact' }] : []),
+          ...(settings.showJourney ? [{ label: 'Explore my journey', href: '/journey' }] : []),
+          ...(settings.showImpact ? [{ label: 'View selected impact', href: '/impact' }] : []),
         ]
+
+  const hasAtlas = Boolean(atlas && atlas.nodes.length > 0)
 
   return (
     <>
-      <section className="container-page section-y" aria-labelledby="home-heading">
-        <div className="grid items-center gap-12 md:grid-cols-[3fr_2fr]">
-          <div>
-            <h1 id="home-heading" className="max-w-3xl text-hero font-semibold">
+      <section
+        className="container-page pt-12 pb-16 md:pt-16 lg:pb-24"
+        aria-labelledby="home-heading"
+      >
+        <div
+          className={`grid items-center gap-10 ${
+            hasAtlas || home.heroImage ? 'lg:grid-cols-[minmax(0,45fr)_minmax(0,55fr)]' : ''
+          }`}
+        >
+          <div className="reveal">
+            {home.eyebrow && <p className="eyebrow">{home.eyebrow}</p>}
+            <h1 id="home-heading" className="mt-4 max-w-3xl text-hero font-semibold">
               {home.headline ?? settings.siteTitle}
+              {home.headlineEmphasis && (
+                <span className="block text-accent">{home.headlineEmphasis}</span>
+              )}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted">
               {home.subheadline ??
                 settings.description ??
                 'This site has not been configured yet. Add a headline under Home page in the content admin.'}
@@ -62,43 +78,52 @@ export default async function HomePage({ searchParams }: Props) {
               </ul>
             )}
           </div>
-          {home.heroImage && (
-            <Image
-              src={home.heroImage.url}
-              alt={home.heroImage.alt}
-              width={home.heroImage.width ?? 800}
-              height={home.heroImage.height ?? 800}
-              sizes="(min-width: 768px) 400px, 100vw"
-              priority
-              className="h-auto w-full rounded-lg"
-            />
+
+          {atlas && hasAtlas ? (
+            <div className="lg:-mr-6">
+              <PlaceGlobe
+                nodes={atlas.nodes}
+                arcs={atlas.arcs}
+                center={settings.atlasCenter}
+                className="max-w-[36rem]"
+                overview={
+                  <>
+                    <p className="text-xs font-medium tracking-wide text-accent uppercase">Atlas</p>
+                    <p className="mt-1 text-sm text-ink/90">
+                      {count(atlas.nodes.length, 'place')}
+                      {atlas.arcs.length > 0 && `, ${count(atlas.arcs.length, 'connection')}`}, with
+                      the projects and milestones behind them.
+                    </p>
+                    <Link
+                      href="/atlas"
+                      className="mt-3 inline-flex text-sm font-medium text-accent underline-offset-4 hover:text-ink hover:underline"
+                    >
+                      Explore the atlas →
+                    </Link>
+                  </>
+                }
+              />
+            </div>
+          ) : (
+            home.heroImage && (
+              <Image
+                src={home.heroImage.url}
+                alt={home.heroImage.alt}
+                width={home.heroImage.width ?? 800}
+                height={home.heroImage.height ?? 800}
+                sizes="(min-width: 1024px) 40vw, 100vw"
+                priority
+                className="mx-auto h-auto w-full max-w-md rounded-2xl"
+              />
+            )
           )}
         </div>
-      </section>
-
-      {atlas && atlas.nodes.length > 0 && (
-        <section className="container-page pb-24" aria-labelledby="home-atlas-heading">
-          <div className="grid items-center gap-12 rounded-lg border border-line p-8 md:grid-cols-[2fr_3fr]">
-            <div>
-              <h2 id="home-atlas-heading" className="text-section font-semibold">
-                Atlas
-              </h2>
-              <p className="mt-3 leading-relaxed text-muted">
-                {count(atlas.nodes.length, 'place')}
-                {atlas.arcs.length > 0 && `, ${count(atlas.arcs.length, 'connection')}`}, with the
-                projects and milestones behind them.
-              </p>
-              <Link
-                href="/atlas"
-                className="mt-6 inline-flex font-medium text-accent underline underline-offset-4 hover:text-ink"
-              >
-                Explore the atlas
-              </Link>
-            </div>
-            <HomeGlobe atlas={atlas} center={settings.atlasCenter} />
+        {achievements.length > 0 && (
+          <div className="mt-12 lg:mt-16">
+            <MetricStrip achievements={achievements} />
           </div>
-        </section>
-      )}
+        )}
+      </section>
 
       {milestones.length > 0 && (
         <section className="container-page section-y" aria-labelledby="home-journey-heading">

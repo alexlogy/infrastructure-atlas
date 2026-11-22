@@ -4,6 +4,7 @@ export const CACHE_TAGS = {
   siteSettings: 'site-settings',
   projects: 'projects',
   homePage: 'home-page',
+  achievements: 'achievements',
   atlas: 'atlas',
   writing: 'writing-settings',
   ghost: 'ghost',

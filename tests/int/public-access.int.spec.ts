@@ -12,6 +12,7 @@ vi.mock('next/cache', () => ({ revalidateTag, unstable_cache: (fn: unknown) => f
 import config from '@/payload.config'
 import {
   fetchAtlas,
+  fetchPublicAchievements,
   fetchHomePage,
   fetchPublicProject,
   fetchPublicProjects,
@@ -45,6 +46,7 @@ beforeAll(async () => {
   type Migrations = NonNullable<Parameters<Payload['db']['migrate']>[0]>['migrations']
   await payload.db.migrate({ migrations: migrations as unknown as Migrations })
   for (const collection of [
+    'achievements',
     'impact-projects',
     'atlas-locations',
     'timeline-milestones',
@@ -370,6 +372,35 @@ describe('atlas locations', () => {
     })
     const { docs } = await payload.find({ collection: 'atlas-locations', overrideAccess: false })
     expect(docs).toHaveLength(0)
+  })
+})
+
+describe('achievements', () => {
+  it('shows only published figures, in order, and expires the cache on publish', async () => {
+    const draft = await payload.create({
+      collection: 'achievements',
+      data: { value: '1', label: 'Sample draft figure', _status: 'draft' },
+      draft: true,
+    })
+    expect(await fetchPublicAchievements(payload)).toEqual([])
+    const anon = await payload.find({ collection: 'achievements', overrideAccess: false })
+    expect(anon.docs).toHaveLength(0)
+
+    revalidateTag.mockClear()
+    await payload.create({
+      collection: 'achievements',
+      data: { value: '2', label: 'Sample second', sortOrder: 2, _status: 'published' },
+    })
+    await payload.create({
+      collection: 'achievements',
+      data: { value: '1', unit: '+', label: 'Sample first', sortOrder: 1, _status: 'published' },
+    })
+    expect(revalidateTag).toHaveBeenCalledWith('achievements', expect.anything())
+    expect((await fetchPublicAchievements(payload)).map((a) => a.label)).toEqual([
+      'Sample first',
+      'Sample second',
+    ])
+    await payload.delete({ collection: 'achievements', id: draft.id })
   })
 })
 

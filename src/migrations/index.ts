@@ -5,6 +5,7 @@ import * as migration_20261121_151739_writing_settings from './20261121_151739_w
 import * as migration_20261121_152635_site_share_image from './20261121_152635_site_share_image';
 import * as migration_20261122_040725_site_contact from './20261122_040725_site_contact';
 import * as migration_20261122_042656_project_category_icon from './20261122_042656_project_category_icon';
+import * as migration_20261122_043453_achievements_home_hero from './20261122_043453_achievements_home_hero';
 
 export const migrations = [
   {
@@ -40,6 +41,11 @@ export const migrations = [
   {
     up: migration_20261122_042656_project_category_icon.up,
     down: migration_20261122_042656_project_category_icon.down,
-    name: '20261122_042656_project_category_icon'
+    name: '20261122_042656_project_category_icon',
+  },
+  {
+    up: migration_20261122_043453_achievements_home_hero.up,
+    down: migration_20261122_043453_achievements_home_hero.down,
+    name: '20261122_043453_achievements_home_hero'
   },
 ];

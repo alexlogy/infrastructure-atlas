@@ -83,12 +83,25 @@ export type ProjectView = ProjectSummaryView & {
 }
 
 export type HomePageView = {
+  eyebrow: string | null
   headline: string | null
+  /** Optional second headline line, shown in the accent colour. */
+  headlineEmphasis: string | null
   subheadline: string | null
   heroImage: ImageView | null
   callsToAction: NavLink[]
   /** Ordered ids; resolved against published projects at render time. */
   featuredProjectIds: string[]
+}
+
+/** One figure in the home page metric strip; entered by an editor, never computed. */
+export type AchievementView = {
+  id: string
+  value: string
+  unit: string | null
+  label: string
+  explanation: string | null
+  icon: ProjectIconName | null
 }
 
 export type AtlasStoryView = { kind: 'project' | 'milestone'; title: string; href: string }

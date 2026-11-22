@@ -42,7 +42,7 @@ Browser ──> Next.js (server components, HTML content, SEO)
 
 | Route            | Content                                                                                                                                                                                                                                                                             |
 | ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), an Atlas section with a small globe, the Journey mountain scene and the impact dashboard                                                                             |
+| `/`              | Hero (eyebrow, two-line headline and calls to action from **Home page**, with the atlas globe beside it) and a metric strip from published **Achievements**, then the Journey mountain scene and the impact dashboard                                                               |
 | `/journey`       | A mountain scene: a glowing trail climbs one peak per published milestone to a gold summit (the latest). Choosing a peak shows its story and related projects below; era buttons jump between eras. A plain-text **Chronology** follows. Returns 404 when the section is turned off |
 | `/impact`        | The impact dashboard (selected case study with the Leadership / Engineering switch, project tiles, and a mini atlas of the project's places), then every published project as a card. Returns 404 when the section is turned off                                                    |
 | `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                                                                                                                                     |
@@ -55,9 +55,9 @@ On the Journey scene, milestones are ordered by date (then `sortOrder`) and the 
 
 The impact dashboard shows the projects chosen under **Home page → Featured projects** (or, if none, projects marked featured). Each project's optional **category** and **icon** label its tile. Choosing a tile or a perspective changes the URL (`?project=<slug>&view=engineering`), so every view can be linked to and works without JavaScript. The mini atlas appears when the selected project lists published places.
 
-On `/atlas`, the list of places is the main content and works without JavaScript or WebGL. When WebGL is available, a globe loads afterwards, facing the starting view set in **Site settings** (Asia-Pacific by default). Markers come from published locations, and arcs connect the places a published project lists, in order. Each location **category** gets its own marker shape and colour, explained in a key under the globe and shown on each place card. Uncategorised places use a cyan circle. Clicking a marker or a place's **Show on globe** button selects it in both views, and links like `/atlas#place-<id>` open with that place selected. The globe only draws a frame when something changes, keeps the scroll wheel for the page, and skips the camera animation when the visitor prefers reduced motion.
+On `/atlas`, the list of places is the main content and works without JavaScript or WebGL. When WebGL is available, a globe loads afterwards, facing the starting view set in **Site settings** (Asia-Pacific by default). Markers come from published locations, and arcs connect the places a published project lists, in order. Each location **category** gets its own marker shape and colour (cyan or ice; gold marks the selected place), explained in a key under the globe and shown on each place card. Uncategorised places use a cyan circle. Clicking a marker or a place's **Show on globe** button selects it in both views, and links like `/atlas#place-<id>` open with that place selected. The globe only draws a frame when something changes, keeps the scroll wheel for the page, and skips the camera animation when the visitor prefers reduced motion.
 
-When the Atlas section is on and places are published, the home page shows a place count, an **Explore the atlas** link and the same globe, without auto-rotation. three.js loads only when that section scrolls near the viewport; without WebGL the text and link stay, next to a plain disc. Selecting a marker there opens the place on `/atlas`.
+The home hero places the globe beside the headline when the Atlas section is on and places are published (otherwise the optional hero image). It turns slowly until the visitor points at it, and stops for good once a place is chosen from the card's place buttons or the globe; it never turns with reduced motion or on low-power devices. The metric strip under the hero shows up to four published **Achievements** and disappears when there are none: figures are only ever typed in by an editor. The globe draws Natural Earth coastlines (public domain), loaded only with the globe.
 
 Every page shares one shell: a sticky header that marks the current page, an outlined contact button when **Site settings → Contact button** has a link, and a footer with the same links, the Ghost blog (when configured) and a back-to-top link. Below 1024px the links move into a **Menu** button that closes on Escape and returns focus. Content sits in a container about 1320px wide.
 
@@ -197,16 +197,17 @@ There is no public sign-up, and editors can't change their own role.
 
 ### Content model
 
-| Name                  | Kind       | Public visitors can see                                                        |
-| --------------------- | ---------- | ------------------------------------------------------------------------------ |
-| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                                 |
-| `impact-projects`     | Collection | Published projects only. Their milestone and location links are not shown yet  |
-| `atlas-locations`     | Collection | Published locations only, on `/atlas`                                          |
-| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility               |
-| `home-page`           | Global     | Headline, subheadline, hero image, calls to action, featured projects          |
-| `writing-settings`    | Global     | Whether Writing is on, how many recent posts, tag filters, featured post slugs |
-| `media`               | Collection | Every uploaded file                                                            |
-| `users`               | Collection | Nothing                                                                        |
+| Name                  | Kind       | Public visitors can see                                                                 |
+| --------------------- | ---------- | --------------------------------------------------------------------------------------- |
+| `timeline-milestones` | Collection | Published milestones only. Drafts stay private                                          |
+| `impact-projects`     | Collection | Published projects only. Their milestone and location links are not shown yet           |
+| `atlas-locations`     | Collection | Published locations only, on `/atlas`                                                   |
+| `achievements`        | Collection | Published figures only, in the home page metric strip                                   |
+| `site-settings`       | Global     | Title, description, locale, navigation links, section visibility                        |
+| `home-page`           | Global     | Eyebrow, two-line headline, subheadline, hero image, calls to action, featured projects |
+| `writing-settings`    | Global     | Whether Writing is on, how many recent posts, tag filters, featured post slugs          |
+| `media`               | Collection | Every uploaded file                                                                     |
+| `users`               | Collection | Nothing                                                                                 |
 
 Milestones have a start date, an optional end date, and a date precision (year, month or day) that controls how dates are displayed. They also support a short rich-text description, era, tags, an image, a featured flag, and a `sortOrder` that breaks ties between milestones on the same date.
 
@@ -319,3 +320,4 @@ For the full production procedure (applying migrations before the new version ta
 | Design foundation: tokens, fonts, sticky header, mobile menu, footer            | Done   |
 | Mountain Journey scene on the home page and `/journey`                          | Done   |
 | Three-column impact dashboard on the home page and `/impact`                    | Done   |
+| Hero with globe, metric strip (achievements), coastlines, idle spin             | Done   |
