@@ -72,6 +72,7 @@ export interface Config {
     'timeline-milestones': TimelineMilestone;
     'impact-projects': ImpactProject;
     'atlas-locations': AtlasLocation;
+    achievements: Achievement;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -84,6 +85,7 @@ export interface Config {
     'timeline-milestones': TimelineMilestonesSelect<false> | TimelineMilestonesSelect<true>;
     'impact-projects': ImpactProjectsSelect<false> | ImpactProjectsSelect<true>;
     'atlas-locations': AtlasLocationsSelect<false> | AtlasLocationsSelect<true>;
+    achievements: AchievementsSelect<false> | AchievementsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -433,6 +435,40 @@ export interface ImpactProject {
   _status?: ('draft' | 'published') | null;
 }
 /**
+ * Up to four published achievements appear under the home page headline.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements".
+ */
+export interface Achievement {
+  id: number;
+  /**
+   * The figure as displayed, e.g. "12" or "3.5".
+   */
+  value: string;
+  /**
+   * Optional suffix, e.g. "+", "%" or "yrs".
+   */
+  unit?: string | null;
+  /**
+   * Short caption under the figure.
+   */
+  label: string;
+  /**
+   * How the figure was arrived at. Shown to assistive technology and on hover.
+   */
+  explanation?: string | null;
+  icon?: ('cloud' | 'server' | 'network' | 'shield' | 'chart' | 'people' | 'code' | 'layers') | null;
+  project?: (number | null) | ImpactProject;
+  /**
+   * Lower values are shown first.
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -475,6 +511,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'atlas-locations';
         value: number | AtlasLocation;
+      } | null)
+    | ({
+        relationTo: 'achievements';
+        value: number | Achievement;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -644,6 +684,22 @@ export interface AtlasLocationsSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "achievements_select".
+ */
+export interface AchievementsSelect<T extends boolean = true> {
+  value?: T;
+  unit?: T;
+  label?: T;
+  explanation?: T;
+  icon?: T;
+  project?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -737,9 +793,17 @@ export interface SiteSetting {
 export interface HomePage {
   id: number;
   /**
+   * Small line above the headline, e.g. a role or focus area.
+   */
+  eyebrow?: string | null;
+  /**
    * Leave empty to use the site title.
    */
   headline?: string | null;
+  /**
+   * Optional second line, shown in the accent colour.
+   */
+  headlineEmphasis?: string | null;
   /**
    * Leave empty to use the site description.
    */
@@ -831,7 +895,9 @@ export interface SiteSettingsSelect<T extends boolean = true> {
  * via the `definition` "home-page_select".
  */
 export interface HomePageSelect<T extends boolean = true> {
+  eyebrow?: T;
   headline?: T;
+  headlineEmphasis?: T;
   subheadline?: T;
   heroImage?: T;
   callsToAction?:

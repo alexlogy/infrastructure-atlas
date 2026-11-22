@@ -1,4 +1,5 @@
 import type {
+  Achievement,
   AtlasLocation,
   HomePage,
   ImpactProject,
@@ -10,6 +11,7 @@ import type {
 import { PROJECT_ICONS } from '@/lib/project-icons'
 import { isSafeHref } from '@/lib/validation/links'
 import type {
+  AchievementView,
   AtlasNodeView,
   AtlasView,
   DatePrecision,
@@ -183,7 +185,9 @@ export function compareProjects(a: ProjectSummaryView, b: ProjectSummaryView): n
 
 export function toHomePageView(doc: Partial<HomePage> | null | undefined): HomePageView {
   return {
+    eyebrow: clean(doc?.eyebrow),
     headline: clean(doc?.headline),
+    headlineEmphasis: clean(doc?.headlineEmphasis),
     subheadline: clean(doc?.subheadline),
     heroImage: toImageView(doc?.heroImage),
     callsToAction: toLinks(doc?.callsToAction),
@@ -286,5 +290,24 @@ export function toWritingSettingsView(
     includeTags: cleanTags(doc?.includeTags),
     excludeTags: cleanTags(doc?.excludeTags),
     featuredSlugs: cleanTags(doc?.featuredSlugs),
+  }
+}
+
+export type PublicAchievementDoc = Pick<
+  Achievement,
+  'id' | 'value' | 'unit' | 'label' | 'explanation' | 'icon'
+>
+
+export function toAchievementView(doc: PublicAchievementDoc): AchievementView | null {
+  const value = clean(doc.value)
+  const label = clean(doc.label)
+  if (!value || !label) return null
+  return {
+    id: String(doc.id),
+    value,
+    unit: clean(doc.unit),
+    label,
+    explanation: clean(doc.explanation),
+    icon: doc.icon && PROJECT_ICONS.includes(doc.icon) ? doc.icon : null,
   }
 }

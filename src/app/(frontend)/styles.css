@@ -28,7 +28,7 @@
     var(--font-space-grotesk), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
   --header-height: 4.75rem;
   /* DESIGN.md §2.2 type scale: hero ~2–4.4rem, page heading ~1.9–3.5rem, section heading 24–38px. */
-  --text-hero: clamp(2rem, 1.1rem + 3.6vw, 4.4rem);
+  --text-hero: clamp(2rem, 0.9rem + 3.2vw, 4.4rem);
   --text-hero--line-height: 1.08;
   --text-page: clamp(1.9rem, 1.3rem + 2.4vw, 3.5rem);
   --text-page--line-height: 1.12;

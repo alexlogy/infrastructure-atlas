@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test'
+import { type Page, expect, test } from '@playwright/test'
 
 const suffix = Date.now()
 const placeLabel = `E2E sample place ${suffix}`
@@ -107,17 +107,22 @@ test('a #place- link preselects that place', async ({ page }) => {
   )
 })
 
-test('the home page shows the atlas with a globe and a link to explore it', async ({ page }) => {
+const hero = (page: Page) => page.locator('section[aria-labelledby="home-heading"]')
+
+test('the home hero shows the globe with an atlas card and place buttons', async ({ page }) => {
   await page.goto('/')
-  const section = page.getByRole('region', { name: 'Atlas', exact: true })
-  await expect(section).toContainText(/\d+ places?/)
-  await section.scrollIntoViewIfNeeded()
-  await expect(section.locator('canvas')).toBeVisible()
-  await section.getByRole('link', { name: 'Explore the atlas' }).click()
-  await expect(page).toHaveURL(/\/atlas$/)
+  await expect(hero(page)).toContainText(/\d+ places?/)
+  await expect(hero(page).locator('canvas')).toBeVisible()
+
+  await hero(page).getByRole('group', { name: 'Places' }).getByRole('button').first().click()
+  await expect(hero(page).getByText('Location', { exact: true })).toBeVisible()
+  await expect(hero(page).getByRole('link', { name: 'Open in the atlas →' })).toHaveAttribute(
+    'href',
+    /^\/atlas#place-\d+$/,
+  )
 })
 
-test('without WebGL the home atlas section keeps its text and link', async ({ page }) => {
+test('without WebGL the hero keeps the atlas card and its links', async ({ page }) => {
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext
     // @ts-expect-error -- test stub: report no WebGL support
@@ -126,8 +131,7 @@ test('without WebGL the home atlas section keeps its text and link', async ({ pa
     }
   })
   await page.goto('/')
-  const section = page.getByRole('region', { name: 'Atlas', exact: true })
-  await section.scrollIntoViewIfNeeded()
-  await expect(section.getByRole('link', { name: 'Explore the atlas' })).toBeVisible()
+  await hero(page).getByRole('link', { name: 'Explore the atlas →' }).click()
+  await expect(page).toHaveURL(/\/atlas$/)
   await expect(page.locator('canvas')).toHaveCount(0)
 })

@@ -76,7 +76,9 @@ The home page and `/impact` share one three-column band (`ImpactDashboard`): the
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.
 
-Markers share one geometry per shape and one material per colour. `src/lib/atlas-markers.ts` assigns category styles, and both the globe and the HTML key (`MarkerIcon`) read it, so they can't drift apart. The home page's `HomeGlobe` reuses `Globe` and the same capability hook, and mounts it only after an `IntersectionObserver` reports the section near the viewport. Visitors who never scroll there never download three.js.
+The globe draws Natural Earth 110m coastlines (public domain) from `public/generic/coastlines.json` (66 KB, 26 KB gzipped), fetched only once a globe mounts and regenerated with `node scripts/build-coastlines.mjs` from the `world-atlas` dev dependency. Latitude and longitude lines stay faint; the atmosphere is a CSS glow behind the transparent canvas, not a shader. Markers share one geometry per shape and one material per colour. `src/lib/atlas-markers.ts` assigns category styles (shape plus cyan or ice), and both the globe and the HTML key (`MarkerIcon`) read it, so they can't drift apart. Gold is reserved for the selected place.
+
+`PlaceGlobe` pairs a globe with an HTML card and place buttons; the home hero and the impact dashboard both use it. It mounts the globe only after an `IntersectionObserver` reports it near the viewport. In the hero nothing is selected at first and the globe turns slowly (about 120 s a revolution): frames are requested only while spinning, and the spin stops when the pointer rests on it, on a drag or a selection, and never runs with reduced motion or on low-detail devices.
 
 ## Media access
 

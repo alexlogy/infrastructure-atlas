@@ -3,3 +3,6 @@ src/payload-types.ts
 src/migrations/
 src/app/(payload)/
 .next/
+
+# Generated data (scripts/build-coastlines.mjs)
+public/generic/coastlines.json

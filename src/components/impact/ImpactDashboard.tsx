@@ -2,12 +2,12 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import type { Perspective } from '@/lib/perspective'
+import { PlaceGlobe } from '@/components/atlas/PlaceGlobe'
 import { richTextExcerpt } from '@/lib/rich-text'
 import type { AtlasView, ProjectSummaryView, ProjectView } from '@/types/view-models'
 
 import { PerspectiveSwitch } from './PerspectiveSwitch'
 import { ProjectIcon } from './ProjectIcon'
-import { RegionalImpact } from './RegionalImpact'
 
 type Row = { label: string; text: string | null }
 
@@ -191,7 +191,7 @@ export function ImpactDashboard({
             Where it happened
           </H>
           <div className="mt-4">
-            <RegionalImpact nodes={places} arcs={arcs} />
+            <PlaceGlobe nodes={places} arcs={arcs} />
           </div>
         </section>
       )}

@@ -1,7 +1,7 @@
 'use client'
 
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { useEffect, useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 
@@ -11,12 +11,14 @@ import type { AtlasArcView, AtlasNodeView, LatLng } from '@/types/view-models'
 
 // Midnight Atlas tokens (mirrors styles.css; WebGL cannot read CSS variables cheaply).
 const COLORS = {
-  surface: '#13273a',
-  line: '#2e4a63',
+  surface: '#122639',
+  line: '#2c4a5f',
   accent: '#65d6df',
+  ice: '#b5f4f4',
   gold: '#e5b96d',
-  ink: '#f4f7fa',
 }
+/** Idle spin: one revolution in about 120 s (OrbitControls: 2π/60 rad per unit per second). */
+const SPIN_SPEED = 0.5
 const CAMERA_DISTANCE = 2.8
 const MARKER_RADIUS = 0.022
 
@@ -28,6 +30,8 @@ export type GlobeProps = {
   onSelect: (id: string) => void
   reducedMotion: boolean
   lowDetail: boolean
+  /** Slow rotation while nothing is selected; stops on hover, drag or selection. */
+  idleSpin?: boolean
 }
 
 /**
@@ -43,6 +47,7 @@ export default function Globe({
   onSelect,
   reducedMotion,
   lowDetail,
+  idleSpin = false,
 }: GlobeProps) {
   const selected = nodes.find((n) => n.id === selectedId) ?? null
 
@@ -64,9 +69,11 @@ export default function Globe({
         <meshBasicMaterial color={COLORS.surface} />
       </mesh>
       <Graticule />
+      <Coastlines />
       <Arcs nodes={nodes} arcs={arcs} />
       <Markers nodes={nodes} selectedId={selectedId} onSelect={onSelect} />
-      <Controls />
+      {/* No spin on low-detail devices: a still globe beats a continuous render loop on a phone. */}
+      <Controls spin={idleSpin && !reducedMotion && !lowDetail && !selected} />
       <CameraRig target={selected} reducedMotion={reducedMotion} />
     </Canvas>
   )
@@ -101,7 +108,53 @@ function Graticule() {
 
   return (
     <lineSegments geometry={geometry}>
-      <lineBasicMaterial color={COLORS.line} transparent opacity={0.7} />
+      <lineBasicMaterial color={COLORS.line} transparent opacity={0.45} />
+    </lineSegments>
+  )
+}
+
+/**
+ * Natural Earth coastlines (public/generic/coastlines.json, ~26 KB gzipped), fetched only once a
+ * globe mounts. Until it arrives, or if it fails, the graticule alone shapes the globe.
+ */
+function Coastlines() {
+  const { invalidate } = useThree()
+  const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    let built: THREE.BufferGeometry | null = null
+    fetch('/generic/coastlines.json')
+      .then((res) => (res.ok ? (res.json() as Promise<{ lines: number[][] }>) : null))
+      .then((data) => {
+        if (cancelled || !data) return
+        const points: number[] = []
+        for (const line of data.lines) {
+          for (let i = 2; i < line.length; i += 2) {
+            points.push(
+              ...latLngToVector(line[i - 1], line[i - 2], 1.002),
+              ...latLngToVector(line[i + 1], line[i], 1.002),
+            )
+          }
+        }
+        built = new THREE.BufferGeometry().setAttribute(
+          'position',
+          new THREE.Float32BufferAttribute(points, 3),
+        )
+        setGeometry(built)
+        invalidate()
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+      built?.dispose()
+    }
+  }, [invalidate])
+
+  if (!geometry) return null
+  return (
+    <lineSegments geometry={geometry}>
+      <lineBasicMaterial color={COLORS.accent} transparent opacity={0.6} />
     </lineSegments>
   )
 }
@@ -155,12 +208,13 @@ function Markers({
   const square = useMemo(() => new THREE.BoxGeometry(r * 1.7, r * 1.7, r * 1.7), [r])
   const triangle = useMemo(() => new THREE.TetrahedronGeometry(r * 1.6), [r])
   const accent = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.accent }), [])
-  const gold = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.gold }), [])
-  const active = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.ink }), [])
-  useDispose(circle, diamond, square, triangle, accent, gold, active)
+  const ice = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.ice }), [])
+  // Gold is reserved for the selected place (cyan leads, gold marks significance).
+  const active = useMemo(() => new THREE.MeshBasicMaterial({ color: COLORS.gold }), [])
+  useDispose(circle, diamond, square, triangle, accent, ice, active)
 
   const geometries = { circle, diamond, square, triangle }
-  const materials = { accent, gold }
+  const materials = { accent, ice }
   const key = useMemo(() => markerKey(nodes.map((n) => n.category)), [nodes])
   const styleOf = (node: AtlasNodeView): MarkerStyle => markerStyleFor(key, node.category)
 
@@ -192,24 +246,57 @@ function Markers({
   })
 }
 
-/** Drag to rotate. Zoom is off so the wheel keeps scrolling the page. */
-function Controls() {
+/**
+ * Drag to rotate. Zoom is off so the wheel keeps scrolling the page. With `spin`, the globe turns
+ * slowly until the pointer rests on it or the visitor drags it; frames are only requested while
+ * spinning, so an idle, paused globe costs nothing.
+ */
+function Controls({ spin }: { spin: boolean }) {
   const { camera, gl, invalidate } = useThree()
+  const controls = useRef<OrbitControls | null>(null)
+  const paused = useRef(false)
 
   useEffect(() => {
-    const controls = new OrbitControls(camera, gl.domElement)
-    controls.enablePan = false
-    controls.enableZoom = false
-    controls.rotateSpeed = 0.5
+    const c = new OrbitControls(camera, gl.domElement)
+    c.enablePan = false
+    c.enableZoom = false
+    c.rotateSpeed = 0.5
+    c.autoRotateSpeed = SPIN_SPEED
     // OrbitControls sets touch-action: none; let vertical swipes scroll the page instead.
-    if (controls.domElement) controls.domElement.style.touchAction = 'pan-y'
+    if (c.domElement) c.domElement.style.touchAction = 'pan-y'
     const onChange = () => invalidate()
-    controls.addEventListener('change', onChange)
+    const pause = () => void (paused.current = true)
+    const resume = () => {
+      paused.current = false
+      invalidate()
+    }
+    c.addEventListener('change', onChange)
+    c.addEventListener('start', pause)
+    gl.domElement.addEventListener('pointerenter', pause)
+    gl.domElement.addEventListener('pointerleave', resume)
+    controls.current = c
     return () => {
-      controls.removeEventListener('change', onChange)
-      controls.dispose()
+      c.removeEventListener('change', onChange)
+      c.removeEventListener('start', pause)
+      gl.domElement.removeEventListener('pointerenter', pause)
+      gl.domElement.removeEventListener('pointerleave', resume)
+      c.dispose()
+      controls.current = null
     }
   }, [camera, gl, invalidate])
+
+  useEffect(() => {
+    if (spin) invalidate()
+  }, [spin, invalidate])
+
+  useFrame((_, delta) => {
+    const c = controls.current
+    if (!c || !spin || paused.current) return
+    c.autoRotate = true
+    c.update(Math.min(delta, 1 / 30))
+    c.autoRotate = false
+    invalidate()
+  })
 
   return null
 }

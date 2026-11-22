@@ -11,6 +11,7 @@ Payload schemas live in `src/collections/` and `src/globals/`. Types are generat
 | `timeline-milestones` | Collection | Published only                       | Authenticated                                          | Yes    |
 | `impact-projects`     | Collection | Published only                       | Authenticated                                          | Yes    |
 | `atlas-locations`     | Collection | Published only                       | Authenticated                                          | Yes    |
+| `achievements`        | Collection | Published only                       | Authenticated                                          | Yes    |
 | `site-settings`       | Global     | Yes                                  | Authenticated                                          | No     |
 | `home-page`           | Global     | Yes                                  | Authenticated                                          | No     |
 | `writing-settings`    | Global     | Yes                                  | Authenticated                                          | No     |
@@ -91,13 +92,31 @@ Visibility is controlled by draft/publish; there is no separate display toggle. 
 
 | Field              | Type                                  | Notes                                                      |
 | ------------------ | ------------------------------------- | ---------------------------------------------------------- |
+| `eyebrow`          | text, ≤ 60                            | Small accent line above the headline                       |
 | `headline`         | text, ≤ 120                           | Empty falls back to the site title                         |
+| `headlineEmphasis` | text, ≤ 120                           | Optional second headline line, shown in cyan               |
 | `subheadline`      | textarea, ≤ 400                       | Empty falls back to the site description                   |
-| `heroImage`        | upload → `media`                      |                                                            |
+| `heroImage`        | upload → `media`                      | Shown in the hero only when the atlas has no places        |
 | `callsToAction`    | array (≤ 2) of label + href           | Empty shows links to the enabled sections                  |
 | `featuredProjects` | relationship → `impact-projects`, ≤ 6 | Shown in this order; only published projects are displayed |
 
 Saving expires the `home-page` cache tag.
+
+## `achievements`
+
+Figures for the compact strip under the home page hero. Nothing is computed or filled in automatically: the strip only appears once a published achievement exists, and shows up to four in `sortOrder`.
+
+| Field         | Type                             | Notes                                                                 |
+| ------------- | -------------------------------- | --------------------------------------------------------------------- |
+| `value`       | text, required, ≤ 16             | The figure as displayed, e.g. "12"                                    |
+| `unit`        | text, ≤ 12                       | Optional suffix in gold, e.g. "+" or "%"                              |
+| `label`       | text, required, ≤ 60             | Caption under the figure                                              |
+| `explanation` | textarea, ≤ 300                  | How the figure was arrived at; read to screen readers, shown on hover |
+| `icon`        | select (same set as projects)    | Gold line icon                                                        |
+| `project`     | relationship → `impact-projects` | Optional source project                                               |
+| `sortOrder`   | number                           | Lower first                                                           |
+
+Publishing or unpublishing expires the `achievements` cache tag.
 
 ## `writing-settings` (global)
 

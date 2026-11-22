@@ -16,6 +16,7 @@ import {
   toProjectSummaryView,
   toProjectView,
   toSiteSettingsView,
+  toAchievementView,
 } from '@/lib/payload/mappers'
 import type { Media } from '@/payload-types'
 
@@ -224,10 +225,28 @@ describe('compareProjects', () => {
   })
 })
 
+describe('toAchievementView', () => {
+  it('keeps complete figures and drops incomplete or unknown values', () => {
+    const base = { id: 1, value: ' 12 ', unit: '+', label: ' Sample label ', explanation: '' }
+    expect(toAchievementView({ ...base, icon: 'chart' })).toEqual({
+      id: '1',
+      value: '12',
+      unit: '+',
+      label: 'Sample label',
+      explanation: null,
+      icon: 'chart',
+    })
+    expect(toAchievementView({ ...base, value: '  ' })).toBeNull()
+    expect(toAchievementView({ ...base, icon: 'rocket' as never })?.icon).toBeNull()
+  })
+})
+
 describe('toHomePageView', () => {
   it('returns empty defaults for a missing global', () => {
     expect(toHomePageView(null)).toEqual({
+      eyebrow: null,
       headline: null,
+      headlineEmphasis: null,
       subheadline: null,
       heroImage: null,
       callsToAction: [],

@@ -4,6 +4,7 @@ import type { User } from '@/payload-types'
 
 import { isValidSlug } from '@/lib/validation/slugs'
 import type {
+  AchievementView,
   AtlasView,
   HomePageView,
   MilestoneView,
@@ -15,6 +16,7 @@ import type {
 
 import {
   compareMilestones,
+  toAchievementView,
   toAtlasView,
   compareProjects,
   toHomePageView,
@@ -184,7 +186,9 @@ export async function fetchHomePage(payload: Payload): Promise<HomePageView> {
     depth: 1,
     overrideAccess: false,
     select: {
+      eyebrow: true,
       headline: true,
+      headlineEmphasis: true,
       subheadline: true,
       heroImage: true,
       callsToAction: true,
@@ -253,4 +257,23 @@ export async function fetchWritingSettings(payload: Payload): Promise<WritingSet
     },
   })
   return toWritingSettingsView(doc)
+}
+
+/** Most figures the home page strip shows. */
+export const ACHIEVEMENTS_LIMIT = 4
+
+/** Published achievements for the metric strip, in editor order. Incomplete entries are dropped. */
+export async function fetchPublicAchievements(payload: Payload): Promise<AchievementView[]> {
+  const { docs } = await payload.find({
+    collection: 'achievements',
+    draft: false,
+    overrideAccess: false,
+    where: { _status: { equals: 'published' } },
+    depth: 0,
+    limit: ACHIEVEMENTS_LIMIT,
+    pagination: false,
+    sort: ['sortOrder', 'label'],
+    select: { value: true, unit: true, label: true, explanation: true, icon: true },
+  })
+  return docs.flatMap((doc) => toAchievementView(doc) ?? [])
 }

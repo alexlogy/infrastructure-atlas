@@ -17,10 +17,23 @@ export const HomePage: GlobalConfig = {
   },
   fields: [
     {
+      name: 'eyebrow',
+      type: 'text',
+      maxLength: 60,
+      admin: { description: 'Small line above the headline, e.g. a role or focus area.' },
+    },
+    {
       name: 'headline',
       type: 'text',
       maxLength: 120,
       admin: { description: 'Leave empty to use the site title.' },
+    },
+    {
+      name: 'headlineEmphasis',
+      label: 'Headline, second line',
+      type: 'text',
+      maxLength: 120,
+      admin: { description: 'Optional second line, shown in the accent colour.' },
     },
     {
       name: 'subheadline',

@@ -16,6 +16,7 @@ export default async function globalSetup(): Promise<void> {
   const payload = await getPayload({ config: await config })
   await payload.db.migrate()
   for (const collection of [
+    'achievements',
     'impact-projects',
     'atlas-locations',
     'timeline-milestones',
@@ -47,7 +48,14 @@ export default async function globalSetup(): Promise<void> {
   })
   await payload.updateGlobal({
     slug: 'home-page',
-    data: { headline: '', subheadline: '', callsToAction: [], featuredProjects: [] },
+    data: {
+      eyebrow: '',
+      headline: '',
+      headlineEmphasis: '',
+      subheadline: '',
+      callsToAction: [],
+      featuredProjects: [],
+    },
     context: { disableRevalidate: true },
   })
 
