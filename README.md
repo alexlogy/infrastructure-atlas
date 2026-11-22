@@ -285,11 +285,19 @@ docker compose -f docker/compose.yml up -d --build
 
 The app listens on `127.0.0.1:3000` (change it with `APP_PORT`). Put a TLS reverse proxy in front, then open `/admin` to create the first admin account. Uploads and the database live in named volumes (`media`, `pgdata`). The image runs as a non-root user and contains only the built server, with no `.env`, tests or uploads. Rebuild after changing `NEXT_PUBLIC_SITE_URL`, because it's baked into the build. CI builds the image, smoke-tests the stack and scans the image for vulnerabilities. Details are in [docs/deployment.md](docs/deployment.md#docker).
 
+To have nginx terminate TLS in front of the app, put `fullchain.pem` and `privkey.pem` in `docker/nginx/certs/` (gitignored) and add the sample override:
+
+```bash
+docker compose -f docker/compose.yml -f docker/compose.nginx.yml up -d --build
+```
+
+The sample config (`docker/nginx/atlas.conf`) redirects HTTP to HTTPS, serves HTTP/2 and rate-limits the login endpoints. With it, the app's port is no longer published, so all traffic goes through nginx. See [docs/deployment.md](docs/deployment.md#nginx-optional-sample).
+
 ### Security baseline
 
 - GraphQL is disabled. The REST API stays enabled for the admin panel and is protected by collection access rules.
 - Every response gets baseline security headers: `nosniff`, `Referrer-Policy`, frame protection, `Permissions-Policy`, and HSTS in production. Every page also gets a per-request nonce Content Security Policy (see [docs/security.md](docs/security.md)).
-- After 5 failed logins an account is locked for 10 minutes. On https the session cookie is `Secure`. Add per-IP rate limiting at your reverse proxy ([docs/deployment.md](docs/deployment.md#login-protection) has an nginx example).
+- After 5 failed logins an account is locked for 10 minutes. On https the session cookie is `Secure`. Add per-IP rate limiting at your reverse proxy (the sample nginx config in `docker/nginx/atlas.conf` does this).
 - Visitors can only fetch an uploaded image while published content uses it. Images attached only to a draft, or to nothing, need an admin session. Editors still see draft images in preview.
 
 ### Backup and restore
