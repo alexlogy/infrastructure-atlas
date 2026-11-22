@@ -8,19 +8,24 @@ export function MilestoneCard({
   milestone,
   locale,
   unoptimizedImages = false,
+  idPrefix = 'milestone-',
+  headingLevel: Heading = 'h2',
 }: {
   milestone: MilestoneView
   locale: string
   unoptimizedImages?: boolean
+  /** Heading id prefix; `milestone-<id>` is the deep-link target, so other copies need their own. */
+  idPrefix?: string
+  headingLevel?: 'h2' | 'h3'
 }) {
   const { title, subtitle, startDate, endDate, datePrecision, description, era, tags, image } =
     milestone
-  const headingId = `milestone-${milestone.id}`
+  const headingId = `${idPrefix}${milestone.id}`
 
   return (
     <article
       aria-labelledby={headingId}
-      className={`reveal rounded-lg border bg-surface p-6 ${
+      className={`reveal rounded-2xl border bg-surface p-6 ${
         milestone.featured ? 'border-gold' : 'border-line'
       }`}
     >
@@ -31,9 +36,9 @@ export function MilestoneCard({
         {era && <span>· {era}</span>}
         {milestone.featured && <span className="font-medium text-gold">· Featured</span>}
       </p>
-      <h2 id={headingId} className="mt-2 text-xl font-semibold text-ink">
+      <Heading id={headingId} className="mt-2 text-xl font-semibold text-ink">
         {title}
-      </h2>
+      </Heading>
       {subtitle && <p className="mt-1 text-muted">{subtitle}</p>}
 
       {image && (

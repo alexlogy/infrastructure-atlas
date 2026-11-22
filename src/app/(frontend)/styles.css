@@ -107,8 +107,36 @@
   }
 }
 
+/* Journey scene fades into the page on every side instead of ending in a hard rectangle. */
+.journey-art {
+  mask-image:
+    linear-gradient(to bottom, transparent, black 18%, black 88%, transparent),
+    linear-gradient(to right, transparent, black 5%, black 95%, transparent);
+  mask-composite: intersect;
+}
+
 /* Motion is opt-in: only users without a reduced-motion preference get the reveal. */
 @media (prefers-reduced-motion: no-preference) {
+  /* Journey trail: hidden until the scene scrolls into view, then drawn once (MountainJourney). */
+  .journey-trail path {
+    stroke-dasharray: 1;
+  }
+  .journey-trail[data-reveal='hidden'] path {
+    stroke-dashoffset: 1;
+  }
+  .journey-trail[data-reveal='drawing'] path {
+    animation: journey-draw 1.8s ease-out both;
+  }
+
+  @keyframes journey-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
   .reveal {
     animation: reveal 500ms ease-out both;
   }

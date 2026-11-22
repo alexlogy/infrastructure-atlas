@@ -54,7 +54,7 @@ export const getPublicTimeline = unstable_cache(
 /** Published project summaries, cached until a project publish/unpublish. */
 export const getPublicProjects = unstable_cache(
   async (): Promise<ProjectSummaryView[]> => fetchPublicProjects(await getPayload({ config })),
-  ['public-projects'],
+  ['public-projects-v2'],
   { tags: [CACHE_TAGS.projects] },
 )
 
@@ -62,7 +62,7 @@ export const getPublicProjects = unstable_cache(
 export const getPublicProject = unstable_cache(
   async (slug: string): Promise<ProjectView | null> =>
     fetchPublicProject(await getPayload({ config }), slug),
-  ['public-project'],
+  ['public-project-v2'],
   { tags: [CACHE_TAGS.projects] },
 )
 
