@@ -35,6 +35,9 @@ pnpm start
 
 Use `GET /api/health` for readiness and liveness checks. It returns `200 {"status":"ok"}` when the database is reachable and `503 {"status":"unavailable"}` otherwise, with no further detail.
 
+> [!WARNING]
+> Run **one** app instance. Next.js keeps cached CMS reads on disk but tracks which ones a publish or delete expired only in that process's memory. `src/instrumentation.ts` empties the data cache (`.next/cache/fetch-cache`) on every start, so a restart never serves content deleted or unpublished before it. A second instance, though, would not hear about the first one's expiries and could keep showing old content. Scaling out needs a shared Next.js `cacheHandler` (for example Redis) first.
+
 > [!IMPORTANT]
 > On a brand-new production database, run `pnpm migrate` before the first start. Then open `/admin` straight away to create the first admin account, because the first-user screen stays available until an account exists. If you can, restrict access to `/admin` at the proxy until that's done.
 

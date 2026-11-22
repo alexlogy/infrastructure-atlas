@@ -41,6 +41,7 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 ## Rendering and caching
 
 - Frontend routes are dynamic (`force-dynamic`), so `next build` never needs a database. CMS reads are cached through `unstable_cache` and invalidated by tag.
+- Next.js stores those cache entries on disk but keeps tag expiry in memory only, so content deleted or unpublished shortly before a restart could otherwise come back. `src/instrumentation.ts` empties the data cache when the server starts. Expiry is per process, which is why deployment assumes a single instance (see `docs/deployment.md`).
 - Next.js 16 `cacheComponents` is deliberately **not** enabled yet. Switching to `'use cache'` / `cacheTag` should be a single, deliberate migration.
 - Client components are reserved for real interactivity. The only one today is the error boundary.
 

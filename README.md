@@ -265,7 +265,7 @@ Preview only works with a valid admin session, checked again on every page load,
 
 Infrastructure Atlas needs a **Node.js runtime**. A static `next export` can't host Payload. A deployment has three parts:
 
-1. **The app:** `pnpm build` then `pnpm start`, on any Node.js host or container platform.
+1. **The app:** `pnpm build` then `pnpm start`, on any Node.js host or container platform. Run a single instance: cache expiry lives in the server's memory, so several instances would not share it (see [docs/deployment.md](docs/deployment.md)). The server empties its data cache on every start, so a restart never brings back deleted or unpublished content.
 2. **PostgreSQL:** a managed or self-hosted instance, set through `DATABASE_URI`.
 3. **Persistent media storage:** local uploads go to `/media`, which is gitignored. In production, use a persistent volume or object storage.
 
