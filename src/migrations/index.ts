@@ -3,6 +3,7 @@ import * as migration_20261121_135345_impact_projects_atlas_home from './2026112
 import * as migration_20261121_144219_atlas_settings from './20261121_144219_atlas_settings';
 import * as migration_20261121_151739_writing_settings from './20261121_151739_writing_settings';
 import * as migration_20261121_152635_site_share_image from './20261121_152635_site_share_image';
+import * as migration_20261122_040725_site_contact from './20261122_040725_site_contact';
 
 export const migrations = [
   {
@@ -28,6 +29,11 @@ export const migrations = [
   {
     up: migration_20261121_152635_site_share_image.up,
     down: migration_20261121_152635_site_share_image.down,
-    name: '20261121_152635_site_share_image'
+    name: '20261121_152635_site_share_image',
+  },
+  {
+    up: migration_20261122_040725_site_contact.up,
+    down: migration_20261122_040725_site_contact.down,
+    name: '20261122_040725_site_contact'
   },
 ];

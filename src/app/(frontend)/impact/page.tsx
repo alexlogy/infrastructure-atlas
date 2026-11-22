@@ -20,8 +20,8 @@ export default async function ImpactPage() {
   const projects = await getPublicProjects()
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-16 sm:py-24" aria-labelledby="impact-heading">
-      <h1 id="impact-heading" className="text-3xl font-semibold tracking-tight sm:text-4xl">
+    <section className="container-page section-y" aria-labelledby="impact-heading">
+      <h1 id="impact-heading" className="text-page font-semibold">
         Impact
       </h1>
       <p className="mt-3 text-muted">

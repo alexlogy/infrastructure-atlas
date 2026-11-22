@@ -2,8 +2,8 @@
 
 export default function FrontendError({ reset }: { error: Error; reset: () => void }) {
   return (
-    <section className="mx-auto max-w-3xl px-6 py-24" aria-labelledby="error-heading">
-      <h1 id="error-heading" className="text-2xl font-semibold">
+    <section className="container-page section-y" aria-labelledby="error-heading">
+      <h1 id="error-heading" className="text-page font-semibold">
         This content is temporarily unavailable
       </h1>
       <p className="mt-3 text-muted">Please try again in a moment.</p>

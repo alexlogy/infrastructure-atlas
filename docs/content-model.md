@@ -111,17 +111,18 @@ The Ghost address and key are environment variables, never CMS fields. Saving ex
 
 ## `site-settings` (global)
 
-| Field                                           | Type                        | Notes                                                                                           |
-| ----------------------------------------------- | --------------------------- | ----------------------------------------------------------------------------------------------- |
-| `siteTitle`                                     | text, ≤ 80                  | Empty means a neutral default ("Infrastructure Atlas")                                          |
-| `description`                                   | textarea, ≤ 300             | Homepage introduction and default meta description                                              |
-| `locale`                                        | text (BCP 47)               | Sets `<html lang>` and the date formatting locale                                               |
-| `shareImage`                                    | upload → `media`            | Default Open Graph/Twitter image when a page has none of its own (1200×630 works best)          |
-| `navLinks`                                      | array (≤ 8) of label + href | `href` must be a site path or an `http(s)`/`mailto` URL. Links are checked again at render time |
-| `sections.journey`                              | checkbox                    | Hides `/journey` (404) and its navigation link                                                  |
-| `sections.impact`                               | checkbox                    | Hides `/impact` and project pages (404), the navigation link and homepage featured projects     |
-| `sections.atlas`                                | checkbox                    | Hides `/atlas` (404) and its navigation link                                                    |
-| `atlasCenter.latitude`, `atlasCenter.longitude` | number (±90 / ±180)         | Where the globe faces on load. Empty means 5°N 115°E (Asia-Pacific)                             |
+| Field                                           | Type                        | Notes                                                                                                                      |
+| ----------------------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `siteTitle`                                     | text, ≤ 80                  | Empty means a neutral default ("Infrastructure Atlas")                                                                     |
+| `description`                                   | textarea, ≤ 300             | Homepage introduction and default meta description                                                                         |
+| `locale`                                        | text (BCP 47)               | Sets `<html lang>` and the date formatting locale                                                                          |
+| `shareImage`                                    | upload → `media`            | Default Open Graph/Twitter image when a page has none of its own (1200×630 works best)                                     |
+| `navLinks`                                      | array (≤ 8) of label + href | `href` must be a site path or an `http(s)`/`mailto` URL. Links are checked again at render time                            |
+| `contact.label`, `contact.href`                 | text, text                  | Outlined button at the right of the header and in the footer. Hidden until `href` is set; label defaults to "Get in touch" |
+| `sections.journey`                              | checkbox                    | Hides `/journey` (404) and its navigation link                                                                             |
+| `sections.impact`                               | checkbox                    | Hides `/impact` and project pages (404), the navigation link and homepage featured projects                                |
+| `sections.atlas`                                | checkbox                    | Hides `/atlas` (404) and its navigation link                                                                               |
+| `atlasCenter.latitude`, `atlasCenter.longitude` | number (±90 / ±180)         | Where the globe faces on load. Empty means 5°N 115°E (Asia-Pacific)                                                        |
 
 ## Rules for new content types
 

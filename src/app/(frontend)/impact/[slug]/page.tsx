@@ -49,7 +49,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
   })
 
   return (
-    <article className="mx-auto max-w-3xl px-6 py-16 sm:py-24" aria-labelledby="project-heading">
+    <article className="container-page section-y [&>*]:max-w-3xl" aria-labelledby="project-heading">
       <p className="text-sm">
         <Link
           href="/impact"
@@ -58,7 +58,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
           ← All projects
         </Link>
       </p>
-      <h1 id="project-heading" className="mt-4 text-3xl font-semibold tracking-tight sm:text-4xl">
+      <h1 id="project-heading" className="mt-4 text-page font-semibold">
         {project.title}
       </h1>
       <p className="mt-4 text-lg leading-relaxed text-muted">{project.summary}</p>
@@ -83,7 +83,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
           {narratives.leadership && narratives.engineering && (
             <PerspectiveSwitch slug={project.slug} active={perspective} />
           )}
-          <h2 id="perspective-heading" className="mt-6 text-2xl font-semibold">
+          <h2 id="perspective-heading" className="mt-6 text-section font-semibold">
             {perspectiveLabel(perspective)} perspective
           </h2>
           <RichText
@@ -103,7 +103,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
 
       {project.outcomes.length > 0 && (
         <section aria-labelledby="outcomes-heading" className="mt-12">
-          <h2 id="outcomes-heading" className="text-2xl font-semibold">
+          <h2 id="outcomes-heading" className="text-section font-semibold">
             Outcomes
           </h2>
           <ul className="mt-4 space-y-4">
@@ -133,7 +133,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
 
       {project.sourceLinks.length > 0 && (
         <section aria-labelledby="sources-heading" className="mt-12">
-          <h2 id="sources-heading" className="text-2xl font-semibold">
+          <h2 id="sources-heading" className="text-section font-semibold">
             Sources
           </h2>
           <ul className="mt-4 list-disc space-y-2 pl-6">
@@ -168,7 +168,7 @@ function ProseSection({
   const id = `${title.toLowerCase().replace(/[^a-z]+/g, '-')}-heading`
   return (
     <section aria-labelledby={id} className="mt-12">
-      <h2 id={id} className="text-2xl font-semibold">
+      <h2 id={id} className="text-section font-semibold">
         {title}
       </h2>
       {data && <RichText data={data} className={`mt-4 ${PROSE_CLASS}`} />}

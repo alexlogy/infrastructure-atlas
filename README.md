@@ -55,6 +55,8 @@ On `/atlas`, the list of places is the main content and works without JavaScript
 
 When the Atlas section is on and places are published, the home page shows a place count, an **Explore the atlas** link and the same globe, without auto-rotation. three.js loads only when that section scrolls near the viewport; without WebGL the text and link stay, next to a plain disc. Selecting a marker there opens the place on `/atlas`.
 
+Every page shares one shell: a sticky header that marks the current page, an outlined contact button when **Site settings → Contact button** has a link, and a footer with the same links, the Ghost blog (when configured) and a back-to-top link. Below 1024px the links move into a **Menu** button that closes on Escape and returns focus. Content sits in a container about 1320px wide.
+
 Pages are rendered on the server as plain HTML, so they work without JavaScript or WebGL. They read only published records through narrow, server-only queries (`src/lib/payload/public.ts`) that select just the fields they display, and they map each record to a small display object before it reaches React. When the CMS is empty, the pages show a short explanation instead of sample content.
 
 Every public page sets a canonical URL and Open Graph and Twitter tags built from published CMS data. Project pages use their featured image; other pages use the optional **share image** from Site settings. `/sitemap.xml` lists the home page, the enabled sections and published projects. It never lists drafts, and includes `/writing` only when Ghost is set up. `/robots.txt` keeps crawlers out of `/admin` and `/api/`. Absolute URLs come from `NEXT_PUBLIC_SITE_URL`, so set it to your public address when you build for production.
@@ -63,17 +65,17 @@ Accessibility built in: a skip link, landmarks and a sensible heading order, a v
 
 ### Tech stack
 
-| Concern         | Choice                                                                                  |
-| --------------- | --------------------------------------------------------------------------------------- |
-| Web application | Next.js 16 (App Router), React 19, TypeScript strict                                    |
-| CMS             | Payload 3 with the official PostgreSQL adapter                                          |
-| Database        | PostgreSQL 18 (Docker Compose locally)                                                  |
-| Styling         | Tailwind CSS 4 with Midnight Atlas design tokens                                        |
-| 3D              | three 0.187 and @react-three/fiber 9.8 (supports React >=19 <19.4); Drei not needed yet |
-| Validation      | zod for environment configuration                                                       |
-| Testing         | Vitest, Playwright                                                                      |
-| Tooling         | pnpm 11 (via corepack), ESLint (flat config), Prettier                                  |
-| CI              | GitHub Actions, `pnpm audit`, gitleaks                                                  |
+| Concern         | Choice                                                                                                  |
+| --------------- | ------------------------------------------------------------------------------------------------------- |
+| Web application | Next.js 16 (App Router), React 19, TypeScript strict                                                    |
+| CMS             | Payload 3 with the official PostgreSQL adapter                                                          |
+| Database        | PostgreSQL 18 (Docker Compose locally)                                                                  |
+| Styling         | Tailwind CSS 4 with Midnight Atlas design tokens; Space Grotesk and Inter via `next/font` (self-hosted) |
+| 3D              | three 0.187 and @react-three/fiber 9.8 (supports React >=19 <19.4); Drei not needed yet                 |
+| Validation      | zod for environment configuration                                                                       |
+| Testing         | Vitest, Playwright                                                                                      |
+| Tooling         | pnpm 11 (via corepack), ESLint (flat config), Prettier                                                  |
+| CI              | GitHub Actions, `pnpm audit`, gitleaks                                                                  |
 
 ## Getting started
 
@@ -310,3 +312,4 @@ For the full production procedure (applying migrations before the new version ta
 | 3. Signed Ghost webhook for instant updates                                     | Done   |
 | 3. Login lockout, Secure session cookie, proxy rate-limit guide                 | Done   |
 | 3. Media visible only while published content uses it                           | Done   |
+| Design foundation: tokens, fonts, sticky header, mobile menu, footer            | Done   |

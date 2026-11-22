@@ -1,27 +1,98 @@
 @import 'tailwindcss';
 
 /*
- * Midnight Atlas design tokens. Contrast ratios (WCAG 2.x) measured on midnight / surface:
- *   ink 17.1 / 14.2 · muted 8.9 / 7.4 · accent 10.7 / 8.9 · gold 10.1 / 8.3 · disabled 5.5 / 4.5
+ * Midnight Atlas design tokens (DESIGN.md §2.1). Tailwind exposes each as a CSS custom property
+ * (`--color-*`) and a utility (`bg-surface`, `text-muted`, ...).
+ * Contrast ratios (WCAG 2.x) on midnight / surface / raised:
+ *   ink 17.1 / 14.3 / 12.8 · muted 9.4 / 7.9 / 7.0 · accent 10.7 / 9.0 / 8.0
+ *   gold 10.1 / 8.4 / 7.5 · ice 15.1 / 12.6 / 11.3 · subtle 5.8 / 4.8 / 4.3
+ * `subtle` is for tertiary labels only, never small critical copy on `raised`.
  * `line` is decorative only (cards, dividers) and never carries meaning on its own.
+ * Cyan (`accent`) leads interaction; gold marks significance (summit, outcomes, selection).
  */
 @theme {
   --color-midnight: #091522;
-  --color-surface: #13273a;
+  --color-deep: #07111d;
+  --color-surface: #122639;
+  --color-raised: #182f43;
+  --color-line: #2c4a5f;
   --color-accent: #65d6df;
+  --color-ice: #b5f4f4;
   --color-gold: #e5b96d;
   --color-ink: #f4f7fa;
-  --color-muted: #a7b6c5;
-  --color-disabled: #7c8ea0;
-  --color-line: #2e4a63;
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --color-muted: #a8bccd;
+  --color-subtle: #7894a7;
+  --color-success: #83e1bb;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display:
+    var(--font-space-grotesk), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --header-height: 4.75rem;
+  /* DESIGN.md §2.2 type scale: hero ~2–4.4rem, page heading ~1.9–3.5rem, section heading 24–38px. */
+  --text-hero: clamp(2rem, 1.1rem + 3.6vw, 4.4rem);
+  --text-hero--line-height: 1.08;
+  --text-page: clamp(1.9rem, 1.3rem + 2.4vw, 3.5rem);
+  --text-page--line-height: 1.12;
+  --text-section: clamp(1.5rem, 1.2rem + 1vw, 2.375rem);
+  --text-section--line-height: 1.2;
+}
+
+/* Page container: ~1320px content width with DESIGN.md §2.3 gutters. */
+@utility container-page {
+  margin-inline: auto;
+  width: 100%;
+  max-width: calc(82.5rem + 2 * var(--gutter));
+  padding-inline: var(--gutter);
+  --gutter: 1.25rem;
+  @media (width >= 40rem) {
+    --gutter: 2rem;
+  }
+  @media (width >= 64rem) {
+    --gutter: 3.5rem;
+  }
+}
+
+/* Section rhythm: 48–72 mobile, 64–88 tablet, 96–140 desktop. */
+@utility section-y {
+  padding-block: 3.5rem;
+  @media (width >= 48rem) {
+    padding-block: 5rem;
+  }
+  @media (width >= 80rem) {
+    padding-block: 7rem;
+  }
+}
+
+@utility eyebrow {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-accent);
 }
 
 @layer base {
   html {
-    background-color: var(--color-midnight);
+    background-color: var(--color-deep);
     color: var(--color-ink);
     color-scheme: dark;
+    /* Anchor jumps land below the sticky header. */
+    scroll-padding-top: calc(var(--header-height) + 1rem);
+  }
+
+  body {
+    /* Layered atmosphere behind all content; separate from the semantic HTML on top. */
+    background:
+      radial-gradient(60rem 40rem at 85% -10%, rgb(101 214 223 / 0.08), transparent 70%),
+      radial-gradient(50rem 30rem at -10% 30%, rgb(24 47 67 / 0.7), transparent 70%),
+      linear-gradient(180deg, var(--color-midnight) 0%, var(--color-deep) 100%);
+    background-attachment: fixed;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 
   :focus-visible {

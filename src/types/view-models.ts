@@ -9,6 +9,8 @@ export type SiteSettingsView = {
   description: string | null
   locale: string
   navLinks: NavLink[]
+  /** Header/footer contact button; null until an editor sets a link. */
+  contact: NavLink | null
   showJourney: boolean
   showImpact: boolean
   showAtlas: boolean

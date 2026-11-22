@@ -20,8 +20,8 @@ export default async function AtlasPage() {
   const atlas = await getAtlas()
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-16 sm:py-24" aria-labelledby="atlas-heading">
-      <h1 id="atlas-heading" className="text-3xl font-semibold tracking-tight sm:text-4xl">
+    <section className="container-page section-y" aria-labelledby="atlas-heading">
+      <h1 id="atlas-heading" className="text-page font-semibold">
         Atlas
       </h1>
       <p className="mt-3 text-muted">Places, and the projects and milestones connected to them.</p>

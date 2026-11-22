@@ -58,6 +58,12 @@ Unpublishing and deleting published content expire the same tag. Saving site set
 
 `POST /api/revalidate/ghost` lets Ghost expire the `ghost` tag as soon as a post changes. `src/lib/ghost/webhook.ts` checks Ghost's `X-Ghost-Signature` (HMAC-SHA256 of the raw body plus timestamp, keyed with `REVALIDATION_SECRET`) in constant time and rejects timestamps more than 5 minutes off. The payload is only used to check the signature; which post changed doesn't matter, because the whole post list is refetched.
 
+## Visual system
+
+The Midnight Atlas tokens live in `src/app/(frontend)/styles.css` as Tailwind 4 `@theme` variables (`bg-surface`, `text-muted`, `text-gold`, ...), with their WCAG contrast ratios noted beside them. Cyan (`accent`) leads interaction; gold marks significance only (the career summit, outcomes, the selected place). Shared utilities cover the page container (`container-page`, about 1320px with responsive gutters), section rhythm (`section-y`), the eyebrow label and a fluid type scale (`text-hero`, `text-page`, `text-section`). Space Grotesk (headings) and Inter (body) are self-hosted by `next/font` at build time, so visitors' browsers never contact Google and the CSP keeps `font-src 'self'`.
+
+The header is sticky with a translucent background that stays readable without `backdrop-filter`. Below 1024px the links move into a disclosure menu (`HeaderNav`, a client component) that closes on Escape, on a link choice or on navigation and returns focus to its button. The current page is marked with `aria-current="page"` and an underline, not colour alone. `scroll-padding-top` keeps anchor targets clear of the header.
+
 ## Atlas globe
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.
