@@ -1,0 +1,20 @@
+# Optional sample: nginx in front of the app, terminating TLS on ports 80 and 443.
+#   mkdir -p docker/nginx/certs   # add fullchain.pem and privkey.pem (gitignored)
+#   docker compose -f docker/compose.yml -f docker/compose.nginx.yml up -d --build
+# The app's port is no longer published on the host: all traffic goes through nginx.
+services:
+  app:
+    ports: !reset []
+
+  nginx:
+    image: nginx:1.30-alpine
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - ./nginx/atlas.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      app:
+        condition: service_healthy

@@ -140,6 +140,21 @@ jobs:
           curl -fsS -o /dev/null http://localhost:3000/
           curl -fsS -o /dev/null http://localhost:3000/admin
           test "$(docker compose -f docker/compose.yml exec -T app id -u)" != 0
+      - name: Smoke test through the sample nginx proxy (self-signed certificate)
+        run: |
+          mkdir -p docker/nginx/certs
+          openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=localhost \
+            -keyout docker/nginx/certs/privkey.pem -out docker/nginx/certs/fullchain.pem
+          docker compose -f docker/compose.yml -f docker/compose.nginx.yml up -d --wait nginx
+          test "$(curl -s -o /dev/null -w '%{http_code}' http://localhost/)" = 301
+          curl -kfsS https://localhost/api/health
+          curl -kfsS -o /dev/null https://localhost/
+          # The app port is no longer published; only nginx is reachable.
+          if curl -fsS --max-time 3 http://localhost:3000/api/health; then exit 1; fi
+          # Login attempts beyond the burst are rate-limited.
+          for i in $(seq 1 9); do
+            curl -ks -o /dev/null -w '%{http_code}\n' -X POST https://localhost/api/users/login
+          done | grep 429
       # Trivy run from its image, pinned by digest (0.76.2), rather than a mutable action tag.
       - name: Scan the app image (fixable high/critical vulnerabilities fail the job)
         run: >-
@@ -149,7 +164,7 @@ jobs:
           infrastructure-atlas-prod-app
       - name: Logs on failure
         if: failure()
-        run: docker compose -f docker/compose.yml logs --no-color
+        run: docker compose -f docker/compose.yml -f docker/compose.nginx.yml logs --no-color
       - name: Stop the stack
         if: always()
-        run: docker compose -f docker/compose.yml down -v
+        run: docker compose -f docker/compose.yml -f docker/compose.nginx.yml down -v
