@@ -76,6 +76,12 @@ The home page and `/impact` share one three-column band (`ImpactDashboard`): the
 
 The home page follows the design's narrative: hero with globe and metric strip, Journey scene, impact dashboard, philosophy preview, Lab preview, selected writing (three posts), then the contact section. Every section renders only when it has published content and its switch in Site settings is on, so an empty CMS still gives a coherent page.
 
+## Motion and section transitions
+
+All motion is CSS in `src/app/(frontend)/styles.css`, inside `@media (prefers-reduced-motion: no-preference)`, so visitors who ask for less motion get the finished page. Section transitions are scroll-driven animations (`animation-timeline: view()`): their progress follows the scroll position, so they never block, delay or take over scrolling, and browsers without scroll timelines (wrapped in `@supports`) see the static result. As the hero scrolls away its globe fades and shrinks back (`globe-recede`, on the globe box only; the HTML card stays opaque), the distant mountain ranges rise as the Journey arrives (a named `--journey` timeline on the scene region, because the art sits inside its own horizontal scroller), and on the home page a decorative gold line with a travelling light leads from under the summit into Impact (`SummitHandoff`, rendered only when the Journey is shown). Headers, tiles and cards rise in over their first 10rem in view (`enter-on-scroll`), staggered within a row by `--i` from `src/lib/motion.ts`. The Journey markers light up as the trail reaches them and the summit pulses gold three times, then stops. The scene is not re-rendered in WebGL for any of this.
+
+The globe module also filters one console message: React Three Fiber 9 creates a deprecated `THREE.Clock`, and three warns about it on every canvas. Remove the filter in `Globe.tsx` once R3F 10 is stable.
+
 ## Atlas globe
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.

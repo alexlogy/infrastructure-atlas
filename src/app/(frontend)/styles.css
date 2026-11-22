@@ -137,8 +137,143 @@
     }
   }
 
+  /* --i (src/lib/motion.ts) staggers groups such as the hero metric strip. */
   .reveal {
     animation: reveal 500ms ease-out both;
+    animation-delay: calc(var(--i, 0) * 90ms);
+  }
+
+  /* Journey markers light up as the trail reaches them; the summit then pulses gold three times. */
+  [data-reveal='hidden'] .journey-node {
+    opacity: 0;
+  }
+  [data-reveal='drawing'] .journey-node {
+    animation: node-in 450ms cubic-bezier(0.2, 0.8, 0.3, 1.4) var(--node-delay, 0s) backwards;
+  }
+  .journey-summit::after {
+    animation: summit-pulse 1.6s ease-out calc(var(--node-delay, 0s) + 0.5s) 3;
+  }
+  [data-reveal='hidden'] .journey-summit::after {
+    animation: none;
+  }
+
+  @keyframes node-in {
+    from {
+      opacity: 0;
+      scale: 0.3;
+    }
+  }
+
+  @keyframes summit-pulse {
+    from {
+      opacity: 0.6;
+      scale: 1;
+    }
+    to {
+      opacity: 0;
+      scale: 2.8;
+    }
+  }
+
+  /*
+   * Scroll-driven section transitions. Progress follows the scroll position, so nothing blocks or
+   * takes over scrolling; browsers without scroll timelines simply show the finished state.
+   */
+  @supports (animation-timeline: view()) {
+    /* Hero → Journey: the globe fades back as it leaves the top of the viewport. */
+    .globe-recede {
+      animation: globe-recede linear both;
+      animation-timeline: view();
+      animation-range: exit 0% exit 100%;
+    }
+
+    /* The distant ranges rise out of the haze as the Journey scene comes in. The timeline is named
+       on the scene region because the art sits inside its own horizontal scroller. */
+    .journey-scene {
+      view-timeline-name: --journey;
+    }
+    .journey-far,
+    .journey-mid {
+      animation: horizon-rise linear both;
+      animation-timeline: --journey;
+      animation-range: entry 0% cover 50%;
+    }
+    .journey-far {
+      --rise: 90px;
+    }
+    .journey-mid {
+      --rise: 45px;
+    }
+
+    /* Content rises in over the first 10rem of entering; --i offsets items within a row. */
+    .enter-on-scroll {
+      animation: enter linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--i, 0) * 2.5rem) entry calc(10rem + var(--i, 0) * 2.5rem);
+    }
+
+    /* Journey → Impact: a gold line draws from under the summit and a light runs along it. */
+    .summit-handoff {
+      view-timeline-name: --handoff;
+    }
+    .summit-handoff-line,
+    .summit-handoff-light {
+      animation-timeline: --handoff;
+      animation-range: cover 0% cover 45%;
+      animation-fill-mode: both;
+      animation-timing-function: linear;
+    }
+    .summit-handoff-line {
+      animation-name: handoff-line;
+    }
+    .summit-handoff-light {
+      animation-name: handoff-light;
+    }
+
+    @keyframes globe-recede {
+      to {
+        opacity: 0.2;
+        scale: 0.9;
+        translate: 0 -6%;
+      }
+    }
+
+    @keyframes horizon-rise {
+      from {
+        opacity: 0.2;
+        transform: translateY(var(--rise));
+      }
+    }
+
+    @keyframes enter {
+      from {
+        opacity: 0;
+        translate: 0 1.5rem;
+      }
+    }
+
+    @keyframes handoff-line {
+      from {
+        clip-path: inset(0 0 0 100%);
+      }
+      to {
+        clip-path: inset(0);
+      }
+    }
+
+    @keyframes handoff-light {
+      from {
+        left: 100%;
+        opacity: 1;
+      }
+      85% {
+        opacity: 1;
+      }
+      to {
+        left: 0%;
+        opacity: 0;
+      }
+    }
   }
 
   /* Impact dashboard: the case study crossfades when the project or perspective changes. */

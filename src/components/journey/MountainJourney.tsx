@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  type CSSProperties,
   type ReactNode,
   useEffect,
   useId,
@@ -123,10 +124,11 @@ export function MountainJourney({
         role="region"
         aria-label="Journey scene"
         tabIndex={0}
-        className="-mx-(--gutter) overflow-x-auto px-(--gutter) pt-12 pb-2 sm:mx-0 sm:px-0"
+        className="journey-scene -mx-(--gutter) overflow-x-auto px-(--gutter) pt-12 pb-2 sm:mx-0 sm:px-0"
       >
         <div
           ref={scene}
+          data-reveal={reveal}
           className="relative aspect-[1600/560] overflow-visible rounded-2xl"
           style={{ minWidth: `max(34rem, ${12.5 * (stops.length - 1)}rem)` }}
         >
@@ -147,9 +149,15 @@ export function MountainJourney({
                   >
                     <span
                       aria-hidden="true"
-                      className={`block rounded-full transition-transform duration-150 group-hover:scale-125 ${
+                      // Each marker lights up as the drawn trail reaches it (styles.css, node-in).
+                      style={
+                        {
+                          '--node-delay': `${(i / Math.max(1, stops.length - 1)) * 1.4}s`,
+                        } as CSSProperties
+                      }
+                      className={`journey-node block rounded-full transition-transform duration-150 group-hover:scale-125 ${
                         summit
-                          ? 'h-4.5 w-4.5 bg-gold ring-4 ring-gold/35'
+                          ? 'journey-summit relative h-4.5 w-4.5 bg-gold ring-4 ring-gold/35 after:absolute after:inset-0 after:rounded-full after:bg-gold after:opacity-0'
                           : 'h-3.5 w-3.5 bg-accent ring-4 ring-accent/25'
                       } ${selected ? 'scale-125 ring-ice/70 outline-2 outline-offset-4 outline-ice/60' : ''}`}
                     />

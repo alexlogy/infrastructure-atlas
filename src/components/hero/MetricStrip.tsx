@@ -1,4 +1,5 @@
 import { ProjectIcon } from '@/components/impact/ProjectIcon'
+import { stagger } from '@/lib/motion'
 import type { AchievementView } from '@/types/view-models'
 
 const COLUMNS = ['', 'sm:grid-cols-1', 'sm:grid-cols-2', 'sm:grid-cols-3', 'sm:grid-cols-4']
@@ -16,10 +17,12 @@ export function MetricStrip({ achievements }: { achievements: AchievementView[] 
         COLUMNS[Math.min(achievements.length, 4)]
       }`}
     >
-      {achievements.map((a) => (
+      {achievements.map((a, i) => (
         <li
           key={a.id}
-          className="flex gap-4 bg-surface/90 p-5 lg:p-6"
+          // Rises in after the headline (stagger 2+), one figure at a time.
+          style={stagger(i + 2)}
+          className="reveal flex gap-4 bg-surface/90 p-5 lg:p-6"
           title={a.explanation ?? undefined}
         >
           {a.icon && (

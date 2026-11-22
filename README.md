@@ -53,7 +53,7 @@ Browser ──> Next.js (server components, HTML content, SEO)
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
 
-On the Journey scene, milestones are ordered by date (then `sortOrder`) and the latest one sits on the summit, so the summit changes when you publish a newer milestone. Links like `/journey#milestone-<id>` open with that milestone selected. The trail draws in when it scrolls into view, unless the visitor prefers reduced motion.
+On the Journey scene, milestones are ordered by date (then `sortOrder`) and the latest one sits on the summit, so the summit changes when you publish a newer milestone. Links like `/journey#milestone-<id>` open with that milestone selected. The trail draws in when it scrolls into view and each marker lights up as the trail reaches it, then the gold summit pulses three times, unless the visitor prefers reduced motion.
 
 The impact dashboard shows the projects chosen under **Home page → Featured projects** (or, if none, projects marked featured). Each project's optional **category** and **icon** label its tile. Choosing a tile or a perspective changes the URL (`?project=<slug>&view=engineering`), so every view can be linked to and works without JavaScript. The mini atlas appears when the selected project lists published places.
 
@@ -67,7 +67,9 @@ Pages are rendered on the server as plain HTML, so they work without JavaScript 
 
 Every public page sets a canonical URL and Open Graph and Twitter tags built from published CMS data. Project pages use their featured image; other pages use the optional **share image** from Site settings. `/sitemap.xml` lists the home page, the enabled sections and published projects. It never lists drafts, and includes `/writing` only when Ghost is set up. `/robots.txt` keeps crawlers out of `/admin` and `/api/`. Absolute URLs come from `NEXT_PUBLIC_SITE_URL`, so set it to your public address when you build for production.
 
-Accessibility built in: a skip link, landmarks and a sensible heading order, a visible focus ring, colours checked for WCAG AA contrast (most pass AAA), and an entry animation that only plays when the visitor's browser allows motion. Featured milestones are labelled in text as well as colour, and measured outcomes are distinguished from qualitative ones in text.
+The home page moves between sections as you scroll: the hero globe fades back as it leaves the screen, the distant mountain ranges rise as the Journey arrives, a gold line runs from the summit into Impact, and headers and cards rise in with a slight stagger. These follow the scroll position, so scrolling, Page Down and anchor links always behave normally. They are plain CSS, so no extra 3D renders while you scroll, and browsers without scroll-driven animations show the finished page.
+
+Accessibility built in: a skip link, landmarks and a sensible heading order, a visible focus ring, colours checked for WCAG AA contrast (most pass AAA), and motion that only plays when the visitor's browser allows it (reduced motion turns every animation off). Featured milestones are labelled in text as well as colour, and measured outcomes are distinguished from qualitative ones in text.
 
 ### Tech stack
 
@@ -327,3 +329,4 @@ For the full production procedure (applying migrations before the new version ta
 | Philosophy page, home philosophy preview and contact section                    | Done   |
 | Engineering Lab page and home preview                                           | Done   |
 | Writing lead story, card grid and tag filters; atlas side panel and search      | Done   |
+| Scroll-driven section transitions and Journey marker reveal                     | Done   |

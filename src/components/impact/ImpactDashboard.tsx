@@ -1,6 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { stagger } from '@/lib/motion'
 import type { Perspective } from '@/lib/perspective'
 import { PlaceGlobe } from '@/components/atlas/PlaceGlobe'
 import { richTextExcerpt } from '@/lib/rich-text'
@@ -141,10 +142,10 @@ export function ImpactDashboard({
 
       <nav aria-label="Featured projects">
         <ul className="grid gap-3">
-          {projects.map((p) => {
+          {projects.map((p, i) => {
             const active = p.id === selected.id
             return (
-              <li key={p.id}>
+              <li key={p.id} className="enter-on-scroll" style={stagger(i)}>
                 <Link
                   href={hrefFor(p.slug, perspective)}
                   scroll={false}

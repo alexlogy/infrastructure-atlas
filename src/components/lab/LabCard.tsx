@@ -2,6 +2,7 @@ import Image from 'next/image'
 
 import { SmartLink } from '@/components/layout/SmartLink'
 import type { LabStatus } from '@/lib/lab'
+import { stagger } from '@/lib/motion'
 import type { LabProjectView } from '@/types/view-models'
 
 const STATUS: Record<LabStatus, { label: string; dot: string }> = {
@@ -97,8 +98,8 @@ export function LabGrid({
 }) {
   return (
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {projects.map((p) => (
-        <li key={p.id}>
+      {projects.map((p, i) => (
+        <li key={p.id} className="enter-on-scroll" style={stagger(i % 3)}>
           <LabCard project={p} heading={heading} />
         </li>
       ))}

@@ -139,7 +139,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       {milestones.length > 0 && (
         <section className="container-page section-y" aria-labelledby="home-journey-heading">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="enter-on-scroll flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Career journey</p>
               <h2 id="home-journey-heading" className="mt-3 text-section font-semibold">
@@ -153,7 +153,7 @@ export default async function HomePage({ searchParams }: Props) {
               See the full journey
             </Link>
           </div>
-          <div className="mt-8">
+          <div className="enter-on-scroll mt-8">
             <JourneyScene milestones={milestones} projects={projects} locale={settings.locale} />
           </div>
         </section>
@@ -161,7 +161,8 @@ export default async function HomePage({ searchParams }: Props) {
 
       {projects.length > 0 && (
         <section className="container-page section-y" aria-labelledby="home-impact-heading">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          {milestones.length > 0 && <SummitHandoff />}
+          <div className="enter-on-scroll flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Selected work</p>
               <h2 id="home-impact-heading" className="mt-3 text-section font-semibold">
@@ -189,7 +190,7 @@ export default async function HomePage({ searchParams }: Props) {
       {about.hasContent && (
         <section className="container-page section-y" aria-labelledby="home-philosophy-heading">
           <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-            <div>
+            <div className="enter-on-scroll">
               <p className="eyebrow">Philosophy</p>
               <h2 id="home-philosophy-heading" className="mt-3 text-section font-semibold">
                 {about.statement ?? 'How I work'}
@@ -210,7 +211,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       {lab.length > 0 && (
         <section className="container-page section-y" aria-labelledby="home-lab-heading">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="enter-on-scroll flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Engineering Lab</p>
               <h2 id="home-lab-heading" className="mt-3 text-section font-semibold">
@@ -232,7 +233,7 @@ export default async function HomePage({ searchParams }: Props) {
 
       {posts.length > 0 && (
         <section className="container-page section-y" aria-labelledby="home-writing-heading">
-          <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="enter-on-scroll flex flex-wrap items-end justify-between gap-4">
             <div>
               <p className="eyebrow">Writing</p>
               <h2 id="home-writing-heading" className="mt-3 text-section font-semibold">
@@ -264,6 +265,20 @@ async function homePosts(): Promise<GhostPostView[]> {
   const { featured, recent } = await getGhostPosts(writing)
   const { lead, rest } = arrangePosts(featured, recent, null)
   return [...(lead ? [lead] : []), ...rest].slice(0, 3)
+}
+
+/**
+ * Decorative hand-off from Journey to Impact: a gold line starts under the summit (which sits 85%
+ * across the scene) and a light runs from it toward the Impact heading as the section scrolls in.
+ */
+function SummitHandoff() {
+  return (
+    <div aria-hidden="true" className="summit-handoff relative mb-12 h-px w-[85%]">
+      <div className="summit-handoff-line h-full bg-linear-to-r from-transparent via-gold/40 to-gold" />
+      <span className="absolute top-1/2 right-0 size-2 translate-x-1/2 -translate-y-1/2 rounded-full bg-gold" />
+      <span className="summit-handoff-light absolute top-1/2 left-full size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold opacity-0 shadow-[0_0_14px_5px_rgb(229_185_109/0.55)]" />
+    </div>
+  )
 }
 
 const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
