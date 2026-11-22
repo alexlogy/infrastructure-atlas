@@ -1,10 +1,11 @@
 import type { Metadata } from 'next'
-import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
+import { TagFilter } from '@/components/TagFilter'
 import { LabGrid } from '@/components/lab/LabCard'
 import { LabFeature } from '@/components/lab/LabFeature'
-import { labTags, leadLabProject, pickLabTag } from '@/lib/lab'
+import { labTags, leadLabProject } from '@/lib/lab'
+import { pickTag } from '@/lib/tags'
 import { pageMetadata } from '@/lib/metadata'
 import { getPublicLabProjects } from '@/lib/payload/public'
 
@@ -23,7 +24,7 @@ export default async function LabPage({ searchParams }: Props) {
   if (projects.length === 0) notFound()
 
   const tags = labTags(projects)
-  const tag = pickLabTag(tags, (await searchParams).tag)
+  const tag = pickTag(tags, (await searchParams).tag)
   const lead = tag ? null : leadLabProject(projects)
   const rest = tag
     ? projects.filter((p) => p.tags.includes(tag))
@@ -45,24 +46,9 @@ export default async function LabPage({ searchParams }: Props) {
         </div>
       )}
 
-      {tags.length > 1 && (
-        <nav aria-label="Filter by tag" className="mt-12">
-          <ul className="flex flex-wrap gap-2">
-            {[null, ...tags].map((t) => (
-              <li key={t ?? 'all'}>
-                <Link
-                  href={t ? `/lab?tag=${encodeURIComponent(t)}` : '/lab'}
-                  scroll={false}
-                  aria-current={t === tag ? 'true' : undefined}
-                  className="inline-flex min-h-10 items-center rounded-full border border-line px-4 text-sm text-muted transition-colors duration-150 hover:border-accent hover:text-ink aria-[current=true]:border-accent aria-[current=true]:bg-accent/10 aria-[current=true]:text-ink"
-                >
-                  {t ?? 'All'}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </nav>
-      )}
+      <div className="mt-12">
+        <TagFilter basePath="/lab" tags={tags} active={tag} />
+      </div>
 
       {rest.length > 0 && (
         <div className="mt-8">

@@ -74,7 +74,7 @@ The home page and `/impact` share one three-column band (`ImpactDashboard`): the
 
 ## Home page order
 
-The home page follows the design's narrative: hero with globe and metric strip, Journey scene, impact dashboard, philosophy preview, Lab preview, then the contact section. Every section renders only when it has published content and its switch in Site settings is on, so an empty CMS still gives a coherent page.
+The home page follows the design's narrative: hero with globe and metric strip, Journey scene, impact dashboard, philosophy preview, Lab preview, selected writing (three posts), then the contact section. Every section renders only when it has published content and its switch in Site settings is on, so an empty CMS still gives a coherent page.
 
 ## Atlas globe
 
@@ -83,6 +83,12 @@ The home page follows the design's narrative: hero with globe and metric strip, 
 The globe draws Natural Earth 110m coastlines (public domain) from `public/generic/coastlines.json` (66 KB, 26 KB gzipped), fetched only once a globe mounts and regenerated with `node scripts/build-coastlines.mjs` from the `world-atlas` dev dependency. Latitude and longitude lines stay faint; the atmosphere is a CSS glow behind the transparent canvas, not a shader. Markers share one geometry per shape and one material per colour. `src/lib/atlas-markers.ts` assigns category styles (shape plus cyan or ice), and both the globe and the HTML key (`MarkerIcon`) read it, so they can't drift apart. Gold is reserved for the selected place.
 
 `PlaceGlobe` pairs a globe with an HTML card and place buttons; the home hero and the impact dashboard both use it. It mounts the globe only after an `IntersectionObserver` reports it near the viewport. In the hero nothing is selected at first and the globe turns slowly (about 120 s a revolution): frames are requested only while spinning, and the spin stops when the pointer rests on it, on a drag or a selection, and never runs with reduced motion or on low-detail devices.
+
+## Writing and the atlas index
+
+`/writing` leads with the first featured Ghost post (else the newest), then the remaining featured and recent posts as a 3/2/1 grid of 16:9 cards; posts without a feature image get a quiet gradient panel so the grid stays even. Tags from the listed posts become filter links (`?tag=`, shared `TagFilter` component, also used on `/lab`); unknown tags are ignored. Ghost is still queried only through the cached loader, so filtering never adds requests.
+
+On `/atlas` the globe takes about two thirds of the width and a side panel the rest: the chosen place's details and stories (a polite live region), then a searchable index. Index entries are `#place-<id>` links, so without JavaScript they jump to the place's card in the full list below; with JavaScript they select the place in place.
 
 ## Media access
 

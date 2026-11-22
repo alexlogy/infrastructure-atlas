@@ -21,7 +21,7 @@ const deliver = (request: APIRequestContext, secret = SECRET) => {
 }
 
 const recentTitles = (page: Page) =>
-  page.getByRole('region', { name: 'Recent' }).getByRole('heading', { level: 3 })
+  page.getByRole('region', { name: 'More articles' }).getByRole('heading', { level: 3 })
 
 // Leave the mock and the cached list as other tests expect them.
 test.afterEach(async ({ request }) => {

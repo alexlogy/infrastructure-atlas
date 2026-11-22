@@ -107,6 +107,33 @@ test('a #place- link preselects that place', async ({ page }) => {
   )
 })
 
+test('the side panel shows the chosen place, and the index can be searched', async ({ page }) => {
+  await page.goto('/atlas')
+  const panel = page.getByRole('complementary', { name: 'Place details' })
+  await expect(panel).toContainText('Choose a place')
+
+  const index = panel.getByRole('list', { name: 'Place index' })
+  await panel.getByRole('searchbox', { name: 'Find a place' }).fill('(second)')
+  await expect(index.getByRole('link')).toHaveCount(1)
+  await panel.getByRole('searchbox', { name: 'Find a place' }).fill(String(suffix))
+  await index.getByRole('link', { name: placeLabel, exact: true }).click()
+
+  await expect(page).toHaveURL(new RegExp(`#place-${placeId}$`))
+  await expect(panel).toContainText('Selected place')
+  await expect(panel.getByRole('link', { name: projectTitle })).toBeVisible()
+  await expect(index.getByRole('link', { name: placeLabel, exact: true })).toHaveAttribute(
+    'aria-current',
+    'true',
+  )
+  await expect(place(page).getByRole('button', { name: /Shown on globe/ })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+
+  await panel.getByRole('searchbox', { name: 'Find a place' }).fill('no such place zzz')
+  await expect(index).toContainText('No places match')
+})
+
 const hero = (page: Page) => page.locator('section[aria-labelledby="home-heading"]')
 
 test('the home hero shows the globe with an atlas card and place buttons', async ({ page }) => {

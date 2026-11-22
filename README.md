@@ -46,10 +46,10 @@ Browser ──> Next.js (server components, HTML content, SEO)
 | `/journey`       | A mountain scene: a glowing trail climbs one peak per published milestone to a gold summit (the latest). Choosing a peak shows its story and related projects below; era buttons jump between eras. A plain-text **Chronology** follows. Returns 404 when the section is turned off |
 | `/impact`        | The impact dashboard (selected case study with the Leadership / Engineering switch, project tiles, and a mini atlas of the project's places), then every published project as a card. Returns 404 when the section is turned off                                                    |
 | `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                                                                                                                                     |
-| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                                                                                                                                             |
+| `/atlas`         | Globe with a side panel (chosen place and its stories, plus a searchable index), then every published place with its linked projects and milestones. Returns 404 when the section is turned off                                                                                     |
 | `/about`         | **Philosophy**: opening statement, introduction, principles, current focus, credentials (expired ones labelled) and the contact section. Returns 404 until there is content                                                                                                         |
 | `/lab`           | **Engineering Lab**: the featured entry large with its diagram, then the rest as cards with status, tags and an outbound link; filter by tag with `?tag=`. Returns 404 until an entry is published                                                                                  |
-| `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off                                                                                                                   |
+| `/writing`       | Lead story (first featured post, else the newest), then the rest as a 16:9 card grid, with tag filters (`?tag=`). Each card links to the original article. Returns 404 when Ghost is not configured or the section is off                                                           |
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
 
@@ -326,3 +326,4 @@ For the full production procedure (applying migrations before the new version ta
 | Hero with globe, metric strip (achievements), coastlines, idle spin             | Done   |
 | Philosophy page, home philosophy preview and contact section                    | Done   |
 | Engineering Lab page and home preview                                           | Done   |
+| Writing lead story, card grid and tag filters; atlas side panel and search      | Done   |
