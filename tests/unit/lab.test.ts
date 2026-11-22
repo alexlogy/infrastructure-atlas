@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
-import { labTags, leadLabProject, pickLabTag } from '@/lib/lab'
+import { labTags, leadLabProject } from '@/lib/lab'
+import { pickTag } from '@/lib/tags'
 import { toLabProjectView } from '@/lib/payload/mappers'
 import type { LabProjectView } from '@/types/view-models'
 
@@ -28,10 +29,10 @@ describe('lab helpers', () => {
   it('lists tags A–Z and accepts only tags in use', () => {
     const tags = labTags(all)
     expect(tags).toEqual(['a', 'b'])
-    expect(pickLabTag(tags, 'b')).toBe('b')
-    expect(pickLabTag(tags, ['a', 'b'])).toBe('a')
-    expect(pickLabTag(tags, 'missing')).toBeNull()
-    expect(pickLabTag(tags, undefined)).toBeNull()
+    expect(pickTag(tags, 'b')).toBe('b')
+    expect(pickTag(tags, ['a', 'b'])).toBe('a')
+    expect(pickTag(tags, 'missing')).toBeNull()
+    expect(pickTag(tags, undefined)).toBeNull()
   })
 })
 

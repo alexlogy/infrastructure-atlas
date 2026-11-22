@@ -21,8 +21,16 @@ const post = (n, extra = {}) => ({
   ...extra,
 })
 
+const SECOND_TAG = { name: 'Second sample tag', slug: 'second-sample-tag', visibility: 'public' }
 const INITIAL = [5, 4, 3, 2, 1].map((n) =>
-  post(n, n === 3 ? { canonical_url: 'https://canonical.example.test/sample-article-3/' } : {}),
+  post(
+    n,
+    n === 3
+      ? { canonical_url: 'https://canonical.example.test/sample-article-3/' }
+      : n === 4
+        ? { tags: [post(4).tags[0], SECOND_TAG] }
+        : {},
+  ),
 )
 let POSTS = INITIAL
 

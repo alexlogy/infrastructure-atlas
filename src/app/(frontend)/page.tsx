@@ -5,11 +5,13 @@ import Link from 'next/link'
 import { ContactSection } from '@/components/about/ContactSection'
 import { Principles } from '@/components/about/Principles'
 import { LabGrid } from '@/components/lab/LabCard'
+import { PostGrid } from '@/components/writing/PostCard'
 import { PlaceGlobe } from '@/components/atlas/PlaceGlobe'
 import { MetricStrip } from '@/components/hero/MetricStrip'
 import { SmartLink } from '@/components/layout/SmartLink'
 import { ImpactSection } from '@/components/impact/ImpactSection'
 import { JourneyScene } from '@/components/journey/JourneyScene'
+import { getGhostPosts, ghostConfig } from '@/lib/ghost'
 import { pageMetadata } from '@/lib/metadata'
 import {
   getAboutPage,
@@ -20,8 +22,10 @@ import {
   getPublicProjects,
   getPublicTimeline,
   getSiteSettings,
+  getWritingSettings,
 } from '@/lib/payload/public'
-import type { AtlasView, NavLink } from '@/types/view-models'
+import { arrangePosts } from '@/lib/writing'
+import type { AtlasView, GhostPostView, NavLink } from '@/types/view-models'
 
 export function generateMetadata(): Promise<Metadata> {
   return pageMetadata({ path: '/' })
@@ -32,12 +36,13 @@ type Props = { searchParams: Promise<{ project?: string | string[]; view?: strin
 export default async function HomePage({ searchParams }: Props) {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])
 
-  const [projects, milestones, achievements, about, lab] = await Promise.all([
+  const [projects, milestones, achievements, about, lab, posts] = await Promise.all([
     settings.showImpact ? getPublicProjects() : [],
     settings.showJourney ? getPublicTimeline() : [],
     getPublicAchievements(),
     getAboutPage(),
     getPublicLabProjects(),
+    homePosts(),
   ])
   const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
@@ -225,9 +230,40 @@ export default async function HomePage({ searchParams }: Props) {
         </section>
       )}
 
+      {posts.length > 0 && (
+        <section className="container-page section-y" aria-labelledby="home-writing-heading">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Writing</p>
+              <h2 id="home-writing-heading" className="mt-3 text-section font-semibold">
+                Selected writing
+              </h2>
+            </div>
+            <Link
+              href="/writing"
+              className="font-medium text-accent underline underline-offset-4 hover:text-ink"
+            >
+              All writing
+            </Link>
+          </div>
+          <div className="mt-8">
+            <PostGrid posts={posts} locale={settings.locale} />
+          </div>
+        </section>
+      )}
+
       <ContactSection contact={about.contact} button={settings.contact} />
     </>
   )
+}
+
+/** Featured posts first, then recent, three at most; empty when Ghost is off or unreachable. */
+async function homePosts(): Promise<GhostPostView[]> {
+  const writing = await getWritingSettings()
+  if (!ghostConfig || !writing.enabled) return []
+  const { featured, recent } = await getGhostPosts(writing)
+  const { lead, rest } = arrangePosts(featured, recent, null)
+  return [...(lead ? [lead] : []), ...rest].slice(0, 3)
 }
 
 const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
