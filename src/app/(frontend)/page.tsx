@@ -3,6 +3,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 
 import { HomeGlobe } from '@/components/atlas/HomeGlobe'
+import { SmartLink } from '@/components/layout/SmartLink'
 import { ProjectGrid } from '@/components/impact/ProjectCard'
 import { pageMetadata } from '@/lib/metadata'
 import { getAtlas, getHomePage, getPublicProjects, getSiteSettings } from '@/lib/payload/public'
@@ -31,13 +32,10 @@ export default async function HomePage() {
 
   return (
     <>
-      <section className="mx-auto max-w-5xl px-6 py-24 sm:py-32" aria-labelledby="home-heading">
+      <section className="container-page section-y" aria-labelledby="home-heading">
         <div className="grid items-center gap-12 md:grid-cols-[3fr_2fr]">
           <div>
-            <h1
-              id="home-heading"
-              className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl"
-            >
+            <h1 id="home-heading" className="max-w-3xl text-hero font-semibold">
               {home.headline ?? settings.siteTitle}
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-muted">
@@ -70,10 +68,10 @@ export default async function HomePage() {
       </section>
 
       {atlas && atlas.nodes.length > 0 && (
-        <section className="mx-auto max-w-5xl px-6 pb-24" aria-labelledby="home-atlas-heading">
+        <section className="container-page pb-24" aria-labelledby="home-atlas-heading">
           <div className="grid items-center gap-12 rounded-lg border border-line p-8 md:grid-cols-[2fr_3fr]">
             <div>
-              <h2 id="home-atlas-heading" className="text-2xl font-semibold">
+              <h2 id="home-atlas-heading" className="text-section font-semibold">
                 Atlas
               </h2>
               <p className="mt-3 leading-relaxed text-muted">
@@ -94,11 +92,8 @@ export default async function HomePage() {
       )}
 
       {featured.length > 0 && (
-        <section
-          className="mx-auto max-w-5xl px-6 pb-24"
-          aria-labelledby="featured-projects-heading"
-        >
-          <h2 id="featured-projects-heading" className="text-2xl font-semibold">
+        <section className="container-page pb-24" aria-labelledby="featured-projects-heading">
+          <h2 id="featured-projects-heading" className="text-section font-semibold">
             Selected projects
           </h2>
           <div className="mt-8">
@@ -119,21 +114,16 @@ function pickInOrder(projects: ProjectSummaryView[], ids: string[]): ProjectSumm
 }
 
 function ActionLink({ label, href, primary }: NavLink & { primary: boolean }) {
-  const className = `inline-flex items-center rounded-md px-5 py-3 font-medium transition-colors ${
-    primary
-      ? 'bg-accent text-midnight hover:bg-ink'
-      : 'border border-line text-ink hover:border-accent hover:text-accent'
-  }`
-  if (href.startsWith('/') || href.startsWith('#')) {
-    return (
-      <Link href={href} className={className}>
-        {label}
-      </Link>
-    )
-  }
   return (
-    <a href={href} className={className} rel="noopener noreferrer">
+    <SmartLink
+      href={href}
+      className={`inline-flex min-h-11 items-center rounded-lg px-5 py-3 font-medium transition-colors duration-150 ${
+        primary
+          ? 'bg-accent text-midnight hover:bg-ice'
+          : 'border border-line text-ink hover:border-accent hover:text-accent'
+      }`}
+    >
       {label}
-    </a>
+    </SmartLink>
   )
 }

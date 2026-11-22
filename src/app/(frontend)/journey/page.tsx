@@ -25,8 +25,8 @@ export default async function JourneyPage() {
   const preview = (await draftMode()).isEnabled
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-16 sm:py-24" aria-labelledby="journey-heading">
-      <h1 id="journey-heading" className="text-3xl font-semibold tracking-tight sm:text-4xl">
+    <section className="container-page section-y" aria-labelledby="journey-heading">
+      <h1 id="journey-heading" className="text-page font-semibold">
         Journey
       </h1>
       <p className="mt-3 text-muted">Milestones in chronological order.</p>

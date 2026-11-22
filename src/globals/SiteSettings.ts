@@ -67,6 +67,32 @@ export const SiteSettings: GlobalConfig = {
       ],
     },
     {
+      name: 'contact',
+      label: 'Contact button',
+      type: 'group',
+      admin: {
+        description:
+          'The outlined button at the right of the header and in the footer. Hidden until a link is set.',
+      },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'label', type: 'text', defaultValue: 'Get in touch', maxLength: 30 },
+            {
+              name: 'href',
+              label: 'Link',
+              type: 'text',
+              validate: (value: string | null | undefined) =>
+                !value ||
+                isSafeHref(value) ||
+                'Use a site path like /about, a full https:// URL or a mailto: address.',
+            },
+          ],
+        },
+      ],
+    },
+    {
       name: 'sections',
       label: 'Section visibility',
       type: 'group',

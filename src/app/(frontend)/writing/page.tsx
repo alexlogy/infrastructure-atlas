@@ -23,8 +23,8 @@ export default async function WritingPage() {
   const empty = featured.length === 0 && recent.length === 0
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-16 sm:py-24" aria-labelledby="writing-heading">
-      <h1 id="writing-heading" className="text-3xl font-semibold tracking-tight sm:text-4xl">
+    <section className="container-page section-y" aria-labelledby="writing-heading">
+      <h1 id="writing-heading" className="text-page font-semibold">
         Writing
       </h1>
       <p className="mt-3 text-muted">
@@ -63,7 +63,7 @@ function PostGroup({
   if (posts.length === 0) return null
   return (
     <section aria-labelledby={`${id}-posts-heading`} className="mt-12">
-      <h2 id={`${id}-posts-heading`} className="text-2xl font-semibold">
+      <h2 id={`${id}-posts-heading`} className="text-section font-semibold">
         {title}
       </h2>
       <ul className="mt-6 grid gap-6 sm:grid-cols-2">

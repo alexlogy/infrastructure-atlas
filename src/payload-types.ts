@@ -698,6 +698,13 @@ export interface SiteSetting {
         id?: string | null;
       }[]
     | null;
+  /**
+   * The outlined button at the right of the header and in the footer. Hidden until a link is set.
+   */
+  contact?: {
+    label?: string | null;
+    href?: string | null;
+  };
   sections?: {
     journey?: boolean | null;
     impact?: boolean | null;
@@ -785,6 +792,12 @@ export interface SiteSettingsSelect<T extends boolean = true> {
         label?: T;
         href?: T;
         id?: T;
+      };
+  contact?:
+    | T
+    | {
+        label?: T;
+        href?: T;
       };
   sections?:
     | T

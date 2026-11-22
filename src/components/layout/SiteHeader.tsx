@@ -1,56 +1,29 @@
 import Link from 'next/link'
 
-import type { SiteSettingsView } from '@/types/view-models'
+import type { NavLink } from '@/types/view-models'
+
+import { HeaderNav } from './HeaderNav'
 
 export function SiteHeader({
-  settings,
-  showWriting,
+  siteTitle,
+  links,
+  contact,
 }: {
-  settings: SiteSettingsView
-  showWriting: boolean
+  siteTitle: string
+  links: NavLink[]
+  contact: NavLink | null
 }) {
-  const links = [
-    ...(settings.showJourney ? [{ label: 'Journey', href: '/journey' }] : []),
-    ...(settings.showImpact ? [{ label: 'Impact', href: '/impact' }] : []),
-    ...(settings.showAtlas ? [{ label: 'Atlas', href: '/atlas' }] : []),
-    ...(showWriting ? [{ label: 'Writing', href: '/writing' }] : []),
-    ...settings.navLinks,
-  ]
-
   return (
-    <header className="border-b border-line">
-      <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-        <Link href="/" className="text-lg font-semibold tracking-tight hover:text-accent">
-          {settings.siteTitle}
+    <header className="sticky top-0 z-40 border-b border-line/60 bg-midnight/90 supports-[backdrop-filter]:bg-midnight/75 supports-[backdrop-filter]:backdrop-blur-md">
+      <div className="container-page flex h-(--header-height) items-center justify-between gap-6">
+        <Link
+          href="/"
+          className="font-display text-lg font-semibold tracking-tight hover:text-accent"
+        >
+          {siteTitle}
         </Link>
-        {links.length > 0 && (
-          <nav aria-label="Primary">
-            <ul className="flex flex-wrap gap-6 text-sm">
-              {links.map((link) => (
-                <li key={`${link.href}-${link.label}`}>
-                  <NavAnchor {...link} />
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
+        <HeaderNav links={links} contact={contact} />
       </div>
     </header>
-  )
-}
-
-function NavAnchor({ label, href }: { label: string; href: string }) {
-  const className = 'text-muted underline-offset-4 hover:text-accent hover:underline'
-  if (href.startsWith('/') || href.startsWith('#')) {
-    return (
-      <Link href={href} className={className}>
-        {label}
-      </Link>
-    )
-  }
-  return (
-    <a href={href} className={className} rel="noopener noreferrer">
-      {label}
-    </a>
   )
 }

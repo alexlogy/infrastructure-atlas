@@ -63,6 +63,7 @@ export async function fetchSiteSettings(payload: Payload): Promise<SiteSettingsV
       description: true,
       locale: true,
       navLinks: true,
+      contact: true,
       sections: true,
       atlasCenter: true,
     },

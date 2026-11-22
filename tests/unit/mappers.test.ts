@@ -34,6 +34,7 @@ describe('toSiteSettingsView', () => {
       description: null,
       locale: 'en',
       navLinks: [],
+      contact: null,
       showJourney: true,
       showImpact: true,
       showAtlas: true,
@@ -54,6 +55,20 @@ describe('toSiteSettingsView', () => {
       ],
     })
     expect(view.navLinks).toEqual([{ label: 'Docs', href: 'https://example.com/docs' }])
+  })
+
+  it('shows the contact button only for a safe link, with a default label', () => {
+    expect(
+      toSiteSettingsView({ contact: { label: '', href: 'mailto:owner@example.test' } }).contact,
+    ).toEqual({ label: 'Get in touch', href: 'mailto:owner@example.test' })
+    expect(toSiteSettingsView({ contact: { label: 'Say hi', href: '/about' } }).contact).toEqual({
+      label: 'Say hi',
+      href: '/about',
+    })
+    expect(
+      toSiteSettingsView({ contact: { label: 'X', href: 'javascript:alert(1)' } }).contact,
+    ).toBeNull()
+    expect(toSiteSettingsView({ contact: { label: 'X', href: null } }).contact).toBeNull()
   })
 
   it('honours the journey visibility toggle', () => {

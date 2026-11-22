@@ -2,8 +2,8 @@ import Link from 'next/link'
 
 export default function NotFound() {
   return (
-    <section className="mx-auto max-w-3xl px-6 py-24" aria-labelledby="nf-heading">
-      <h1 id="nf-heading" className="text-2xl font-semibold">
+    <section className="container-page section-y" aria-labelledby="nf-heading">
+      <h1 id="nf-heading" className="text-page font-semibold">
         Page not found
       </h1>
       <p className="mt-3 text-muted">The page you are looking for does not exist.</p>

@@ -55,6 +55,9 @@ export function toSiteSettingsView(doc: Partial<SiteSetting> | null | undefined)
     description: clean(doc?.description),
     locale: clean(doc?.locale) ?? 'en',
     navLinks: toLinks(doc?.navLinks),
+    contact:
+      toLinks([{ label: doc?.contact?.label || 'Get in touch', href: doc?.contact?.href }])[0] ??
+      null,
     showJourney: doc?.sections?.journey ?? true,
     showImpact: doc?.sections?.impact ?? true,
     showAtlas: doc?.sections?.atlas ?? true,
