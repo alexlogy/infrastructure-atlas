@@ -52,6 +52,8 @@ Everything Docker-related lives in `docker/`:
 | `docker/compose.yml`             | Production-style stack: `db`, one-shot `migrate`, `app`                                              |
 | `docker/.env.example`            | Template for `docker/.env` (gitignored) with the stack's settings                                    |
 | `docker/compose.dev.yml`         | Local development database only (`pnpm db:up`)                                                       |
+| `docker/compose.nginx.yml`       | Optional sample: adds nginx in front of `app`, terminating TLS on ports 80 and 443                   |
+| `docker/nginx/atlas.conf`        | Sample nginx config: HTTPS redirect, TLS, proxy headers, upload limit, login rate limit              |
 
 ```bash
 cp docker/.env.example docker/.env      # fill in the secrets
@@ -72,6 +74,16 @@ docker compose -f docker/compose.yml exec -T app tar -czf - -C /app media > atla
 
 - **First admin:** open `/admin` right after the first start (see above).
 - **Plain hosts are unchanged:** `output: 'standalone'` is enabled only when the image build sets `NEXT_OUTPUT=standalone`, so `pnpm build && pnpm start` works as before.
+
+### nginx (optional sample)
+
+Put your certificate and key in `docker/nginx/certs/` as `fullchain.pem` and `privkey.pem` (the folder is gitignored), set `server_name` in `docker/nginx/atlas.conf` to your domain, then add the override file. The app's port is then no longer published on the host, so all traffic goes through nginx:
+
+```bash
+docker compose -f docker/compose.yml -f docker/compose.nginx.yml up -d --build
+```
+
+nginx redirects HTTP to HTTPS, serves HTTP/2, forwards the client address and scheme, allows uploads up to Payload's 10 MB limit and rate-limits the login endpoints (see [Login protection](#login-protection)). It adds no security headers, because the app already sends them. Getting and renewing certificates (for example with certbot) is up to you; reload nginx after renewal with `docker compose -f docker/compose.yml -f docker/compose.nginx.yml exec nginx nginx -s reload`. To try it locally, a self-signed certificate works: `openssl req -x509 -newkey rsa:2048 -nodes -days 30 -subj /CN=localhost -keyout docker/nginx/certs/privkey.pem -out docker/nginx/certs/fullchain.pem`, with `NEXT_PUBLIC_SITE_URL=https://localhost`.
 
 ## Backups
 
@@ -104,19 +116,7 @@ Built in:
 - **Secure session cookie:** when `NEXT_PUBLIC_SITE_URL` is https, the `payload-token` cookie is `Secure`, `HttpOnly` and `SameSite=Lax`.
 - **Password-reset throttle:** Payload accepts at most one reset request per account every 15 seconds.
 
-Lockout is per account, so it doesn't slow down an attacker trying one password across many accounts, and anyone who knows an editor's email can keep that account locked. Add per-IP rate limiting at the reverse proxy. It belongs there rather than in the app because the proxy sees the real client address and shares limits across every app instance. An nginx example:
-
-```nginx
-# http {} block: 10 requests a minute per client address
-limit_req_zone $binary_remote_addr zone=auth:10m rate=10r/m;
-
-# server {} block, next to the main location that proxies to the app
-location ~ ^/api/users/(login|forgot-password|reset-password|unlock)$ {
-    limit_req zone=auth burst=5 nodelay;
-    limit_req_status 429;
-    proxy_pass http://app:3000;   # same upstream and proxy headers as the main location
-}
-```
+Lockout is per account, so it doesn't slow down an attacker trying one password across many accounts, and anyone who knows an editor's email can keep that account locked. Add per-IP rate limiting at the reverse proxy. It belongs there rather than in the app because the proxy sees the real client address and shares limits across every app instance. The sample nginx config, `docker/nginx/atlas.conf`, does this: 10 requests a minute per client address (burst 5) on the login, forgot-password, reset-password and unlock endpoints, answering 429 beyond that.
 
 Behind a CDN or load balancer, configure nginx's `real_ip` module first, so `$binary_remote_addr` is the visitor's address and not the CDN's.
 
