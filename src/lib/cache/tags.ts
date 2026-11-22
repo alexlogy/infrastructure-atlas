@@ -6,6 +6,7 @@ export const CACHE_TAGS = {
   homePage: 'home-page',
   achievements: 'achievements',
   aboutPage: 'about-page',
+  lab: 'lab',
   atlas: 'atlas',
   writing: 'writing-settings',
   ghost: 'ghost',

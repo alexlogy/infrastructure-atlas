@@ -74,7 +74,7 @@ The home page and `/impact` share one three-column band (`ImpactDashboard`): the
 
 ## Home page order
 
-The home page follows the design's narrative: hero with globe and metric strip, Journey scene, impact dashboard, philosophy preview, then the contact section. Every section renders only when it has published content and its switch in Site settings is on, so an empty CMS still gives a coherent page.
+The home page follows the design's narrative: hero with globe and metric strip, Journey scene, impact dashboard, philosophy preview, Lab preview, then the contact section. Every section renders only when it has published content and its switch in Site settings is on, so an empty CMS still gives a coherent page.
 
 ## Atlas globe
 

@@ -12,6 +12,7 @@ Payload schemas live in `src/collections/` and `src/globals/`. Types are generat
 | `impact-projects`     | Collection | Published only                       | Authenticated                                          | Yes    |
 | `atlas-locations`     | Collection | Published only                       | Authenticated                                          | Yes    |
 | `achievements`        | Collection | Published only                       | Authenticated                                          | Yes    |
+| `lab-projects`        | Collection | Published only                       | Authenticated                                          | Yes    |
 | `site-settings`       | Global     | Yes                                  | Authenticated                                          | No     |
 | `home-page`           | Global     | Yes                                  | Authenticated                                          | No     |
 | `about-page`          | Global     | Yes                                  | Authenticated                                          | No     |
@@ -134,6 +135,22 @@ Feeds `/about` (labelled **Philosophy**), the home page's philosophy preview and
 | `contact.heading`, `contact.text`, `contact.links` | text, textarea, array (≤ 6) of label + href       | Closing call to action; the Site settings contact button is added first                              |
 
 Saving expires the `about-page` cache tag.
+
+## `lab-projects`
+
+Engineering Lab entries on `/lab` and the home page. Each links out to a write-up or repository instead of having its own page. `/lab` and its navigation link stay hidden (404) until one is published.
+
+| Field                     | Type                                        | Notes                                                                                                                       |
+| ------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `title`, `summary`        | text ≤ 120, textarea ≤ 300 (both required)  |                                                                                                                             |
+| `category`                | text, ≤ 40                                  | Small label on the card                                                                                                     |
+| `stage`                   | select: active, exploring, paused, archived | Labelled "Status"; shown as text with a dot. Not named `status` because Postgres would clash with the drafts `_status` enum |
+| `tags`                    | text, many (≤ 8)                            | Visitors filter `/lab` by tag (`?tag=`)                                                                                     |
+| `image`                   | upload → `media`                            | Diagram or screenshot; its alt text is the text alternative                                                                 |
+| `link.label`, `link.href` | text, text                                  | Site path or `http(s)` URL only                                                                                             |
+| `featured`, `sortOrder`   | checkbox, number                            | The first featured entry leads `/lab`                                                                                       |
+
+Publishing or unpublishing expires the `lab` cache tag. Keep hostnames, IP addresses and private network details out of summaries and diagrams.
 
 ## `writing-settings` (global)
 

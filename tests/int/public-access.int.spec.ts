@@ -46,6 +46,7 @@ beforeAll(async () => {
   type Migrations = NonNullable<Parameters<Payload['db']['migrate']>[0]>['migrations']
   await payload.db.migrate({ migrations: migrations as unknown as Migrations })
   for (const collection of [
+    'lab-projects',
     'achievements',
     'impact-projects',
     'atlas-locations',
@@ -593,6 +594,7 @@ describe('media', () => {
       'home-page.heroImage',
       'impact-projects.diagram',
       'impact-projects.featuredImage',
+      'lab-projects.image',
       'site-settings.shareImage',
       'timeline-milestones.image',
     ])

@@ -73,6 +73,7 @@ export interface Config {
     'impact-projects': ImpactProject;
     'atlas-locations': AtlasLocation;
     achievements: Achievement;
+    'lab-projects': LabProject;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -86,6 +87,7 @@ export interface Config {
     'impact-projects': ImpactProjectsSelect<false> | ImpactProjectsSelect<true>;
     'atlas-locations': AtlasLocationsSelect<false> | AtlasLocationsSelect<true>;
     achievements: AchievementsSelect<false> | AchievementsSelect<true>;
+    'lab-projects': LabProjectsSelect<false> | LabProjectsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -472,6 +474,40 @@ export interface Achievement {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-projects".
+ */
+export interface LabProject {
+  id: number;
+  title: string;
+  category?: string | null;
+  stage?: ('active' | 'exploring' | 'paused' | 'archived') | null;
+  summary: string;
+  /**
+   * Stack or theme, e.g. "automation". Visitors can filter by tag.
+   */
+  tags?: string[] | null;
+  /**
+   * A diagram or screenshot. Its alt text is the text alternative.
+   */
+  image?: (number | null) | Media;
+  link?: {
+    label?: string | null;
+    href?: string | null;
+  };
+  /**
+   * The first featured entry leads the Lab page.
+   */
+  featured?: boolean | null;
+  /**
+   * Lower values are listed first.
+   */
+  sortOrder?: number | null;
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -517,6 +553,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'achievements';
         value: number | Achievement;
+      } | null)
+    | ({
+        relationTo: 'lab-projects';
+        value: number | LabProject;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -695,6 +735,29 @@ export interface AchievementsSelect<T extends boolean = true> {
   explanation?: T;
   icon?: T;
   project?: T;
+  sortOrder?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "lab-projects_select".
+ */
+export interface LabProjectsSelect<T extends boolean = true> {
+  title?: T;
+  category?: T;
+  stage?: T;
+  summary?: T;
+  tags?: T;
+  image?: T;
+  link?:
+    | T
+    | {
+        label?: T;
+        href?: T;
+      };
+  featured?: T;
   sortOrder?: T;
   updatedAt?: T;
   createdAt?: T;

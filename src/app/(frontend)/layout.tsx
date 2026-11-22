@@ -8,7 +8,12 @@ import { SkipLink } from '@/components/layout/SkipLink'
 import { getPreviewUser } from '@/lib/payload/preview'
 import { ghostConfig } from '@/lib/ghost'
 import { pageMetadata } from '@/lib/metadata'
-import { getAboutPage, getSiteSettings, getWritingSettings } from '@/lib/payload/public'
+import {
+  getAboutPage,
+  getPublicLabProjects,
+  getSiteSettings,
+  getWritingSettings,
+} from '@/lib/payload/public'
 import { siteOrigin } from '@/lib/seo'
 
 import type { NavLink, SiteSettingsView } from '@/types/view-models'
@@ -36,16 +41,18 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, writing, about, previewUser] = await Promise.all([
+  const [settings, writing, about, lab, previewUser] = await Promise.all([
     getSiteSettings(),
     getWritingSettings(),
     getAboutPage(),
+    getPublicLabProjects(),
     getPreviewUser(),
   ])
 
   const links = primaryLinks(settings, {
     writing: Boolean(ghostConfig) && writing.enabled,
     about: about.hasContent,
+    lab: lab.length > 0,
   })
 
   return (
@@ -71,7 +78,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 /** Built-in sections (when switched on), then the editor's extra links. */
 function primaryLinks(
   settings: SiteSettingsView,
-  show: { writing: boolean; about: boolean },
+  show: { writing: boolean; about: boolean; lab: boolean },
 ): NavLink[] {
   return [
     { label: 'Home', href: '/' },
@@ -79,6 +86,7 @@ function primaryLinks(
     ...(settings.showImpact ? [{ label: 'Impact', href: '/impact' }] : []),
     ...(settings.showAtlas ? [{ label: 'Atlas', href: '/atlas' }] : []),
     ...(show.about ? [{ label: 'Philosophy', href: '/about' }] : []),
+    ...(show.lab ? [{ label: 'Lab', href: '/lab' }] : []),
     ...(show.writing ? [{ label: 'Writing', href: '/writing' }] : []),
     ...settings.navLinks,
   ]

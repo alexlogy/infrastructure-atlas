@@ -1,3 +1,4 @@
+import type { LabStatus } from '@/lib/lab'
 import type { ProjectIconName } from '@/lib/project-icons'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 
@@ -113,6 +114,18 @@ export type AboutPageView = {
   contact: { heading: string | null; text: string | null; links: NavLink[] }
   /** True once there is something to show on /about (statement, introduction or a principle). */
   hasContent: boolean
+}
+
+export type LabProjectView = {
+  id: string
+  title: string
+  category: string | null
+  status: LabStatus
+  summary: string
+  tags: string[]
+  image: ImageView | null
+  link: NavLink | null
+  featured: boolean
 }
 
 /** One figure in the home page metric strip; entered by an editor, never computed. */
