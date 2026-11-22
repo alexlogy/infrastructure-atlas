@@ -8,7 +8,7 @@ import { SkipLink } from '@/components/layout/SkipLink'
 import { getPreviewUser } from '@/lib/payload/preview'
 import { ghostConfig } from '@/lib/ghost'
 import { pageMetadata } from '@/lib/metadata'
-import { getSiteSettings, getWritingSettings } from '@/lib/payload/public'
+import { getAboutPage, getSiteSettings, getWritingSettings } from '@/lib/payload/public'
 import { siteOrigin } from '@/lib/seo'
 
 import type { NavLink, SiteSettingsView } from '@/types/view-models'
@@ -36,13 +36,17 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [settings, writing, previewUser] = await Promise.all([
+  const [settings, writing, about, previewUser] = await Promise.all([
     getSiteSettings(),
     getWritingSettings(),
+    getAboutPage(),
     getPreviewUser(),
   ])
 
-  const links = primaryLinks(settings, Boolean(ghostConfig) && writing.enabled)
+  const links = primaryLinks(settings, {
+    writing: Boolean(ghostConfig) && writing.enabled,
+    about: about.hasContent,
+  })
 
   return (
     <html lang={settings.locale} className={`${inter.variable} ${spaceGrotesk.variable}`}>
@@ -65,13 +69,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 }
 
 /** Built-in sections (when switched on), then the editor's extra links. */
-function primaryLinks(settings: SiteSettingsView, showWriting: boolean): NavLink[] {
+function primaryLinks(
+  settings: SiteSettingsView,
+  show: { writing: boolean; about: boolean },
+): NavLink[] {
   return [
     { label: 'Home', href: '/' },
     ...(settings.showJourney ? [{ label: 'Journey', href: '/journey' }] : []),
     ...(settings.showImpact ? [{ label: 'Impact', href: '/impact' }] : []),
     ...(settings.showAtlas ? [{ label: 'Atlas', href: '/atlas' }] : []),
-    ...(showWriting ? [{ label: 'Writing', href: '/writing' }] : []),
+    ...(show.about ? [{ label: 'Philosophy', href: '/about' }] : []),
+    ...(show.writing ? [{ label: 'Writing', href: '/writing' }] : []),
     ...settings.navLinks,
   ]
 }

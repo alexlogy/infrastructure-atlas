@@ -59,6 +59,19 @@ export default async function globalSetup(): Promise<void> {
     context: { disableRevalidate: true },
   })
 
+  await payload.updateGlobal({
+    slug: 'about-page',
+    data: {
+      statement: '',
+      introduction: null,
+      principles: [],
+      currentFocus: '',
+      credentials: [],
+      contact: { heading: '', text: '', links: [] },
+    },
+    context: { disableRevalidate: true },
+  })
+
   const email = 'e2e-editor@example.test'
   const password = randomBytes(18).toString('base64url')
   await payload.create({ collection: 'users', data: { email, password, role: 'editor' } })

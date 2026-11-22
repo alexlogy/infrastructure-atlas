@@ -98,11 +98,13 @@ export interface Config {
   globals: {
     'site-settings': SiteSetting;
     'home-page': HomePage;
+    'about-page': AboutPage;
     'writing-settings': WritingSetting;
   };
   globalsSelect: {
     'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
     'home-page': HomePageSelect<false> | HomePageSelect<true>;
+    'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
     'writing-settings': WritingSettingsSelect<false> | WritingSettingsSelect<true>;
   };
   locale: null;
@@ -827,6 +829,76 @@ export interface HomePage {
   createdAt?: string | null;
 }
 /**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page".
+ */
+export interface AboutPage {
+  id: number;
+  /**
+   * Opening statement: one clear, human sentence.
+   */
+  statement?: string | null;
+  introduction?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Optional. Leave empty rather than using a stand-in.
+   */
+  portrait?: (number | null) | Media;
+  /**
+   * Three or four short principles read best.
+   */
+  principles?:
+    | {
+        title: string;
+        body?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  currentFocus?: string | null;
+  /**
+   * Shown in a side panel. Past expiry dates are labelled as expired.
+   */
+  credentials?:
+    | {
+        title: string;
+        issuer?: string | null;
+        issuedOn?: string | null;
+        expiresOn?: string | null;
+        url?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Closing call to action on the home page and this page. Use links you are happy to publish.
+   */
+  contact?: {
+    heading?: string | null;
+    text?: string | null;
+    links?:
+      | {
+          label: string;
+          href: string;
+          id?: string | null;
+        }[]
+      | null;
+  };
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * Shows recent posts from the Ghost blog configured on the server. Has no effect until GHOST_URL and GHOST_CONTENT_API_KEY are set.
  *
  * This interface was referenced by `Config`'s JSON-Schema
@@ -908,6 +980,49 @@ export interface HomePageSelect<T extends boolean = true> {
         id?: T;
       };
   featuredProjects?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page_select".
+ */
+export interface AboutPageSelect<T extends boolean = true> {
+  statement?: T;
+  introduction?: T;
+  portrait?: T;
+  principles?:
+    | T
+    | {
+        title?: T;
+        body?: T;
+        id?: T;
+      };
+  currentFocus?: T;
+  credentials?:
+    | T
+    | {
+        title?: T;
+        issuer?: T;
+        issuedOn?: T;
+        expiresOn?: T;
+        url?: T;
+        id?: T;
+      };
+  contact?:
+    | T
+    | {
+        heading?: T;
+        text?: T;
+        links?:
+          | T
+          | {
+              label?: T;
+              href?: T;
+              id?: T;
+            };
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

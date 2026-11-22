@@ -14,6 +14,7 @@ Payload schemas live in `src/collections/` and `src/globals/`. Types are generat
 | `achievements`        | Collection | Published only                       | Authenticated                                          | Yes    |
 | `site-settings`       | Global     | Yes                                  | Authenticated                                          | No     |
 | `home-page`           | Global     | Yes                                  | Authenticated                                          | No     |
+| `about-page`          | Global     | Yes                                  | Authenticated                                          | No     |
 | `writing-settings`    | Global     | Yes                                  | Authenticated                                          | No     |
 
 GraphQL is disabled. Anonymous readers can never see version history (`readVersions`).
@@ -117,6 +118,22 @@ Figures for the compact strip under the home page hero. Nothing is computed or f
 | `sortOrder`   | number                           | Lower first                                                           |
 
 Publishing or unpublishing expires the `achievements` cache tag.
+
+## `about-page` (global)
+
+Feeds `/about` (labelled **Philosophy**), the home page's philosophy preview and the closing contact section. `/about` and its navigation link stay hidden (404) until a statement, introduction or principle is filled in.
+
+| Field                                              | Type                                              | Notes                                                                                                |
+| -------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `statement`                                        | text, ≤ 160                                       | Opening statement; the page heading                                                                  |
+| `introduction`                                     | rich text                                         | Short narrative                                                                                      |
+| `portrait`                                         | upload → `media`                                  | Optional; public only while set here                                                                 |
+| `principles`                                       | array (≤ 4) of title + body                       | The first three also appear on the home page                                                         |
+| `currentFocus`                                     | textarea, ≤ 400                                   |                                                                                                      |
+| `credentials`                                      | array (≤ 12): title, issuer, issued, expires, URL | Status is worked out when the page renders: past the expiry date it reads "Expired", never "Current" |
+| `contact.heading`, `contact.text`, `contact.links` | text, textarea, array (≤ 6) of label + href       | Closing call to action; the Site settings contact button is added first                              |
+
+Saving expires the `about-page` cache tag.
 
 ## `writing-settings` (global)
 

@@ -1,4 +1,5 @@
 import type {
+  AboutPage,
   Achievement,
   AtlasLocation,
   HomePage,
@@ -11,6 +12,7 @@ import type {
 import { PROJECT_ICONS } from '@/lib/project-icons'
 import { isSafeHref } from '@/lib/validation/links'
 import type {
+  AboutPageView,
   AchievementView,
   AtlasNodeView,
   AtlasView,
@@ -309,5 +311,42 @@ export function toAchievementView(doc: PublicAchievementDoc): AchievementView | 
     label,
     explanation: clean(doc.explanation),
     icon: doc.icon && PROJECT_ICONS.includes(doc.icon) ? doc.icon : null,
+  }
+}
+
+export function toAboutPageView(doc: Partial<AboutPage> | null | undefined): AboutPageView {
+  const statement = clean(doc?.statement)
+  const introduction = doc?.introduction ?? null
+  const principles = (doc?.principles ?? []).flatMap((p) => {
+    const title = clean(p.title)
+    return title ? [{ title, body: clean(p.body) }] : []
+  })
+  return {
+    statement,
+    introduction,
+    portrait: toImageView(doc?.portrait),
+    principles,
+    currentFocus: clean(doc?.currentFocus),
+    credentials: (doc?.credentials ?? []).flatMap((c) => {
+      const title = clean(c.title)
+      const url = clean(c.url)
+      return title
+        ? [
+            {
+              title,
+              issuer: clean(c.issuer),
+              issuedOn: c.issuedOn ?? null,
+              expiresOn: c.expiresOn ?? null,
+              url: url && isSafeHref(url) ? url : null,
+            },
+          ]
+        : []
+    }),
+    contact: {
+      heading: clean(doc?.contact?.heading),
+      text: clean(doc?.contact?.text),
+      links: toLinks(doc?.contact?.links),
+    },
+    hasContent: Boolean(statement || introduction || principles.length > 0),
   }
 }

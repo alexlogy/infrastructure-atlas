@@ -94,6 +94,27 @@ export type HomePageView = {
   featuredProjectIds: string[]
 }
 
+export type CredentialView = {
+  title: string
+  issuer: string | null
+  issuedOn: string | null
+  /** Null when the credential does not expire. */
+  expiresOn: string | null
+  url: string | null
+}
+
+export type AboutPageView = {
+  statement: string | null
+  introduction: SerializedEditorState | null
+  portrait: ImageView | null
+  principles: { title: string; body: string | null }[]
+  currentFocus: string | null
+  credentials: CredentialView[]
+  contact: { heading: string | null; text: string | null; links: NavLink[] }
+  /** True once there is something to show on /about (statement, introduction or a principle). */
+  hasContent: boolean
+}
+
 /** One figure in the home page metric strip; entered by an editor, never computed. */
 export type AchievementView = {
   id: string

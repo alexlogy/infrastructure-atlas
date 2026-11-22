@@ -18,6 +18,7 @@ describe('sitemapEntries', () => {
       settings: on,
       projects: [{ slug: 'sample-project' }],
       showWriting: true,
+      showAbout: true,
     }).map((e) => e.url)
     expect(urls).toEqual([
       'https://example.test/',
@@ -25,6 +26,7 @@ describe('sitemapEntries', () => {
       'https://example.test/impact',
       'https://example.test/impact/sample-project',
       'https://example.test/atlas',
+      'https://example.test/about',
       'https://example.test/writing',
     ])
   })

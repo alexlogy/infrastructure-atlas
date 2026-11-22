@@ -589,6 +589,7 @@ describe('media', () => {
       if (!c.slug.startsWith('payload-')) walk(c.slug, c.fields)
     for (const g of payload.config.globals) walk(g.slug, g.fields)
     expect(found.sort()).toEqual([
+      'about-page.portrait',
       'home-page.heroImage',
       'impact-projects.diagram',
       'impact-projects.featuredImage',
