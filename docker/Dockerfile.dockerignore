@@ -1,0 +1,19 @@
+# Build context exclusions for docker/Dockerfile (BuildKit reads <Dockerfile>.dockerignore).
+# Secrets, local data and owner material must never enter an image.
+**/.env
+**/.env.*
+.git
+.github
+.claude
+.next
+node_modules
+media
+test-results
+playwright-report
+coverage
+tests
+docs
+docker
+DESIGN.md
+.local-design-reference
+*.tsbuildinfo

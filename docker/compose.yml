@@ -1,0 +1,64 @@
+# Production-style stack: PostgreSQL, a one-shot migration job, then the app.
+#   cp docker/.env.example docker/.env   # fill in the secrets
+#   docker compose -f docker/compose.yml up -d --build
+# Run exactly one app container: cache expiry is held in the server's memory (docs/deployment.md).
+name: infrastructure-atlas-prod
+
+x-database-uri: &database-uri postgresql://${POSTGRES_USER:-app_user}:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in docker/.env}@db:5432/${POSTGRES_DB:-infrastructure_atlas}
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-app_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in docker/.env}
+      POSTGRES_DB: ${POSTGRES_DB:-infrastructure_atlas}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U "$$POSTGRES_USER" -d "$$POSTGRES_DB"']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: migrate
+    environment:
+      DATABASE_URI: *database-uri
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?set PAYLOAD_SECRET in docker/.env}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: 'no'
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: runner
+      args:
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?set NEXT_PUBLIC_SITE_URL in docker/.env}
+    restart: unless-stopped
+    environment:
+      DATABASE_URI: *database-uri
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET:?set PAYLOAD_SECRET in docker/.env}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL}
+      GHOST_URL: ${GHOST_URL:-}
+      GHOST_CONTENT_API_KEY: ${GHOST_CONTENT_API_KEY:-}
+      REVALIDATION_SECRET: ${REVALIDATION_SECRET:-}
+      CSP_IMG_ORIGINS: ${CSP_IMG_ORIGINS:-}
+    ports:
+      - '127.0.0.1:${APP_PORT:-3000}:3000'
+    volumes:
+      - media:/app/media
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  pgdata:
+  media:

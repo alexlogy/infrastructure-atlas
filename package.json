@@ -9,6 +9,7 @@
   "scripts": {
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build",
     "dev": "cross-env NODE_OPTIONS=--no-deprecation next dev",
+    "db:up": "docker compose -f docker/compose.dev.yml up -d db",
     "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
     "lint": "cross-env NODE_OPTIONS=--no-deprecation eslint .",
     "format": "prettier --write .",

@@ -41,6 +41,38 @@ Use `GET /api/health` for readiness and liveness checks. It returns `200 {"statu
 > [!IMPORTANT]
 > On a brand-new production database, run `pnpm migrate` before the first start. Then open `/admin` straight away to create the first admin account, because the first-user screen stays available until an account exists. If you can, restrict access to `/admin` at the proxy until that's done.
 
+## Docker
+
+Everything Docker-related lives in `docker/`:
+
+| File                             | Purpose                                                                                              |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `docker/Dockerfile`              | Multi-stage image. `runner` (default) is the standalone Next.js server; `migrate` applies migrations |
+| `docker/Dockerfile.dockerignore` | Keeps `.env*`, `.git`, `media`, tests and local design material out of the build context             |
+| `docker/compose.yml`             | Production-style stack: `db`, one-shot `migrate`, `app`                                              |
+| `docker/.env.example`            | Template for `docker/.env` (gitignored) with the stack's settings                                    |
+| `docker/compose.dev.yml`         | Local development database only (`pnpm db:up`)                                                       |
+
+```bash
+cp docker/.env.example docker/.env      # fill in the secrets
+docker compose -f docker/compose.yml up -d --build
+docker compose -f docker/compose.yml ps # migrate: Exited (0); app and db: healthy
+```
+
+- **Order:** `app` starts only after `migrate` exits successfully, so a failed migration stops the release before the new version takes traffic. Each `up` reruns `migrate`; already-applied migrations are skipped.
+- **Build-time setting:** `NEXT_PUBLIC_SITE_URL` is a build argument baked into the image. Rebuild (`--build`) after changing it. The build uses placeholder database settings that never reach the runtime image; the build never connects to the database.
+- **Runtime:** the server runs as the non-root `node` user on port 3000, published on `127.0.0.1:${APP_PORT}`. Terminate TLS at a reverse proxy. The image's health check calls `/api/health`. npm and corepack are removed from the runtime image.
+- **Single instance:** don't scale `app` beyond one container (see the warning above).
+- **Volumes:** `pgdata` (database) and `media` (uploads at `/app/media`). Back them up together:
+
+```bash
+docker compose -f docker/compose.yml exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -Fc "$POSTGRES_DB"' > atlas-$(date +%F).dump
+docker compose -f docker/compose.yml exec -T app tar -czf - -C /app media > atlas-media-$(date +%F).tar.gz
+```
+
+- **First admin:** open `/admin` right after the first start (see above).
+- **Plain hosts are unchanged:** `output: 'standalone'` is enabled only when the image build sets `NEXT_OUTPUT=standalone`, so `pnpm build && pnpm start` works as before.
+
 ## Backups
 
 The database and the media storage together make up the site's content. Back them up together, so database records and the files they reference stay in sync.

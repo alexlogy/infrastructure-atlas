@@ -98,7 +98,7 @@ Accessibility built in: a skip link, landmarks and a sensible heading order, a v
 ```bash
 pnpm install
 cp .env.example .env          # then set a real PAYLOAD_SECRET (see below)
-docker compose up -d db
+pnpm db:up                    # local PostgreSQL (docker/compose.dev.yml)
 pnpm dev
 ```
 
@@ -153,7 +153,7 @@ The app validates its configuration at startup and reports which variables are w
 Integration and e2e tests only run against `TEST_DATABASE_URI`, and they refuse to start unless the database name ends in `_test`. They apply the committed migrations, clear the test data, and create a throwaway editor with a random password for each run. No known credentials or real content are used.
 
 ```bash
-docker compose up -d db                      # creates infrastructure_atlas_test on first start
+pnpm db:up                                   # creates infrastructure_atlas_test on first start
 pnpm test                                    # unit + integration
 pnpm exec playwright install chromium        # first run only
 pnpm test:e2e                                # end-to-end
@@ -265,7 +265,7 @@ Preview only works with a valid admin session, checked again on every page load,
 
 Infrastructure Atlas needs a **Node.js runtime**. A static `next export` can't host Payload. A deployment has three parts:
 
-1. **The app:** `pnpm build` then `pnpm start`, on any Node.js host or container platform. Run a single instance: cache expiry lives in the server's memory, so several instances would not share it (see [docs/deployment.md](docs/deployment.md)). The server empties its data cache on every start, so a restart never brings back deleted or unpublished content.
+1. **The app:** `pnpm build` then `pnpm start` on any Node.js host, or the Docker image in `docker/` (see below). Run a single instance: cache expiry lives in the server's memory, so several instances would not share it (see [docs/deployment.md](docs/deployment.md)). The server empties its data cache on every start, so a restart never brings back deleted or unpublished content.
 2. **PostgreSQL:** a managed or self-hosted instance, set through `DATABASE_URI`.
 3. **Persistent media storage:** local uploads go to `/media`, which is gitignored. In production, use a persistent volume or object storage.
 
@@ -273,6 +273,17 @@ Health checks can use `GET /api/health`. It returns `200 {"status":"ok"}` when t
 
 > [!WARNING]
 > Set a unique `PAYLOAD_SECRET` of at least 32 characters in production. The app refuses to start with a short or placeholder secret.
+
+### Docker
+
+Everything Docker-related lives in `docker/`. `docker/compose.yml` runs the whole stack: PostgreSQL, a one-shot job that applies migrations, then the app, which starts only after the migrations succeed.
+
+```bash
+cp docker/.env.example docker/.env     # set NEXT_PUBLIC_SITE_URL, PAYLOAD_SECRET, POSTGRES_PASSWORD
+docker compose -f docker/compose.yml up -d --build
+```
+
+The app listens on `127.0.0.1:3000` (change it with `APP_PORT`). Put a TLS reverse proxy in front, then open `/admin` to create the first admin account. Uploads and the database live in named volumes (`media`, `pgdata`). The image runs as a non-root user and contains only the built server, with no `.env`, tests or uploads. Rebuild after changing `NEXT_PUBLIC_SITE_URL`, because it's baked into the build. CI builds the image, smoke-tests the stack and scans the image for vulnerabilities. Details are in [docs/deployment.md](docs/deployment.md#docker).
 
 ### Security baseline
 
@@ -286,11 +297,11 @@ Health checks can use `GET /api/health`. It returns `200 {"status":"ok"}` when t
 Back up the **database** and the **media storage** together, so database records and the files they reference stay in sync.
 
 ```bash
-# Backup (local Docker example)
-docker compose exec -T db pg_dump -U app_user -Fc infrastructure_atlas > backup.dump
+# Backup (local development database)
+docker compose -f docker/compose.dev.yml exec -T db pg_dump -U app_user -Fc infrastructure_atlas > backup.dump
 
 # Restore into an existing database
-docker compose exec -T db pg_restore -U app_user -d infrastructure_atlas --clean < backup.dump
+docker compose -f docker/compose.dev.yml exec -T db pg_restore -U app_user -d infrastructure_atlas --clean < backup.dump
 ```
 
 > [!CAUTION]

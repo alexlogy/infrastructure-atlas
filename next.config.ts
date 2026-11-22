@@ -25,6 +25,8 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // The Docker image (docker/Dockerfile) ships the self-contained server; plain hosts use `next start`.
+  output: process.env.NEXT_OUTPUT === 'standalone' ? 'standalone' : undefined,
   poweredByHeader: false,
   images: {
     localPatterns: [
