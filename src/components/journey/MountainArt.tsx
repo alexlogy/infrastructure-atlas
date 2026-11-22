@@ -62,16 +62,21 @@ export function MountainArt({
         <circle key={i} cx={s.x} cy={s.y} r={s.r} fill="#b5f4f4" opacity={s.o} />
       ))}
 
-      <path
-        fill="url(#journey-far)"
-        opacity="0.55"
-        d="M0 330 L120 270 L210 300 L330 215 L430 280 L540 230 L650 290 L760 200 L880 265 L990 185 L1110 250 L1220 175 L1330 240 L1450 195 L1600 260 L1600 560 L0 560 Z"
-      />
-      <path
-        fill="url(#journey-mid)"
-        opacity="0.85"
-        d="M0 410 L90 360 L200 395 L320 320 L440 380 L560 330 L690 400 L800 340 L930 395 L1060 315 L1180 370 L1300 300 L1420 360 L1520 320 L1600 350 L1600 560 L0 560 Z"
-      />
+      {/* Distant ranges rise into place as the scene scrolls in (styles.css, horizon-rise). */}
+      <g className="journey-far">
+        <path
+          fill="url(#journey-far)"
+          opacity="0.55"
+          d="M0 330 L120 270 L210 300 L330 215 L430 280 L540 230 L650 290 L760 200 L880 265 L990 185 L1110 250 L1220 175 L1330 240 L1450 195 L1600 260 L1600 560 L0 560 Z"
+        />
+      </g>
+      <g className="journey-mid">
+        <path
+          fill="url(#journey-mid)"
+          opacity="0.85"
+          d="M0 410 L90 360 L200 395 L320 320 L440 380 L560 330 L690 400 L800 340 L930 395 L1060 315 L1180 370 L1300 300 L1420 360 L1520 320 L1600 350 L1600 560 L0 560 Z"
+        />
+      </g>
       <rect y="330" width={SCENE.width} height="140" fill="url(#journey-fog)" />
 
       {summit && <circle cx={summit.x} cy={summit.y} r="150" fill="url(#journey-summit)" />}

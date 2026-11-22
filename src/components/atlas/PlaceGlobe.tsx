@@ -48,7 +48,8 @@ export function PlaceGlobe({
       <div
         ref={ref}
         aria-hidden="true"
-        className={`relative mx-auto aspect-square w-full ${className}`}
+        // Fades back as it scrolls out of view (styles.css, globe-recede); the card below stays put.
+        className={`globe-recede relative mx-auto aspect-square w-full ${className}`}
       >
         {/* Atmosphere: a soft cyan rim drawn in CSS, so the GPU only draws the globe itself. */}
         <div className="absolute inset-[4%] rounded-full shadow-[0_0_70px_8px_rgb(101_214_223/0.16),inset_0_0_50px_rgb(181_244_244/0.07)]" />

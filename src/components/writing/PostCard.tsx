@@ -1,4 +1,5 @@
 import { formatDate } from '@/lib/dates'
+import { stagger } from '@/lib/motion'
 import type { GhostPostView } from '@/types/view-models'
 
 /**
@@ -143,8 +144,8 @@ export function PostGrid({
 }) {
   return (
     <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-      {posts.map((post) => (
-        <li key={post.id}>
+      {posts.map((post, i) => (
+        <li key={post.id} className="enter-on-scroll" style={stagger(i % 3)}>
           <PostCard post={post} locale={locale} heading={heading} />
         </li>
       ))}

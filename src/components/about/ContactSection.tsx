@@ -19,7 +19,7 @@ export function ContactSection({
 
   return (
     <section aria-labelledby="contact-heading" className="container-page section-y">
-      <div className="relative overflow-hidden rounded-3xl border border-line bg-surface/70 px-6 py-12 text-center sm:px-12">
+      <div className="enter-on-scroll relative overflow-hidden rounded-3xl border border-line bg-surface/70 px-6 py-12 text-center sm:px-12">
         <div
           aria-hidden="true"
           className="absolute inset-x-0 -top-24 mx-auto h-48 w-2/3 rounded-full bg-accent/10 blur-3xl"

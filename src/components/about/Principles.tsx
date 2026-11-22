@@ -1,3 +1,4 @@
+import { stagger } from '@/lib/motion'
 import type { AboutPageView } from '@/types/view-models'
 
 /** Editorial principle blocks: a gold index, a short title and a paragraph. No icon cards. */
@@ -13,7 +14,7 @@ export function Principles({
   return (
     <ol className={`grid gap-x-10 gap-y-8 ${columns}`}>
       {principles.map((p, i) => (
-        <li key={p.title} className="border-t border-line pt-5">
+        <li key={p.title} className="enter-on-scroll border-t border-line pt-5" style={stagger(i)}>
           <p aria-hidden="true" className="font-display text-sm text-gold">
             0{i + 1}
           </p>
