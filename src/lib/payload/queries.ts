@@ -8,6 +8,7 @@ import type {
   AchievementView,
   AtlasView,
   HomePageView,
+  LabProjectView,
   MilestoneView,
   ProjectSummaryView,
   ProjectView,
@@ -22,6 +23,7 @@ import {
   toAtlasView,
   compareProjects,
   toHomePageView,
+  toLabProjectView,
   toMilestoneView,
   toProjectSummaryView,
   toProjectView,
@@ -297,4 +299,32 @@ export async function fetchAboutPage(payload: Payload): Promise<AboutPageView> {
     populate: PUBLIC_MEDIA,
   })
   return toAboutPageView(doc)
+}
+
+const LAB_LIMIT = 100
+
+/** Published Lab entries in editor order. */
+export async function fetchPublicLabProjects(payload: Payload): Promise<LabProjectView[]> {
+  const { docs } = await payload.find({
+    collection: 'lab-projects',
+    draft: false,
+    overrideAccess: false,
+    where: { _status: { equals: 'published' } },
+    depth: 1,
+    limit: LAB_LIMIT,
+    pagination: false,
+    sort: ['sortOrder', 'title'],
+    select: {
+      title: true,
+      category: true,
+      stage: true,
+      summary: true,
+      tags: true,
+      image: true,
+      link: true,
+      featured: true,
+    },
+    populate: PUBLIC_MEDIA,
+  })
+  return docs.map(toLabProjectView)
 }

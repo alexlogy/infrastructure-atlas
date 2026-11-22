@@ -10,6 +10,7 @@ import type {
   AchievementView,
   AtlasView,
   HomePageView,
+  LabProjectView,
   MilestoneView,
   ProjectSummaryView,
   ProjectView,
@@ -27,6 +28,7 @@ import {
   fetchAboutPage,
   fetchAtlas,
   fetchPublicAchievements,
+  fetchPublicLabProjects,
   fetchHomePage,
   fetchPublicProject,
   fetchPublicProjects,
@@ -136,4 +138,18 @@ export const getAboutPage = unstable_cache(
   },
   ['public-about-page'],
   { tags: [CACHE_TAGS.aboutPage] },
+)
+
+/** Published Lab entries, cached until one is published or unpublished. */
+export const getPublicLabProjects = unstable_cache(
+  async (): Promise<LabProjectView[]> => {
+    try {
+      return await fetchPublicLabProjects(await getPayload({ config }))
+    } catch {
+      console.error('[lab] failed to load; hiding the Lab')
+      return []
+    }
+  },
+  ['public-lab-projects'],
+  { tags: [CACHE_TAGS.lab] },
 )

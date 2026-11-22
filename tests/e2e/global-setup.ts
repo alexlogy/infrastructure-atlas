@@ -16,6 +16,7 @@ export default async function globalSetup(): Promise<void> {
   const payload = await getPayload({ config: await config })
   await payload.db.migrate()
   for (const collection of [
+    'lab-projects',
     'achievements',
     'impact-projects',
     'atlas-locations',

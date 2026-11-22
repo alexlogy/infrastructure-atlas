@@ -8,6 +8,7 @@ import { fileURLToPath } from 'url'
 import { Achievements } from './collections/Achievements'
 import { AtlasLocations } from './collections/AtlasLocations'
 import { ImpactProjects } from './collections/ImpactProjects'
+import { LabProjects } from './collections/LabProjects'
 import { Media } from './collections/Media'
 import { TimelineMilestones } from './collections/TimelineMilestones'
 import { Users } from './collections/Users'
@@ -31,7 +32,15 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, TimelineMilestones, ImpactProjects, AtlasLocations, Achievements],
+  collections: [
+    Users,
+    Media,
+    TimelineMilestones,
+    ImpactProjects,
+    AtlasLocations,
+    Achievements,
+    LabProjects,
+  ],
   globals: [SiteSettings, HomePage, AboutPage, WritingSettings],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,

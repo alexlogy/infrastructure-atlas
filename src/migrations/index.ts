@@ -7,6 +7,7 @@ import * as migration_20261122_040725_site_contact from './20261122_040725_site_
 import * as migration_20261122_042656_project_category_icon from './20261122_042656_project_category_icon';
 import * as migration_20261122_043453_achievements_home_hero from './20261122_043453_achievements_home_hero';
 import * as migration_20261122_044715_about_page from './20261122_044715_about_page';
+import * as migration_20261122_045549_lab_projects from './20261122_045549_lab_projects';
 
 export const migrations = [
   {
@@ -52,6 +53,11 @@ export const migrations = [
   {
     up: migration_20261122_044715_about_page.up,
     down: migration_20261122_044715_about_page.down,
-    name: '20261122_044715_about_page'
+    name: '20261122_044715_about_page',
+  },
+  {
+    up: migration_20261122_045549_lab_projects.up,
+    down: migration_20261122_045549_lab_projects.down,
+    name: '20261122_045549_lab_projects'
   },
 ];

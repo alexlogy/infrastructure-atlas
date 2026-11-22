@@ -4,11 +4,13 @@ import type {
   AtlasLocation,
   HomePage,
   ImpactProject,
+  LabProject,
   Media,
   SiteSetting,
   TimelineMilestone,
   WritingSetting,
 } from '@/payload-types'
+import { LAB_STATUSES } from '@/lib/lab'
 import { PROJECT_ICONS } from '@/lib/project-icons'
 import { isSafeHref } from '@/lib/validation/links'
 import type {
@@ -20,6 +22,7 @@ import type {
   LatLng,
   HomePageView,
   ImageView,
+  LabProjectView,
   MilestoneView,
   NavLink,
   ProjectSummaryView,
@@ -348,5 +351,25 @@ export function toAboutPageView(doc: Partial<AboutPage> | null | undefined): Abo
       links: toLinks(doc?.contact?.links),
     },
     hasContent: Boolean(statement || introduction || principles.length > 0),
+  }
+}
+
+export type PublicLabProjectDoc = Pick<
+  LabProject,
+  'id' | 'title' | 'category' | 'stage' | 'summary' | 'tags' | 'image' | 'link' | 'featured'
+>
+
+export function toLabProjectView(doc: PublicLabProjectDoc): LabProjectView {
+  const href = clean(doc.link?.href)
+  return {
+    id: String(doc.id),
+    title: doc.title,
+    category: clean(doc.category),
+    status: doc.stage && LAB_STATUSES.includes(doc.stage) ? doc.stage : 'active',
+    summary: doc.summary,
+    tags: cleanTags(doc.tags),
+    image: toImageView(doc.image),
+    link: href && isSafeHref(href) ? { label: clean(doc.link?.label) ?? 'Read more', href } : null,
+    featured: Boolean(doc.featured),
   }
 }

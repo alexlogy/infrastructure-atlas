@@ -4,6 +4,7 @@ import Link from 'next/link'
 
 import { ContactSection } from '@/components/about/ContactSection'
 import { Principles } from '@/components/about/Principles'
+import { LabGrid } from '@/components/lab/LabCard'
 import { PlaceGlobe } from '@/components/atlas/PlaceGlobe'
 import { MetricStrip } from '@/components/hero/MetricStrip'
 import { SmartLink } from '@/components/layout/SmartLink'
@@ -14,6 +15,7 @@ import {
   getAboutPage,
   getAtlas,
   getPublicAchievements,
+  getPublicLabProjects,
   getHomePage,
   getPublicProjects,
   getPublicTimeline,
@@ -30,11 +32,12 @@ type Props = { searchParams: Promise<{ project?: string | string[]; view?: strin
 export default async function HomePage({ searchParams }: Props) {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])
 
-  const [projects, milestones, achievements, about] = await Promise.all([
+  const [projects, milestones, achievements, about, lab] = await Promise.all([
     settings.showImpact ? getPublicProjects() : [],
     settings.showJourney ? getPublicTimeline() : [],
     getPublicAchievements(),
     getAboutPage(),
+    getPublicLabProjects(),
   ])
   const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
@@ -196,6 +199,28 @@ export default async function HomePage({ searchParams }: Props) {
             {about.principles.length > 0 && (
               <Principles principles={about.principles.slice(0, 3)} columns="sm:grid-cols-3" />
             )}
+          </div>
+        </section>
+      )}
+
+      {lab.length > 0 && (
+        <section className="container-page section-y" aria-labelledby="home-lab-heading">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Engineering Lab</p>
+              <h2 id="home-lab-heading" className="mt-3 text-section font-semibold">
+                Lab
+              </h2>
+            </div>
+            <Link
+              href="/lab"
+              className="font-medium text-accent underline underline-offset-4 hover:text-ink"
+            >
+              Visit the lab
+            </Link>
+          </div>
+          <div className="mt-8">
+            <LabGrid projects={lab.slice(0, 3)} />
           </div>
         </section>
       )}

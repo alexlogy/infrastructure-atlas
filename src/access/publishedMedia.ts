@@ -11,7 +11,7 @@ async function loadPublishedMediaIds(req: PayloadRequest): Promise<number[]> {
   const { payload } = req
   const list = { overrideAccess: false, draft: false, depth: 0, pagination: false } as const
   const single = { overrideAccess: false, depth: 0 } as const
-  const [milestones, projects, home, site, about] = await Promise.all([
+  const [milestones, projects, lab, home, site, about] = await Promise.all([
     payload.find({
       collection: 'timeline-milestones',
       where: PUBLISHED,
@@ -24,6 +24,12 @@ async function loadPublishedMediaIds(req: PayloadRequest): Promise<number[]> {
       select: { featuredImage: true, diagram: true },
       ...list,
     }),
+    payload.find({
+      collection: 'lab-projects',
+      where: PUBLISHED,
+      select: { image: true },
+      ...list,
+    }),
     payload.findGlobal({ slug: 'home-page', select: { heroImage: true }, ...single }),
     payload.findGlobal({ slug: 'site-settings', select: { shareImage: true }, ...single }),
     payload.findGlobal({ slug: 'about-page', select: { portrait: true }, ...single }),
@@ -31,6 +37,7 @@ async function loadPublishedMediaIds(req: PayloadRequest): Promise<number[]> {
   return [
     ...milestones.docs.map((d) => d.image),
     ...projects.docs.flatMap((d) => [d.featuredImage, d.diagram]),
+    ...lab.docs.map((d) => d.image),
     home.heroImage,
     site.shareImage,
     about.portrait,
