@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 import { HomeGlobe } from '@/components/atlas/HomeGlobe'
 import { SmartLink } from '@/components/layout/SmartLink'
-import { ProjectGrid } from '@/components/impact/ProjectCard'
+import { ImpactSection } from '@/components/impact/ImpactSection'
 import { JourneyScene } from '@/components/journey/JourneyScene'
 import { pageMetadata } from '@/lib/metadata'
 import {
@@ -14,20 +14,21 @@ import {
   getPublicTimeline,
   getSiteSettings,
 } from '@/lib/payload/public'
-import type { AtlasView, NavLink, ProjectSummaryView } from '@/types/view-models'
+import type { AtlasView, NavLink } from '@/types/view-models'
 
 export function generateMetadata(): Promise<Metadata> {
   return pageMetadata({ path: '/' })
 }
 
-export default async function HomePage() {
+type Props = { searchParams: Promise<{ project?: string | string[]; view?: string | string[] }> }
+
+export default async function HomePage({ searchParams }: Props) {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])
 
   const [projects, milestones] = await Promise.all([
     settings.showImpact ? getPublicProjects() : [],
     settings.showJourney ? getPublicTimeline() : [],
   ])
-  const featured: ProjectSummaryView[] = pickInOrder(projects, home.featuredProjectIds)
   const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
   const actions: NavLink[] =
@@ -121,13 +122,30 @@ export default async function HomePage() {
         </section>
       )}
 
-      {featured.length > 0 && (
-        <section className="container-page pb-24" aria-labelledby="featured-projects-heading">
-          <h2 id="featured-projects-heading" className="text-section font-semibold">
-            Selected projects
-          </h2>
+      {projects.length > 0 && (
+        <section className="container-page section-y" aria-labelledby="home-impact-heading">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Selected work</p>
+              <h2 id="home-impact-heading" className="mt-3 text-section font-semibold">
+                Impact
+              </h2>
+            </div>
+            <Link
+              href="/impact"
+              className="font-medium text-accent underline underline-offset-4 hover:text-ink"
+            >
+              All projects
+            </Link>
+          </div>
           <div className="mt-8">
-            <ProjectGrid projects={featured} />
+            <ImpactSection
+              projects={projects}
+              chosenIds={home.featuredProjectIds}
+              query={await searchParams}
+              basePath="/"
+              atlas={atlas}
+            />
           </div>
         </section>
       )}
@@ -136,12 +154,6 @@ export default async function HomePage() {
 }
 
 const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
-
-/** Published projects in the editor's chosen order; unpublished ids drop out. */
-function pickInOrder(projects: ProjectSummaryView[], ids: string[]): ProjectSummaryView[] {
-  const byId = new Map(projects.map((p) => [p.id, p]))
-  return ids.flatMap((id) => byId.get(id) ?? [])
-}
 
 function ActionLink({ label, href, primary }: NavLink & { primary: boolean }) {
   return (

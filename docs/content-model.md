@@ -56,19 +56,20 @@ Public ordering is `startDate` ascending, then `sortOrder`, then `title`. Drafts
 
 ## `impact-projects`
 
-| Field                                                   | Type                                             | Notes                                                                                |
-| ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| `title`                                                 | text, required, ≤ 120                            |                                                                                      |
-| `slug`                                                  | text, required, unique, ≤ 80                     | Lowercase words and single hyphens. Generated from the title when left empty         |
-| `summary`                                               | textarea, required, ≤ 300                        | Card text and meta description                                                       |
-| `featuredImage`, `diagram`                              | upload → `media`                                 |                                                                                      |
-| `tags`                                                  | text, many, ≤ 12                                 |                                                                                      |
-| `leadershipNarrative`, `engineeringNarrative`           | rich text                                        | The two perspectives. The switch only appears when both are filled in                |
-| `challenge`, `architecture`, `decisions`, `limitations` | rich text                                        | Shared by both perspectives                                                          |
-| `outcomes`                                              | array (≤ 12): `result`, `metric`, `verification` | A `metric` marks a measured outcome; none means qualitative                          |
-| `sourceLinks`                                           | array (≤ 8): `label`, `url`                      | `url` must be a site path or an `http(s)`/`mailto` URL; checked again at render time |
-| `milestones`, `locations`                               | relationships                                    | Stored for later phases; public queries do not select them                           |
-| `featured`, `sortOrder`                                 | checkbox, number                                 | Listing order is `sortOrder`, then `title`                                           |
+| Field                                                   | Type                                             | Notes                                                                                                                           |
+| ------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
+| `title`                                                 | text, required, ≤ 120                            |                                                                                                                                 |
+| `slug`                                                  | text, required, unique, ≤ 80                     | Lowercase words and single hyphens. Generated from the title when left empty                                                    |
+| `summary`                                               | textarea, required, ≤ 300                        | Card text and meta description                                                                                                  |
+| `category`, `icon`                                      | text ≤ 40, select                                | Label and line icon on the impact dashboard tiles (`cloud`, `server`, `network`, `shield`, `chart`, `people`, `code`, `layers`) |
+| `featuredImage`, `diagram`                              | upload → `media`                                 |                                                                                                                                 |
+| `tags`                                                  | text, many, ≤ 12                                 |                                                                                                                                 |
+| `leadershipNarrative`, `engineeringNarrative`           | rich text                                        | The two perspectives. The switch only appears when both are filled in                                                           |
+| `challenge`, `architecture`, `decisions`, `limitations` | rich text                                        | Shared by both perspectives                                                                                                     |
+| `outcomes`                                              | array (≤ 12): `result`, `metric`, `verification` | A `metric` marks a measured outcome; none means qualitative                                                                     |
+| `sourceLinks`                                           | array (≤ 8): `label`, `url`                      | `url` must be a site path or an `http(s)`/`mailto` URL; checked again at render time                                            |
+| `milestones`, `locations`                               | relationships                                    | Stored for later phases; public queries do not select them                                                                      |
+| `featured`, `sortOrder`                                 | checkbox, number                                 | Listing order is `sortOrder`, then `title`                                                                                      |
 
 Publish, unpublish and delete expire the `projects` cache tag. A pending draft never replaces the published version on the site.
 

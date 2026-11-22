@@ -111,6 +111,8 @@ const PROJECT_SUMMARY_SELECT = {
   slug: true,
   title: true,
   summary: true,
+  category: true,
+  icon: true,
   featuredImage: true,
   tags: true,
   featured: true,

@@ -3,13 +3,19 @@ import Link from 'next/link'
 
 import type { ProjectSummaryView } from '@/types/view-models'
 
-export function ProjectCard({ project }: { project: ProjectSummaryView }) {
+export function ProjectCard({
+  project,
+  headingLevel: Heading = 'h2',
+}: {
+  project: ProjectSummaryView
+  headingLevel?: 'h2' | 'h3'
+}) {
   const headingId = `project-${project.id}`
 
   return (
     <article
       aria-labelledby={headingId}
-      className={`reveal relative flex h-full flex-col rounded-lg border bg-surface p-6 focus-within:ring-2 focus-within:ring-accent ${
+      className={`reveal relative flex h-full flex-col rounded-2xl border bg-surface p-6 focus-within:ring-2 focus-within:ring-accent ${
         project.featured ? 'border-gold' : 'border-line'
       }`}
     >
@@ -23,7 +29,7 @@ export function ProjectCard({ project }: { project: ProjectSummaryView }) {
           className="mb-4 h-auto w-full rounded-md"
         />
       )}
-      <h2 id={headingId} className="text-xl font-semibold text-ink">
+      <Heading id={headingId} className="text-xl font-semibold text-ink">
         {/* The stretched link makes the whole card clickable while keeping one tab stop. */}
         <Link
           href={`/impact/${project.slug}`}
@@ -31,7 +37,7 @@ export function ProjectCard({ project }: { project: ProjectSummaryView }) {
         >
           {project.title}
         </Link>
-      </h2>
+      </Heading>
       <p className="mt-2 leading-relaxed text-muted">{project.summary}</p>
       {project.tags.length > 0 && (
         <ul aria-label="Tags" className="mt-4 flex flex-wrap gap-2">
@@ -49,12 +55,18 @@ export function ProjectCard({ project }: { project: ProjectSummaryView }) {
   )
 }
 
-export function ProjectGrid({ projects }: { projects: ProjectSummaryView[] }) {
+export function ProjectGrid({
+  projects,
+  headingLevel,
+}: {
+  projects: ProjectSummaryView[]
+  headingLevel?: 'h2' | 'h3'
+}) {
   return (
-    <ul className="grid gap-6 sm:grid-cols-2">
+    <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {projects.map((project) => (
         <li key={project.id}>
-          <ProjectCard project={project} />
+          <ProjectCard project={project} headingLevel={headingLevel} />
         </li>
       ))}
     </ul>

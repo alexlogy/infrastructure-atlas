@@ -4,6 +4,7 @@ import { authenticated, publishedOrAuthenticated } from '@/access'
 import { publicRichTextEditor } from '@/fields/richText'
 import { affectsPublishedContent, expireTag } from '@/lib/cache/revalidate'
 import { CACHE_TAGS } from '@/lib/cache/tags'
+import { PROJECT_ICONS } from '@/lib/project-icons'
 import { isSafeHref } from '@/lib/validation/links'
 import { isValidSlug, SLUG_MAX_LENGTH, toSlug } from '@/lib/validation/slugs'
 
@@ -81,6 +82,28 @@ export const ImpactProjects: CollectionConfig = {
           label: 'Overview',
           fields: [
             { name: 'summary', type: 'textarea', required: true, maxLength: 300 },
+            {
+              type: 'row',
+              fields: [
+                {
+                  name: 'category',
+                  type: 'text',
+                  maxLength: 40,
+                  admin: {
+                    description: 'Short label on the impact tiles, e.g. "Platform" or "Security".',
+                  },
+                },
+                {
+                  name: 'icon',
+                  type: 'select',
+                  options: PROJECT_ICONS.map((value) => ({
+                    value,
+                    label: value[0].toUpperCase() + value.slice(1),
+                  })),
+                  admin: { description: 'Line icon on the impact tiles.' },
+                },
+              ],
+            },
             { name: 'featuredImage', type: 'upload', relationTo: 'media' },
             { name: 'tags', type: 'text', hasMany: true, maxRows: 12 },
           ],

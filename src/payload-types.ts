@@ -278,6 +278,14 @@ export interface ImpactProject {
    */
   slug: string;
   summary: string;
+  /**
+   * Short label on the impact tiles, e.g. "Platform" or "Security".
+   */
+  category?: string | null;
+  /**
+   * Line icon on the impact tiles.
+   */
+  icon?: ('cloud' | 'server' | 'network' | 'shield' | 'chart' | 'people' | 'code' | 'layers') | null;
   featuredImage?: (number | null) | Media;
   tags?: string[] | null;
   /**
@@ -582,6 +590,8 @@ export interface ImpactProjectsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   summary?: T;
+  category?: T;
+  icon?: T;
   featuredImage?: T;
   tags?: T;
   leadershipNarrative?: T;

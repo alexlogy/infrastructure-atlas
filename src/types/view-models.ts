@@ -1,3 +1,4 @@
+import type { ProjectIconName } from '@/lib/project-icons'
 import type { SerializedEditorState } from '@payloadcms/richtext-lexical/lexical'
 
 /** Public, minimal shapes handed to React components. Never pass raw CMS documents. */
@@ -57,6 +58,9 @@ export type ProjectSummaryView = {
   slug: string
   title: string
   summary: string
+  /** Short tile label, e.g. "Platform"; null when not set. */
+  category: string | null
+  icon: ProjectIconName | null
   image: ImageView | null
   tags: string[]
   featured: boolean
