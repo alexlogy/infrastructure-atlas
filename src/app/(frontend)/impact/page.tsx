@@ -2,8 +2,9 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 
 import { ProjectGrid } from '@/components/impact/ProjectCard'
+import { ImpactSection } from '@/components/impact/ImpactSection'
 import { pageMetadata } from '@/lib/metadata'
-import { getPublicProjects, getSiteSettings } from '@/lib/payload/public'
+import { getAtlas, getHomePage, getPublicProjects, getSiteSettings } from '@/lib/payload/public'
 
 export function generateMetadata(): Promise<Metadata> {
   return pageMetadata({
@@ -13,11 +14,17 @@ export function generateMetadata(): Promise<Metadata> {
   })
 }
 
-export default async function ImpactPage() {
+type Props = { searchParams: Promise<{ project?: string | string[]; view?: string | string[] }> }
+
+export default async function ImpactPage({ searchParams }: Props) {
   const settings = await getSiteSettings()
   if (!settings.showImpact) notFound()
 
-  const projects = await getPublicProjects()
+  const [projects, home, atlas] = await Promise.all([
+    getPublicProjects(),
+    getHomePage(),
+    settings.showAtlas ? getAtlas() : null,
+  ])
 
   return (
     <section className="container-page section-y" aria-labelledby="impact-heading">
@@ -36,7 +43,24 @@ export default async function ImpactPage() {
             </p>
           </div>
         ) : (
-          <ProjectGrid projects={projects} />
+          <>
+            <ImpactSection
+              projects={projects}
+              chosenIds={home.featuredProjectIds}
+              query={await searchParams}
+              basePath="/impact"
+              atlas={atlas}
+              heading="h2"
+            />
+            <section aria-labelledby="all-projects-heading" className="mt-20">
+              <h2 id="all-projects-heading" className="text-section font-semibold">
+                All projects
+              </h2>
+              <div className="mt-8">
+                <ProjectGrid projects={projects} headingLevel="h3" />
+              </div>
+            </section>
+          </>
         )}
       </div>
     </section>

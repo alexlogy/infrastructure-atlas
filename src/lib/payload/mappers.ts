@@ -7,6 +7,7 @@ import type {
   TimelineMilestone,
   WritingSetting,
 } from '@/payload-types'
+import { PROJECT_ICONS } from '@/lib/project-icons'
 import { isSafeHref } from '@/lib/validation/links'
 import type {
   AtlasNodeView,
@@ -131,6 +132,7 @@ export type PublicProjectSummaryDoc = Pick<
   PublicProjectDoc,
   'id' | 'slug' | 'title' | 'summary' | 'featuredImage' | 'tags' | 'featured' | 'sortOrder'
 > &
+  Partial<Pick<PublicProjectDoc, 'category' | 'icon'>> &
   Partial<Pick<ImpactProject, 'milestones' | 'locations'>>
 
 /** Relationship values arrive as ids or populated docs depending on depth. */
@@ -143,6 +145,8 @@ export function toProjectSummaryView(doc: PublicProjectSummaryDoc): ProjectSumma
     slug: doc.slug,
     title: doc.title,
     summary: doc.summary,
+    category: clean(doc.category),
+    icon: doc.icon && PROJECT_ICONS.includes(doc.icon) ? doc.icon : null,
     image: toImageView(doc.featuredImage),
     tags: cleanTags(doc.tags),
     featured: Boolean(doc.featured),

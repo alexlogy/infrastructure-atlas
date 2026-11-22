@@ -81,7 +81,10 @@ export default async function ProjectPage({ params, searchParams }: Props) {
       {perspective && (
         <section aria-labelledby="perspective-heading" className="mt-12">
           {narratives.leadership && narratives.engineering && (
-            <PerspectiveSwitch slug={project.slug} active={perspective} />
+            <PerspectiveSwitch
+              active={perspective}
+              hrefFor={(view) => `/impact/${project.slug}?view=${view}`}
+            />
           )}
           <h2 id="perspective-heading" className="mt-6 text-section font-semibold">
             {perspectiveLabel(perspective)} perspective

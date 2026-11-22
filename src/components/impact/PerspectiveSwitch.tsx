@@ -12,20 +12,27 @@ const LABELS: Record<Perspective, string> = {
  * state has its own URL (`?view=`), and the active option is exposed with
  * `aria-current` plus a filled style and a check mark, not colour alone.
  */
-export function PerspectiveSwitch({ slug, active }: { slug: string; active: Perspective }) {
+export function PerspectiveSwitch({
+  active,
+  hrefFor,
+}: {
+  active: Perspective
+  /** URL for each option, e.g. `/impact/<slug>?view=engineering`. */
+  hrefFor: (perspective: Perspective) => string
+}) {
   return (
     <nav aria-label="Project perspective">
-      <ul className="inline-flex rounded-md border border-line p-1">
+      <ul className="inline-flex rounded-lg border border-line bg-deep/50 p-1">
         {PERSPECTIVES.map((perspective) => {
           const isActive = perspective === active
           return (
             <li key={perspective}>
               <Link
-                href={{ pathname: `/impact/${slug}`, query: { view: perspective } }}
+                href={hrefFor(perspective)}
                 scroll={false}
                 replace
                 aria-current={isActive ? 'true' : undefined}
-                className={`inline-flex items-center gap-1.5 rounded px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
+                className={`inline-flex min-h-10 items-center gap-1.5 rounded-md px-4 text-sm font-medium transition-colors duration-150 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent ${
                   isActive ? 'bg-accent text-midnight' : 'text-muted hover:text-ink'
                 }`}
               >

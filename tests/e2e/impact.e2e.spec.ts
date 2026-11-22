@@ -54,7 +54,10 @@ test.beforeAll(async ({ request }) => {
 test('a published project is listed on /impact and links to its page', async ({ page }) => {
   await page.goto('/impact')
   await expect(page.getByRole('heading', { level: 1, name: 'Impact' })).toBeVisible()
-  await page.getByRole('link', { name: title }).click()
+  await page
+    .getByRole('region', { name: 'All projects' })
+    .getByRole('link', { name: title })
+    .click()
   await expect(page).toHaveURL(new RegExp(`/impact/${slug}$`))
   await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()
   await expect(page.getByText('10%')).toBeVisible()

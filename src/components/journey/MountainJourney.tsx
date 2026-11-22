@@ -168,7 +168,7 @@ export function MountainJourney({
                         {stop.dateLabel}
                       </span>
                       <span
-                        className={`mt-0.5 line-clamp-2 block text-sm leading-snug font-medium ${
+                        className={`mt-0.5 line-clamp-2 text-sm leading-snug font-medium ${
                           selected
                             ? 'text-ink underline decoration-accent underline-offset-4'
                             : 'text-ink/90'

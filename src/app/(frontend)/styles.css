@@ -141,6 +141,17 @@
     animation: reveal 500ms ease-out both;
   }
 
+  /* Impact dashboard: the case study crossfades when the project or perspective changes. */
+  .fade-in {
+    animation: fade-in 240ms ease-out both;
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
   @keyframes reveal {
     from {
       opacity: 0;
