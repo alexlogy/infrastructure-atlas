@@ -9,6 +9,12 @@ import { markerKey, type MarkerStyle, markerStyleFor } from '@/lib/atlas-markers
 import { angularDistance, latLngToVector } from '@/lib/geo'
 import type { AtlasArcView, AtlasNodeView, LatLng } from '@/types/view-models'
 
+// shortcut: R3F 9 still creates a THREE.Clock (deprecated in three r183), which warns on every
+// Canvas; drop this filter once R3F 10 (built on THREE.Timer) is stable. Other messages pass through.
+THREE.setConsoleFunction((type, message, ...params) => {
+  if (!message.startsWith('THREE.Clock:')) console[type](message, ...params)
+})
+
 // Midnight Atlas tokens (mirrors styles.css; WebGL cannot read CSS variables cheaply).
 const COLORS = {
   surface: '#122639',
