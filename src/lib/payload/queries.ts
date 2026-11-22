@@ -115,6 +115,15 @@ const PROJECT_SUMMARY_SELECT = {
   tags: true,
   featured: true,
   sortOrder: true,
+  milestones: true,
+  locations: true,
+} as const
+
+/** Media for images; related milestones and locations only as ids (pages intersect them with published records). */
+const PROJECT_POPULATE = {
+  ...PUBLIC_MEDIA,
+  'timeline-milestones': { title: true },
+  'atlas-locations': { label: true },
 } as const
 
 /** Published projects for listings, summary fields only. */
@@ -129,7 +138,7 @@ export async function fetchPublicProjects(payload: Payload): Promise<ProjectSumm
     pagination: false,
     sort: ['sortOrder', 'title'],
     select: PROJECT_SUMMARY_SELECT,
-    populate: PUBLIC_MEDIA,
+    populate: PROJECT_POPULATE,
   })
   return docs.map(toProjectSummaryView).sort(compareProjects)
 }
@@ -161,7 +170,7 @@ export async function fetchPublicProject(
       limitations: true,
       sourceLinks: true,
     },
-    populate: PUBLIC_MEDIA,
+    populate: PROJECT_POPULATE,
   })
   const doc = docs[0]
   return doc?.title ? toProjectView({ ...doc, summary: doc.summary ?? '' }) : null

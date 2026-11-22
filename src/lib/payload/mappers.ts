@@ -130,7 +130,12 @@ export type PublicProjectDoc = Omit<
 export type PublicProjectSummaryDoc = Pick<
   PublicProjectDoc,
   'id' | 'slug' | 'title' | 'summary' | 'featuredImage' | 'tags' | 'featured' | 'sortOrder'
->
+> &
+  Partial<Pick<ImpactProject, 'milestones' | 'locations'>>
+
+/** Relationship values arrive as ids or populated docs depending on depth. */
+const relIds = (rels: (number | { id: number } | null)[] | null | undefined): string[] =>
+  (rels ?? []).flatMap((r) => (r == null ? [] : [String(typeof r === 'object' ? r.id : r)]))
 
 export function toProjectSummaryView(doc: PublicProjectSummaryDoc): ProjectSummaryView {
   return {
@@ -142,6 +147,8 @@ export function toProjectSummaryView(doc: PublicProjectSummaryDoc): ProjectSumma
     tags: cleanTags(doc.tags),
     featured: Boolean(doc.featured),
     sortOrder: doc.sortOrder ?? 0,
+    milestoneIds: relIds(doc.milestones),
+    locationIds: relIds(doc.locations),
   }
 }
 

@@ -5,8 +5,15 @@ import Link from 'next/link'
 import { HomeGlobe } from '@/components/atlas/HomeGlobe'
 import { SmartLink } from '@/components/layout/SmartLink'
 import { ProjectGrid } from '@/components/impact/ProjectCard'
+import { JourneyScene } from '@/components/journey/JourneyScene'
 import { pageMetadata } from '@/lib/metadata'
-import { getAtlas, getHomePage, getPublicProjects, getSiteSettings } from '@/lib/payload/public'
+import {
+  getAtlas,
+  getHomePage,
+  getPublicProjects,
+  getPublicTimeline,
+  getSiteSettings,
+} from '@/lib/payload/public'
 import type { AtlasView, NavLink, ProjectSummaryView } from '@/types/view-models'
 
 export function generateMetadata(): Promise<Metadata> {
@@ -16,10 +23,11 @@ export function generateMetadata(): Promise<Metadata> {
 export default async function HomePage() {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])
 
-  const featured: ProjectSummaryView[] =
-    settings.showImpact && home.featuredProjectIds.length > 0
-      ? pickInOrder(await getPublicProjects(), home.featuredProjectIds)
-      : []
+  const [projects, milestones] = await Promise.all([
+    settings.showImpact ? getPublicProjects() : [],
+    settings.showJourney ? getPublicTimeline() : [],
+  ])
+  const featured: ProjectSummaryView[] = pickInOrder(projects, home.featuredProjectIds)
   const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
   const actions: NavLink[] =
@@ -87,6 +95,28 @@ export default async function HomePage() {
               </Link>
             </div>
             <HomeGlobe atlas={atlas} center={settings.atlasCenter} />
+          </div>
+        </section>
+      )}
+
+      {milestones.length > 0 && (
+        <section className="container-page section-y" aria-labelledby="home-journey-heading">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">Career journey</p>
+              <h2 id="home-journey-heading" className="mt-3 text-section font-semibold">
+                Journey
+              </h2>
+            </div>
+            <Link
+              href="/journey"
+              className="font-medium text-accent underline underline-offset-4 hover:text-ink"
+            >
+              See the full journey
+            </Link>
+          </div>
+          <div className="mt-8">
+            <JourneyScene milestones={milestones} projects={projects} locale={settings.locale} />
           </div>
         </section>
       )}

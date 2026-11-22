@@ -61,6 +61,9 @@ export type ProjectSummaryView = {
   tags: string[]
   featured: boolean
   sortOrder: number
+  /** Related records in the editor's order; may include unpublished ids, so intersect before display. */
+  milestoneIds: string[]
+  locationIds: string[]
 }
 
 export type ProjectView = ProjectSummaryView & {

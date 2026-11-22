@@ -41,7 +41,7 @@ test('a milestone published in the CMS appears on /journey; drafts never do', as
   expect(published.ok()).toBeTruthy()
 
   await page.reload()
-  const card = page.getByRole('article', { name: title })
+  const card = page.getByRole('list', { name: 'Chronology' }).getByRole('article', { name: title })
   await expect(card).toBeVisible()
   await expect(card.locator('time')).toHaveText('May 2019')
 

@@ -6,10 +6,12 @@ export function Timeline({
   milestones,
   locale,
   unoptimizedImages = false,
+  headingLevel = 'h2',
 }: {
   milestones: MilestoneView[]
   locale: string
   unoptimizedImages?: boolean
+  headingLevel?: 'h2' | 'h3'
 }) {
   if (milestones.length === 0) {
     return (
@@ -21,7 +23,7 @@ export function Timeline({
   }
 
   return (
-    <ol className="relative space-y-8 border-l border-line pl-6 sm:pl-8">
+    <ol aria-label="Chronology" className="relative space-y-8 border-l border-line pl-6 sm:pl-8">
       {milestones.map((milestone) => (
         <li key={milestone.id} className="relative">
           <span
@@ -34,6 +36,7 @@ export function Timeline({
             milestone={milestone}
             locale={locale}
             unoptimizedImages={unoptimizedImages}
+            headingLevel={headingLevel}
           />
         </li>
       ))}

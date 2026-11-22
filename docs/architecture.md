@@ -64,6 +64,10 @@ The Midnight Atlas tokens live in `src/app/(frontend)/styles.css` as Tailwind 4 
 
 The header is sticky with a translucent background that stays readable without `backdrop-filter`. Below 1024px the links move into a disclosure menu (`HeaderNav`, a client component) that closes on Escape, on a link choice or on navigation and returns focus to its button. The current page is marked with `aria-current="page"` and an underline, not colour alone. `scroll-padding-top` keeps anchor targets clear of the header.
 
+## Journey scene
+
+The Journey is a layered SVG landscape, not WebGL. `src/lib/journey.ts` computes everything from the number of published milestones: one peak per milestone rising left to right with a valley between each pair, the last on the summit, and a smooth (Catmull-Rom) crest that the glowing trail follows. Nothing positional is stored in the CMS. `JourneyScene` (server) formats each stop and renders every milestone's detail card, so rich text never reaches a client bundle; `MountainJourney` (client) draws the art, puts a real `<button>` on each peak (`aria-current="step"` on the selected one) and swaps in the chosen card. Labels never overlap because the scene has a minimum width of 12.5rem per gap and scrolls sideways inside its own region on narrow screens, keeping the selected stop in view. The trail draws once when it first scrolls into view; if it is already visible, or the visitor prefers reduced motion, it is simply shown. Without JavaScript every stop and the summit's details are still in the HTML, and `/journey` also lists every milestone as plain text under **Chronology**.
+
 ## Atlas globe
 
 `/atlas` renders the list of places on the server. `AtlasExplorer` (client) detects WebGL, reduced motion and low-power devices, then loads `Globe` with `next/dynamic` (`ssr: false`), so three.js (about 241 KB gzipped) never ships in the initial page. The canvas uses an on-demand frame loop: it draws only when the camera or the selection changes. Measured on a production build with Playwright: first globe frame 486 ms on desktop and 1061 ms on a 4x-throttled mobile profile, 5 draw calls per frame, and no draws while idle.

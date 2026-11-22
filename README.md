@@ -40,16 +40,18 @@ Browser ──> Next.js (server components, HTML content, SEO)
 
 ### Public pages
 
-| Route            | Content                                                                                                                                                                                           |
-| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), plus an Atlas section with a small globe and featured projects in the chosen order |
-| `/journey`       | Published milestones, oldest first, with dates, era, tags, image and description. Returns 404 when the section is turned off                                                                      |
-| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                                                                   |
-| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                                                   |
-| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                                                           |
-| `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off                                 |
+| Route            | Content                                                                                                                                                                                                                                                                             |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/`              | Headline, introduction, hero image and calls to action from **Home page** (falling back to **Site settings**), an Atlas section with a small globe, the Journey mountain scene and featured projects in the chosen order                                                            |
+| `/journey`       | A mountain scene: a glowing trail climbs one peak per published milestone to a gold summit (the latest). Choosing a peak shows its story and related projects below; era buttons jump between eras. A plain-text **Chronology** follows. Returns 404 when the section is turned off |
+| `/impact`        | Published projects as cards, ordered by `sortOrder`. Returns 404 when the section is turned off                                                                                                                                                                                     |
+| `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                                                                                                                                     |
+| `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                                                                                                                                             |
+| `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off                                                                                                                   |
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
+
+On the Journey scene, milestones are ordered by date (then `sortOrder`) and the latest one sits on the summit, so the summit changes when you publish a newer milestone. Links like `/journey#milestone-<id>` open with that milestone selected. The trail draws in when it scrolls into view, unless the visitor prefers reduced motion.
 
 On `/atlas`, the list of places is the main content and works without JavaScript or WebGL. When WebGL is available, a globe loads afterwards, facing the starting view set in **Site settings** (Asia-Pacific by default). Markers come from published locations, and arcs connect the places a published project lists, in order. Each location **category** gets its own marker shape and colour, explained in a key under the globe and shown on each place card. Uncategorised places use a cyan circle. Clicking a marker or a place's **Show on globe** button selects it in both views, and links like `/atlas#place-<id>` open with that place selected. The globe only draws a frame when something changes, keeps the scroll wheel for the page, and skips the camera animation when the visitor prefers reduced motion.
 
@@ -223,7 +225,7 @@ Media uploads accept JPEG, PNG, WebP, AVIF and GIF files up to 10 MB. SVG is rej
 1. In `/admin`, open **Milestones** and select **Create new**.
 2. Fill in a title, a start date and a date precision, then select **Save draft**. Drafts never appear on the public site or in anonymous API responses.
 3. Select **Publish changes**. The public timeline cache is cleared straight away.
-4. Open <http://localhost:3000/journey>. The milestone appears in date order, and the date is shown at the precision you chose (for example "2020", "Mar 2020" or "Mar 1, 2020").
+4. Open <http://localhost:3000/journey>. The milestone appears as a peak on the mountain trail (on the summit if it is the latest) and in the **Chronology** list, where the date is shown at the precision you chose (for example "2020", "Mar 2020" or "Mar 1, 2020").
 
 Projects work the same way: create one under **Impact projects**, publish it, and it appears on `/impact` and at `/impact/<slug>`. To feature it on the homepage, add it to **Home page → Featured projects**. Unpublished projects are skipped there automatically.
 
@@ -313,3 +315,4 @@ For the full production procedure (applying migrations before the new version ta
 | 3. Login lockout, Secure session cookie, proxy rate-limit guide                 | Done   |
 | 3. Media visible only while published content uses it                           | Done   |
 | Design foundation: tokens, fonts, sticky header, mobile menu, footer            | Done   |
+| Mountain Journey scene on the home page and `/journey`                          | Done   |
