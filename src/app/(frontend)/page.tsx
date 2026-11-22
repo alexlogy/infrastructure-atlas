@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 
+import { ContactSection } from '@/components/about/ContactSection'
+import { Principles } from '@/components/about/Principles'
 import { PlaceGlobe } from '@/components/atlas/PlaceGlobe'
 import { MetricStrip } from '@/components/hero/MetricStrip'
 import { SmartLink } from '@/components/layout/SmartLink'
@@ -9,6 +11,7 @@ import { ImpactSection } from '@/components/impact/ImpactSection'
 import { JourneyScene } from '@/components/journey/JourneyScene'
 import { pageMetadata } from '@/lib/metadata'
 import {
+  getAboutPage,
   getAtlas,
   getPublicAchievements,
   getHomePage,
@@ -27,10 +30,11 @@ type Props = { searchParams: Promise<{ project?: string | string[]; view?: strin
 export default async function HomePage({ searchParams }: Props) {
   const [settings, home] = await Promise.all([getSiteSettings(), getHomePage()])
 
-  const [projects, milestones, achievements] = await Promise.all([
+  const [projects, milestones, achievements, about] = await Promise.all([
     settings.showImpact ? getPublicProjects() : [],
     settings.showJourney ? getPublicTimeline() : [],
     getPublicAchievements(),
+    getAboutPage(),
   ])
   const atlas: AtlasView | null = settings.showAtlas ? await getAtlas() : null
 
@@ -174,6 +178,29 @@ export default async function HomePage({ searchParams }: Props) {
           </div>
         </section>
       )}
+      {about.hasContent && (
+        <section className="container-page section-y" aria-labelledby="home-philosophy-heading">
+          <div className="grid gap-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+            <div>
+              <p className="eyebrow">Philosophy</p>
+              <h2 id="home-philosophy-heading" className="mt-3 text-section font-semibold">
+                {about.statement ?? 'How I work'}
+              </h2>
+              <Link
+                href="/about"
+                className="mt-6 inline-flex font-medium text-accent underline underline-offset-4 hover:text-ink"
+              >
+                Read the philosophy
+              </Link>
+            </div>
+            {about.principles.length > 0 && (
+              <Principles principles={about.principles.slice(0, 3)} columns="sm:grid-cols-3" />
+            )}
+          </div>
+        </section>
+      )}
+
+      <ContactSection contact={about.contact} button={settings.contact} />
     </>
   )
 }

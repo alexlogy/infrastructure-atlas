@@ -6,6 +6,7 @@ import { getPayload } from 'payload'
 
 import { CACHE_TAGS } from '@/lib/cache/tags'
 import type {
+  AboutPageView,
   AchievementView,
   AtlasView,
   HomePageView,
@@ -16,8 +17,14 @@ import type {
   WritingSettingsView,
 } from '@/types/view-models'
 
-import { toHomePageView, toSiteSettingsView, toWritingSettingsView } from './mappers'
 import {
+  toAboutPageView,
+  toHomePageView,
+  toSiteSettingsView,
+  toWritingSettingsView,
+} from './mappers'
+import {
+  fetchAboutPage,
   fetchAtlas,
   fetchPublicAchievements,
   fetchHomePage,
@@ -115,4 +122,18 @@ export const getPublicAchievements = unstable_cache(
   },
   ['public-achievements'],
   { tags: [CACHE_TAGS.achievements] },
+)
+
+/** About & philosophy content. Falls back to empty values so the home page still renders. */
+export const getAboutPage = unstable_cache(
+  async (): Promise<AboutPageView> => {
+    try {
+      return await fetchAboutPage(await getPayload({ config }))
+    } catch {
+      console.error('[about-page] failed to load; using defaults')
+      return toAboutPageView(null)
+    }
+  },
+  ['public-about-page'],
+  { tags: [CACHE_TAGS.aboutPage] },
 )

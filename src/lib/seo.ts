@@ -17,9 +17,10 @@ export function sitemapEntries(
     settings: Pick<SiteSettingsView, 'showJourney' | 'showImpact' | 'showAtlas'>
     projects: Pick<ProjectSummaryView, 'slug'>[]
     showWriting: boolean
+    showAbout?: boolean
   },
 ): MetadataRoute.Sitemap {
-  const { settings, projects, showWriting } = input
+  const { settings, projects, showWriting, showAbout = false } = input
   const paths = [
     '/',
     ...(settings.showJourney ? ['/journey'] : []),
@@ -27,6 +28,7 @@ export function sitemapEntries(
       ? ['/impact', ...projects.map((p) => `/impact/${encodeURIComponent(p.slug)}`)]
       : []),
     ...(settings.showAtlas ? ['/atlas'] : []),
+    ...(showAbout ? ['/about'] : []),
     ...(showWriting ? ['/writing'] : []),
   ]
   return paths.map((path) => ({ url: `${origin}${path}` }))

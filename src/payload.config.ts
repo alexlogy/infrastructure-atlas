@@ -11,6 +11,7 @@ import { ImpactProjects } from './collections/ImpactProjects'
 import { Media } from './collections/Media'
 import { TimelineMilestones } from './collections/TimelineMilestones'
 import { Users } from './collections/Users'
+import { AboutPage } from './globals/AboutPage'
 import { HomePage } from './globals/HomePage'
 import { SiteSettings } from './globals/SiteSettings'
 import { WritingSettings } from './globals/WritingSettings'
@@ -31,7 +32,7 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, TimelineMilestones, ImpactProjects, AtlasLocations, Achievements],
-  globals: [SiteSettings, HomePage, WritingSettings],
+  globals: [SiteSettings, HomePage, AboutPage, WritingSettings],
   editor: lexicalEditor(),
   secret: env.PAYLOAD_SECRET,
   serverURL: env.NEXT_PUBLIC_SITE_URL,

@@ -47,6 +47,7 @@ Browser ──> Next.js (server components, HTML content, SEO)
 | `/impact`        | The impact dashboard (selected case study with the Leadership / Engineering switch, project tiles, and a mini atlas of the project's places), then every published project as a card. Returns 404 when the section is turned off                                                    |
 | `/impact/[slug]` | One project: summary, Leadership / Engineering narrative, challenge, architecture, decisions, outcomes, limitations and sources                                                                                                                                                     |
 | `/atlas`         | Published places with the projects and milestones linked to them, plus an interactive globe. Returns 404 when the section is turned off                                                                                                                                             |
+| `/about`         | **Philosophy**: opening statement, introduction, principles, current focus, credentials (expired ones labelled) and the contact section. Returns 404 until there is content                                                                                                         |
 | `/writing`       | Featured and recent posts from the configured Ghost blog. Each card links to the original article. Returns 404 when Ghost is not configured or the section is off                                                                                                                   |
 
 The Leadership / Engineering switch is a pair of links, so it works without JavaScript and every state has its own URL: `/impact/<slug>?view=engineering`. The active option is marked with `aria-current`, a fill and a check mark. If a project has only one narrative, the switch is hidden and that narrative is shown.
@@ -205,6 +206,7 @@ There is no public sign-up, and editors can't change their own role.
 | `achievements`        | Collection | Published figures only, in the home page metric strip                                   |
 | `site-settings`       | Global     | Title, description, locale, navigation links, section visibility                        |
 | `home-page`           | Global     | Eyebrow, two-line headline, subheadline, hero image, calls to action, featured projects |
+| `about-page`          | Global     | Philosophy statement, principles, current focus, credentials, portrait, contact section |
 | `writing-settings`    | Global     | Whether Writing is on, how many recent posts, tag filters, featured post slugs          |
 | `media`               | Collection | Every uploaded file                                                                     |
 | `users`               | Collection | Nothing                                                                                 |
@@ -321,3 +323,4 @@ For the full production procedure (applying migrations before the new version ta
 | Mountain Journey scene on the home page and `/journey`                          | Done   |
 | Three-column impact dashboard on the home page and `/impact`                    | Done   |
 | Hero with globe, metric strip (achievements), coastlines, idle spin             | Done   |
+| Philosophy page, home philosophy preview and contact section                    | Done   |

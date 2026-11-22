@@ -4,6 +4,7 @@ import type { User } from '@/payload-types'
 
 import { isValidSlug } from '@/lib/validation/slugs'
 import type {
+  AboutPageView,
   AchievementView,
   AtlasView,
   HomePageView,
@@ -16,6 +17,7 @@ import type {
 
 import {
   compareMilestones,
+  toAboutPageView,
   toAchievementView,
   toAtlasView,
   compareProjects,
@@ -276,4 +278,23 @@ export async function fetchPublicAchievements(payload: Payload): Promise<Achieve
     select: { value: true, unit: true, label: true, explanation: true, icon: true },
   })
   return docs.flatMap((doc) => toAchievementView(doc) ?? [])
+}
+
+export async function fetchAboutPage(payload: Payload): Promise<AboutPageView> {
+  const doc = await payload.findGlobal({
+    slug: 'about-page',
+    depth: 1,
+    overrideAccess: false,
+    select: {
+      statement: true,
+      introduction: true,
+      portrait: true,
+      principles: true,
+      currentFocus: true,
+      credentials: true,
+      contact: true,
+    },
+    populate: PUBLIC_MEDIA,
+  })
+  return toAboutPageView(doc)
 }

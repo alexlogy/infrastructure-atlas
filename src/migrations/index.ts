@@ -6,6 +6,7 @@ import * as migration_20261121_152635_site_share_image from './20261121_152635_s
 import * as migration_20261122_040725_site_contact from './20261122_040725_site_contact';
 import * as migration_20261122_042656_project_category_icon from './20261122_042656_project_category_icon';
 import * as migration_20261122_043453_achievements_home_hero from './20261122_043453_achievements_home_hero';
+import * as migration_20261122_044715_about_page from './20261122_044715_about_page';
 
 export const migrations = [
   {
@@ -46,6 +47,11 @@ export const migrations = [
   {
     up: migration_20261122_043453_achievements_home_hero.up,
     down: migration_20261122_043453_achievements_home_hero.down,
-    name: '20261122_043453_achievements_home_hero'
+    name: '20261122_043453_achievements_home_hero',
+  },
+  {
+    up: migration_20261122_044715_about_page.up,
+    down: migration_20261122_044715_about_page.down,
+    name: '20261122_044715_about_page'
   },
 ];
